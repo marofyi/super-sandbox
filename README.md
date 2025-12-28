@@ -8,8 +8,11 @@ A space for coding experiments and explorations.
 # Install dependencies
 pnpm install
 
-# Build shared packages
-pnpm build
+# Type-check all packages
+pnpm check
+
+# Build a specific package
+pnpm b @research/openai-utils build
 ```
 
 ## Structure
@@ -69,4 +72,6 @@ cp .env.example .env
 
 ## Projects
 
-- **example-chat**: Demo showing openai-utils usage
+### example-chat
+
+A demonstration project showcasing all features of the @research/openai-utils package. It includes examples of simple one-liner queries with `ask()`, detailed responses with token usage via `chat()`, custom system prompts for persona-based responses, and real-time streaming output with `chatStream()`. Built with TypeScript and tsx for rapid development without a build step.
