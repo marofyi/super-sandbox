@@ -1,0 +1,33 @@
+name: Update README
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Update README with Claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          prompt: |
+            Analyze the changes in this PR by comparing against origin/main.
+            Update README.md to reflect any new or modified projects.
+            Only update sections relevant to what changed in this PR.
+            If there are no project changes (e.g., only workflow files changed), do not modify the README.
+            Commit changes with message "Update README for PR changes"
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: |
+            --system-prompt "This is a research monorepo with coding experiments. You are responsible for keeping the main README up to date with a summary of each project. For each project folder, write a 2-3 sentence summary describing what it does, key technologies used, and any interesting findings. Sort projects by most recently modified. Do not include .github or other hidden folders. Focus only on projects that were added or modified in this PR."
+            --model claude-opus-4-5-20251101
