@@ -1,0 +1,19 @@
+{
+  "name": "research",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "run": "pnpm tsx",
+    "b": "pnpm --filter",
+    "check": "pnpm -r exec tsc --noEmit",
+    "clean": "pnpm -r clean"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
