@@ -3,7 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "pnpm -r build",
+    "run": "pnpm tsx",
+    "b": "pnpm --filter",
+    "check": "pnpm -r exec tsc --noEmit",
     "clean": "pnpm -r clean"
   },
   "devDependencies": {
