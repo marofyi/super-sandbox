@@ -8,8 +8,11 @@ A space for coding experiments and explorations.
 # Install dependencies
 pnpm install
 
-# Build shared packages
-pnpm build
+# Type-check all packages
+pnpm check
+
+# Build a specific package
+pnpm b @research/openai-utils build
 ```
 
 ## Structure
