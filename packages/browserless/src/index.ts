@@ -6,11 +6,12 @@
  *
  * @example
  * ```typescript
- * import { goto, click, type, screenshot } from '@research/browserless';
+ * import { goto, click, type, screenshotToFile } from '@research/browserless';
  *
- * // Navigate and take screenshot
+ * // Navigate and take screenshot (saves to file for Claude to view)
  * await goto('https://example.com');
- * const base64 = await screenshot();
+ * const path = await screenshotToFile('./page.png');
+ * // Claude can then use Read tool to view the screenshot
  *
  * // Interact with elements
  * await click('button.submit');
@@ -38,8 +39,8 @@ export { goto } from "./browserless-client.js";
 // Interactions
 export { click, type } from "./browserless-client.js";
 
-// Content extraction
-export { getHtml, getText, screenshot } from "./browserless-client.js";
+// Content extraction & screenshots
+export { getHtml, getText, screenshot, screenshotToFile } from "./browserless-client.js";
 
 // Types
 export type {

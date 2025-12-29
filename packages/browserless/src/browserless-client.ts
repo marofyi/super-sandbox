@@ -201,6 +201,32 @@ export async function screenshot(): Promise<string> {
 }
 
 /**
+ * Take a screenshot and save to a file
+ * Returns the file path - use Claude's Read tool to view it
+ *
+ * @param filePath - Path to save the screenshot (default: ./screenshot.png)
+ * @returns The file path where screenshot was saved
+ *
+ * @example
+ * ```typescript
+ * const path = await screenshotToFile('./page.png');
+ * // Then use Read tool: Read({ file_path: path })
+ * ```
+ */
+export async function screenshotToFile(
+  filePath: string = "./screenshot.png"
+): Promise<string> {
+  const { writeFileSync } = await import("fs");
+  const { resolve } = await import("path");
+
+  const base64 = await screenshot();
+  const absolutePath = resolve(filePath);
+  writeFileSync(absolutePath, Buffer.from(base64, "base64"));
+
+  return absolutePath;
+}
+
+/**
  * Execute a complete automation flow in a single request
  * This is more efficient as it uses one browser session for multiple actions
  */
