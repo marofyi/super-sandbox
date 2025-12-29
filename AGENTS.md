@@ -62,6 +62,52 @@ research/
 └── .env.example        # Template for environment setup
 ```
 
+## Environment Variables
+
+### Required
+
+| Variable | Description | Get it from |
+|----------|-------------|-------------|
+| `OPENAI_API_KEY` | OpenAI API key | https://platform.openai.com/api-keys |
+
+### Optional (for deployment)
+
+| Variable | Description | When needed |
+|----------|-------------|-------------|
+| `VERCEL_TOKEN` | Vercel API token | Deploying to Vercel |
+| `VERCEL_ORG_ID` | Vercel team/org ID | Deploying to Vercel |
+| `GH_TOKEN` | GitHub personal access token | Headless `gh` CLI usage |
+
+### Setup by Environment
+
+#### Local Mac
+
+```bash
+# Create .env from template
+cp .env.example .env
+
+# Edit and add your keys
+nano .env
+```
+
+The `.env` file is gitignored and persists locally.
+
+#### Claude Code Web/Cloud
+
+The web environment is **ephemeral**—files outside the repo reset each session.
+
+**Recommended:** Add secrets via Claude Code settings (they persist across sessions and inject automatically).
+
+**Alternative:** Export manually each session:
+```bash
+export OPENAI_API_KEY=sk-proj-...
+```
+
+| Environment | `.env` persists? | Best approach |
+|-------------|------------------|---------------|
+| Local Mac | ✅ Yes | Use `.env` file |
+| Claude Code Web | ❌ No | Use Claude Code secrets |
+
 ## Boundaries
 
 ### Always Do
