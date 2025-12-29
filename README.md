@@ -33,7 +33,7 @@ research/
 
 ### @research/browserless
 
-Browser automation client for [Browserless](https://browserless.io) BrowserQL using pure HTTP POST (no WebSocket), making it compatible with sandboxed environments like Claude Code Web. Exposes helpers like `goto`, `click`, `type`, `getText`, and `screenshot` plus `executeFlow` for multi-step GraphQL mutations. Requires `BROWSERLESS_TOKEN` and optionally `BROWSERLESS_URL`.
+Browser automation client for [Browserless](https://browserless.io) BrowserQL using pure HTTP POST (no WebSocket), making it compatible with sandboxed environments like Claude Code Web. Helpers include `goto`, `click`, `type`, `getText`, `getHtml`, and `screenshot`/`screenshotToFile` (optimized JPEG defaults to `/tmp`) plus `executeFlow` for single-session GraphQL flows. Requires `BROWSERLESS_TOKEN` and optionally `BROWSERLESS_URL`.
 
 ### @research/openai-utils
 
@@ -117,3 +117,4 @@ See [docs/vercel-deployment.md](docs/vercel-deployment.md) for:
 - GitHub Actions keeps README.md current on pull requests via `.github/workflows/update-readme.yml`.
 - The `projects/tanstack-chat/.env.example` file documents required `OPENAI_API_KEY` and optional `ANTHROPIC_API_KEY`/`GEMINI_API_KEY` values for the multi-provider chat demos.
 - Browser automation utilities in `@research/browserless` need `BROWSERLESS_TOKEN` (and optional `BROWSERLESS_URL`) for BrowserQL HTTP calls; works without WebSockets for sandboxed environments.
+- Browser automation options for sandboxed environments are compared in `docs/cc-web-browser-automation.md`, highlighting Browserless BrowserQL as the HTTP-only approach that succeeds when CDP WebSockets are blocked.
