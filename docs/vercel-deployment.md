@@ -40,10 +40,21 @@ pnpm vercel --prod --yes --token=$VERCEL_TOKEN
 
 ## Environment Variables
 
-### Push from local .env to Vercel
+### Push to Vercel from terminal environment
+
+If env vars are already set in your terminal session:
 
 ```bash
-# Read OPENAI_API_KEY from local .env and add to Vercel
+# Pipe directly from environment variable
+echo "$OPENAI_API_KEY" | pnpm vercel env add OPENAI_API_KEY production --token=$VERCEL_TOKEN
+```
+
+### Push to Vercel from .env file
+
+If using a `.env` file:
+
+```bash
+# Source and pipe
 source .env
 echo "$OPENAI_API_KEY" | pnpm vercel env add OPENAI_API_KEY production --token=$VERCEL_TOKEN
 
@@ -51,7 +62,7 @@ echo "$OPENAI_API_KEY" | pnpm vercel env add OPENAI_API_KEY production --token=$
 grep '^OPENAI_API_KEY=' .env | cut -d'=' -f2 | pnpm vercel env add OPENAI_API_KEY production --token=$VERCEL_TOKEN
 ```
 
-### Manage env vars
+### Manage Vercel env vars
 
 ```bash
 # List env vars
@@ -67,9 +78,31 @@ Deploy only when specific projects change. This is the **recommended approach fo
 
 ### Setup
 
-1. Add `VERCEL_TOKEN` to GitHub repo secrets
-2. Add `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID` (get these by running `vercel link` once locally)
-3. Add the workflow file below
+1. Get Vercel project IDs (run `vercel link` — see below)
+2. Add secrets to GitHub (via CLI — see below)
+3. Add the workflow file
+
+### Setting GitHub Secrets via CLI
+
+Use the `gh` CLI to set secrets programmatically from your terminal environment:
+
+```bash
+# Set all required secrets from environment variables
+gh secret set VERCEL_TOKEN --body "$VERCEL_TOKEN"
+gh secret set VERCEL_ORG_ID --body "$VERCEL_ORG_ID"
+gh secret set VERCEL_PROJECT_ID_EXAMPLE_CHAT_WEB --body "$VERCEL_PROJECT_ID"
+gh secret set OPENAI_API_KEY --body "$OPENAI_API_KEY"
+
+# List secrets (values are hidden)
+gh secret list
+```
+
+**Note:** The `gh` CLI uses `GITHUB_TOKEN` or interactive auth. In a headless environment, set `GH_TOKEN`:
+
+```bash
+export GH_TOKEN=ghp_your_github_token
+gh secret set VERCEL_TOKEN --body "$VERCEL_TOKEN"
+```
 
 ### Workflow: `.github/workflows/deploy-example-chat-web.yml`
 
