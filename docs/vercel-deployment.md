@@ -181,22 +181,26 @@ pnpm exec vercel deploy --prod --yes --token "$VERCEL_TOKEN"
 pnpm exec vercel deploy --prod --yes --force --token "$VERCEL_TOKEN"
 ```
 
-## Auto-Deploy Options
+## Auto-Deploy with GitHub Actions
 
-### Option 1: Vercel GitHub Integration (Interactive Setup)
+All web projects use **GitHub Actions** for automatic deployments. This ensures:
 
-Connect via Vercel dashboard for automatic deployments on every push. Requires one-time interactive setup but then works automatically.
+- Fully headless CI/CD (works with Claude Code Web)
+- Consistent deployment process across all projects
+- No interactive Vercel dashboard setup required
 
-### Option 2: GitHub Actions (Headless)
-
-Add a workflow file for CI/CD deployments:
+### Workflow Configuration
 
 ```yaml
-# .github/workflows/deploy.yml
+# .github/workflows/deploy-vercel.yml
 name: Deploy to Vercel
 on:
   push:
     branches: [main]
+    paths:
+      - 'projects/example-chat-web/**'
+      - 'packages/openai-utils/**'
+      - 'pnpm-lock.yaml'
 
 jobs:
   deploy:
@@ -211,10 +215,30 @@ jobs:
           node-version: '22'
           cache: 'pnpm'
       - run: pnpm install
+
+      # Create Vercel project link
+      - run: |
+          mkdir -p .vercel
+          echo '{"projectId":"${{ secrets.VERCEL_PROJECT_ID }}","orgId":"${{ secrets.VERCEL_ORG_ID }}"}' > .vercel/project.json
+
       - run: pnpm exec vercel deploy --prod --yes --token ${{ secrets.VERCEL_TOKEN }}
 ```
 
-Add `VERCEL_TOKEN` to GitHub repository secrets.
+### Required GitHub Secrets
+
+| Secret | Description | Where to find |
+|--------|-------------|---------------|
+| `VERCEL_TOKEN` | API token | [Vercel Tokens](https://vercel.com/account/tokens) |
+| `VERCEL_ORG_ID` | Team/org ID | `.vercel/project.json` after linking |
+| `VERCEL_PROJECT_ID` | Project ID | `.vercel/project.json` after linking |
+
+### Adding a New Web Project to CI/CD
+
+1. Create and configure the Vercel project (see Steps 1-3 above)
+2. Add the project's paths to the workflow `paths` filter
+3. For multiple projects, either:
+   - Use separate workflow files per project
+   - Use a matrix strategy in a single workflow
 
 **Status**: Not yet configured for this repo.
 

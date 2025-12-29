@@ -224,9 +224,9 @@ pnpm exec vercel deploy --prod --yes --token "$VERCEL_TOKEN"
 ### Key Points
 
 - Each web project gets its own Vercel Project
-- Initial setup via **Vercel API** (works in Claude Code Web), then deploy via CLI
+- Initial setup via **Vercel API** (works in Claude Code Web)
 - Build command must build workspace dependencies first
-- Auto-deploy via GitHub Actions (not yet configured)
+- **Auto-deploy enforced via GitHub Actions** (headless, no dashboard required)
 
 ### Current Deployments
 
