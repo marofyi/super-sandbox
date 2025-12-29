@@ -14,11 +14,11 @@ Each deployable web project in `projects/` gets its own **separate Vercel Projec
 
 ### Critical Configuration
 
-Vercel monorepo deployments require specific settings. These must be configured via **Vercel API** because:
+Vercel monorepo deployments require specific settings. These can be configured via **Vercel API** or **CLI**:
 
-- `vercel link` requires interactive project selection (no `--project` flag)
-- Project settings like `rootDirectory` can only be set via API or dashboard
-- API works in Claude Code Web; interactive CLI does not
+- `vercel link` requires interactive project selection (no `--project` flag) - but `vercel project add` works headlessly
+- Project settings like `rootDirectory` can be set via API, dashboard, or auto-detected
+- **Recommended**: Use CLI for project creation and linking; API can be unreliable
 
 Once a project is configured, **deployments use the CLI** (`vercel deploy --yes --token`).
 
@@ -47,7 +47,46 @@ Required environment variables (add via Claude Code secrets for web sessions):
 - `VERCEL_TOKEN` - Vercel API token ([create here](https://vercel.com/account/tokens))
 - `OPENAI_API_KEY` - For projects using OpenAI (or other required keys)
 
-### Step 1: Create Vercel Project
+### Recommended: CLI-Based Deployment
+
+This approach is more reliable than the API-based method, especially in Claude Code Web.
+
+#### Step 1: Create and Link Project
+
+```bash
+# Remove any existing .vercel folder
+rm -rf .vercel
+
+# Create the project (headless, no interaction required)
+pnpm exec vercel project add <project-name> --token "$VERCEL_TOKEN"
+
+# IMPORTANT: Temporarily unset env vars to avoid conflicts
+# (If VERCEL_ORG_ID is set without VERCEL_PROJECT_ID, CLI will fail)
+VERCEL_ORG_ID= VERCEL_PROJECT_ID= pnpm exec vercel link \
+  --project <project-name> --yes --token "$VERCEL_TOKEN"
+```
+
+#### Step 2: Add Environment Variables
+
+```bash
+# Add via CLI (more reliable than API)
+VERCEL_ORG_ID= VERCEL_PROJECT_ID= pnpm exec vercel env add OPENAI_API_KEY production \
+  --token "$VERCEL_TOKEN" <<< "$OPENAI_API_KEY"
+```
+
+#### Step 3: Deploy
+
+```bash
+# Deploy to production
+VERCEL_ORG_ID= VERCEL_PROJECT_ID= pnpm exec vercel deploy --prod --yes \
+  --token "$VERCEL_TOKEN"
+```
+
+### Alternative: API-Based Deployment
+
+Use this if CLI commands fail. Note: API authentication can be unreliable.
+
+#### Step 1: Create Vercel Project
 
 ```bash
 # Create the project via API
@@ -59,14 +98,14 @@ curl -X POST "https://api.vercel.com/v10/projects" \
     "framework": "nextjs",
     "rootDirectory": "projects/<project-name>",
     "installCommand": "pnpm install",
-    "buildCommand": "pnpm --filter @research/openai-utils build && pnpm --filter @research/<project-name> build",
+    "buildCommand": "pnpm --filter @research/<project-name> build",
     "publicSource": false
   }'
 ```
 
 Save the returned `id` (e.g., `prj_xxxxx`) for subsequent commands.
 
-### Step 2: Configure Project Settings
+#### Step 2: Configure Project Settings
 
 Ensure source files outside root directory are accessible:
 
@@ -77,7 +116,7 @@ curl -X PATCH "https://api.vercel.com/v9/projects/<PROJECT_ID>" \
   -d '{"sourceFilesOutsideRootDirectory": true}'
 ```
 
-### Step 3: Add Environment Variables
+#### Step 3: Add Environment Variables
 
 ```bash
 # Add each required environment variable
@@ -92,7 +131,7 @@ curl -X POST "https://api.vercel.com/v10/projects/<PROJECT_ID>/env" \
   }"
 ```
 
-### Step 4: Link and Deploy
+#### Step 4: Link and Deploy
 
 From the **monorepo root**:
 
@@ -141,15 +180,52 @@ const nextConfig: NextConfig = {
 export default nextConfig;
 ```
 
+## Framework-Specific Notes
+
+### Next.js Projects
+
+Standard Next.js projects work with the default settings. Set `framework: "nextjs"` in the API or let Vercel auto-detect.
+
+### TanStack Start / Nitro Projects
+
+TanStack Start uses Vite + Nitro for SSR. Vercel auto-detects this correctly:
+
+- **No `vercel.json` required** - Nitro auto-generates `.vercel/output`
+- **Build output**: Nitro creates serverless functions automatically
+- **Framework detection**: Set to `null` or omit; Vercel detects Nitro preset
+
+Example build output structure:
+```
+.vercel/output/
+├── static/           # Client assets
+└── functions/        # Serverless functions
+    └── __fallback.func/
+```
+
+**Note**: You may see this warning during build (safe to ignore):
+```
+[warn] [nitro] Please add `compatibilityDate: '2025-12-29'` to the config file.
+```
+
 ## Existing Deployments
 
-### example-chat-web
+### example-chat-web (Next.js)
 
 | Property | Value |
 |----------|-------|
 | Project ID | `prj_3ten4pMxczOKsya7GVc3Dh6VhZTr` |
 | URL | https://example-chat-web-marofyi.vercel.app |
 | Root Directory | `projects/example-chat-web` |
+| Framework | Next.js |
+
+### tanstack-chat (TanStack Start)
+
+| Property | Value |
+|----------|-------|
+| Project ID | `prj_ugAj68LssRkhASeqoqqZ4GihVwQI` |
+| URL | https://tanstack-chat.vercel.app |
+| Root Directory | `projects/tanstack-chat` |
+| Framework | TanStack Start (Vite + Nitro) |
 
 ## Troubleshooting
 
@@ -170,6 +246,35 @@ export default nextConfig;
 **Cause**: Next.js 16+ with Turbopack may have issues detecting monorepo structure.
 
 **Fix**: Usually resolved by proper `rootDirectory` and `sourceFilesOutsideRootDirectory` settings. If issues persist, the build will still work as Turbopack handles this automatically when configured correctly.
+
+### "You specified VERCEL_ORG_ID but forgot to specify VERCEL_PROJECT_ID"
+
+**Cause**: Environment has `VERCEL_ORG_ID` set (e.g., from Claude Code secrets) but no `VERCEL_PROJECT_ID`. The CLI requires both or neither.
+
+**Fix**: Temporarily unset both when running CLI commands:
+```bash
+VERCEL_ORG_ID= VERCEL_PROJECT_ID= pnpm exec vercel link --project <name> --yes --token "$VERCEL_TOKEN"
+```
+
+### API returns "missingToken" or "invalidToken"
+
+**Cause**: Vercel API authentication can be unreliable, especially with token passing through environment variables.
+
+**Fix**: Use CLI commands instead of direct API calls. The CLI handles authentication more reliably:
+```bash
+# Instead of curl API calls, use:
+pnpm exec vercel project add <name> --token "$VERCEL_TOKEN"
+pnpm exec vercel env add <KEY> production --token "$VERCEL_TOKEN"
+```
+
+### API calls return empty responses
+
+**Cause**: API calls may silently fail or return empty responses without error messages.
+
+**Fix**:
+1. Verify token is valid by running a simple CLI command first
+2. Use CLI-based deployment workflow instead of API
+3. Check Vercel dashboard for project status if unsure
 
 ## Redeploying
 
