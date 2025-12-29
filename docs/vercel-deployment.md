@@ -148,7 +148,7 @@ export default nextConfig;
 | Property | Value |
 |----------|-------|
 | Project ID | `prj_3ten4pMxczOKsya7GVc3Dh6VhZTr` |
-| URL | https://research-marofyi.vercel.app |
+| URL | https://example-chat-web-marofyi.vercel.app |
 | Root Directory | `projects/example-chat-web` |
 
 ## Troubleshooting

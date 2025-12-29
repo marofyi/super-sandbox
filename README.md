@@ -21,8 +21,10 @@ pnpm b @research/openai-utils build
 research/
 ├── packages/           # Shared utilities
 │   └── openai-utils/   # OpenAI API wrapper
-└── projects/           # Research projects
-    └── example-chat/   # Demo project
+├── projects/           # Research projects
+│   ├── example-chat/   # CLI demo
+│   └── example-chat-web/ # Web demo (Next.js)
+└── docs/               # Documentation
 ```
 
 ## Shared Packages
@@ -54,12 +56,18 @@ for await (const chunk of chatStream('Tell me a story')) {
 
 ## Running Projects
 
-```bash
-# Run any project with tsx (no build needed)
-pnpm --filter @research/example-chat start
+### CLI Projects
 
-# Or directly
-cd projects/example-chat && pnpm start
+```bash
+# Run CLI projects with tsx (no build needed)
+pnpm --filter @research/example-chat start
+```
+
+### Web Projects
+
+```bash
+# Run web projects locally (requires OPENAI_API_KEY in .env)
+pnpm --filter @research/example-chat-web dev
 ```
 
 ## Environment Setup
@@ -80,7 +88,7 @@ A CLI demonstration showcasing all features of the @research/openai-utils packag
 
 A Next.js web application providing a chat interface using the @research/openai-utils package. Deployed to Vercel.
 
-**Live**: https://research-marofyi.vercel.app
+**Live**: https://example-chat-web-marofyi.vercel.app
 
 ## Deployment
 
