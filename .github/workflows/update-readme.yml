@@ -18,15 +18,28 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Update README with Claude
-        uses: anthropics/claude-code-action@v1
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Update README with Codex
+        uses: openai/codex-action@v1
         with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          sandbox: workspace-write
           prompt: |
             Analyze the changes in this PR by comparing against origin/main.
             Update README.md to reflect any new or modified projects in the projects/ directory.
             For each project, write a 2-3 sentence summary with key technologies used.
             Sort projects by most recently modified. Skip hidden folders.
             If no projects changed, do not modify the README.
-            Commit changes with message "Update README for PR changes"
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+            Stage and commit any changes with message "Update README for PR changes".
+
+      - name: Push changes
+        run: |
+          if [ -n "$(git log origin/${{ github.head_ref }}..HEAD)" ]; then
+            git push origin HEAD:${{ github.head_ref }}
+          fi
