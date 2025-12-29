@@ -24,7 +24,9 @@ jobs:
         with:
           prompt: |
             Analyze the changes in this PR by comparing against origin/main.
-            Update README.md to reflect any new or modified projects.
-            Only update sections relevant to what changed in this PR.
+            Update README.md to reflect any new or modified projects in the projects/ directory.
+            For each project, write a 2-3 sentence summary with key technologies used.
+            Sort projects by most recently modified. Skip hidden folders.
+            If no projects changed, do not modify the README.
             Commit changes with message "Update README for PR changes"
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
