@@ -189,17 +189,31 @@ All web projects use **GitHub Actions** for automatic deployments. This ensures:
 - Consistent deployment process across all projects
 - No interactive Vercel dashboard setup required
 
-### Workflow Configuration
+### Architecture: One Workflow Per Project
+
+Each web project gets its own workflow file. This keeps deployments independent and failures isolated.
+
+```
+.github/workflows/
+├── deploy-example-chat-web.yml
+├── deploy-future-project.yml
+└── ...
+```
+
+### Workflow Template
+
+Create a workflow file for each web project:
 
 ```yaml
-# .github/workflows/deploy-vercel.yml
-name: Deploy to Vercel
+# .github/workflows/deploy-example-chat-web.yml
+name: Deploy example-chat-web
+
 on:
   push:
     branches: [main]
     paths:
       - 'projects/example-chat-web/**'
-      - 'packages/openai-utils/**'
+      - 'packages/openai-utils/**'  # Shared dependency
       - 'pnpm-lock.yaml'
 
 jobs:
@@ -207,38 +221,48 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: pnpm/action-setup@v2
         with:
           version: 10
+
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'pnpm'
+
       - run: pnpm install
 
-      # Create Vercel project link
-      - run: |
+      - name: Create Vercel project link
+        run: |
           mkdir -p .vercel
-          echo '{"projectId":"${{ secrets.VERCEL_PROJECT_ID }}","orgId":"${{ secrets.VERCEL_ORG_ID }}"}' > .vercel/project.json
+          echo '{"projectId":"${{ secrets.VERCEL_PROJECT_ID_EXAMPLE_CHAT_WEB }}","orgId":"${{ secrets.VERCEL_ORG_ID }}"}' > .vercel/project.json
 
-      - run: pnpm exec vercel deploy --prod --yes --token ${{ secrets.VERCEL_TOKEN }}
+      - name: Deploy to Vercel
+        run: pnpm exec vercel deploy --prod --yes --token ${{ secrets.VERCEL_TOKEN }}
 ```
 
 ### Required GitHub Secrets
 
-| Secret | Description | Where to find |
-|--------|-------------|---------------|
-| `VERCEL_TOKEN` | API token | [Vercel Tokens](https://vercel.com/account/tokens) |
-| `VERCEL_ORG_ID` | Team/org ID | `.vercel/project.json` after linking |
-| `VERCEL_PROJECT_ID` | Project ID | `.vercel/project.json` after linking |
+**Shared (one per repo):**
+
+| Secret | Description |
+|--------|-------------|
+| `VERCEL_TOKEN` | API token from [Vercel Tokens](https://vercel.com/account/tokens) |
+| `VERCEL_ORG_ID` | Team/org ID (same for all projects) |
+
+**Per project:**
+
+| Secret | Description |
+|--------|-------------|
+| `VERCEL_PROJECT_ID_<PROJECT_NAME>` | Project ID (e.g., `VERCEL_PROJECT_ID_EXAMPLE_CHAT_WEB`) |
 
 ### Adding a New Web Project to CI/CD
 
-1. Create and configure the Vercel project (see Steps 1-3 above)
-2. Add the project's paths to the workflow `paths` filter
-3. For multiple projects, either:
-   - Use separate workflow files per project
-   - Use a matrix strategy in a single workflow
+1. Create and configure the Vercel project via API (see Steps 1-3 above)
+2. Add GitHub secret: `VERCEL_PROJECT_ID_<PROJECT_NAME>` with the project ID
+3. Create workflow file: `.github/workflows/deploy-<project-name>.yml`
+4. Update paths to include the project directory and any shared dependencies
 
 **Status**: Not yet configured for this repo.
 
