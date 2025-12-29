@@ -1,217 +1,198 @@
 # Vercel Deployment Guide
 
-Deploy monorepo projects to Vercel using the CLI and GitHub Actions.
+This guide covers deploying web projects from this pnpm monorepo to Vercel.
 
-## Prerequisites
+## Key Concepts
 
-### Install Vercel CLI
+### Monorepo Structure
 
-```bash
-# As workspace dev dependency (recommended for CI)
-pnpm add -wD vercel
+Each deployable web project in `projects/` gets its own **separate Vercel Project**. This allows:
 
-# Run via pnpm
-pnpm vercel --help
+- Independent deployments per project
+- Project-specific environment variables
+- Separate deployment URLs and domains
 
-# Or via npx (no install needed)
-npx vercel --help
-```
+### Critical Configuration
 
-## Authentication
+Vercel monorepo deployments require specific settings configured via the **Vercel API** (not `vercel.json`):
 
-**Token-based only** (no browser required):
+| Setting | Value | Why |
+|---------|-------|-----|
+| `rootDirectory` | `projects/<name>` | Points Vercel to the project subdirectory |
+| `sourceFilesOutsideRootDirectory` | `true` | Allows access to workspace packages in `packages/` |
+| `installCommand` | `pnpm install` | Runs from monorepo root, resolves workspace deps |
+| `buildCommand` | See below | Must build dependencies before the target project |
+| `framework` | `nextjs` (or appropriate) | Enables framework-specific optimizations |
 
-1. Generate a token at https://vercel.com/account/tokens
-2. Use via environment variable:
+### Build Command Pattern
 
-```bash
-export VERCEL_TOKEN=your_token_here
-```
-
-## Manual Deployment
+Always build workspace dependencies before the target project:
 
 ```bash
-# Navigate to the project
-cd projects/example-chat-web
-
-# Deploy to production
-pnpm vercel --prod --yes --token=$VERCEL_TOKEN
+pnpm --filter @research/openai-utils build && pnpm --filter @research/<project> build
 ```
 
-## Environment Variables
+## Deploying a New Web Project
 
-### Push to Vercel from terminal environment
+### Prerequisites
 
-If env vars are already set in your terminal session:
+Required environment variables (add via Claude Code secrets for web sessions):
+
+- `VERCEL_TOKEN` - Vercel API token ([create here](https://vercel.com/account/tokens))
+- `OPENAI_API_KEY` - For projects using OpenAI (or other required keys)
+
+### Step 1: Create Vercel Project
 
 ```bash
-# Pipe directly from environment variable
-echo "$OPENAI_API_KEY" | pnpm vercel env add OPENAI_API_KEY production --token=$VERCEL_TOKEN
+# Create the project via API
+curl -X POST "https://api.vercel.com/v10/projects" \
+  -H "Authorization: Bearer $VERCEL_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "<project-name>",
+    "framework": "nextjs",
+    "rootDirectory": "projects/<project-name>",
+    "installCommand": "pnpm install",
+    "buildCommand": "pnpm --filter @research/openai-utils build && pnpm --filter @research/<project-name> build",
+    "publicSource": false
+  }'
 ```
 
-### Push to Vercel from .env file
+Save the returned `id` (e.g., `prj_xxxxx`) for subsequent commands.
 
-If using a `.env` file:
+### Step 2: Configure Project Settings
+
+Ensure source files outside root directory are accessible:
 
 ```bash
-# Source and pipe
-source .env
-echo "$OPENAI_API_KEY" | pnpm vercel env add OPENAI_API_KEY production --token=$VERCEL_TOKEN
-
-# Or one-liner using grep
-grep '^OPENAI_API_KEY=' .env | cut -d'=' -f2 | pnpm vercel env add OPENAI_API_KEY production --token=$VERCEL_TOKEN
+curl -X PATCH "https://api.vercel.com/v9/projects/<PROJECT_ID>" \
+  -H "Authorization: Bearer $VERCEL_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sourceFilesOutsideRootDirectory": true,
+    "ssoProtection": null
+  }'
 ```
 
-### Manage Vercel env vars
+Setting `ssoProtection` to `null` makes deployments publicly accessible.
+
+### Step 3: Add Environment Variables
 
 ```bash
-# List env vars
-pnpm vercel env ls --token=$VERCEL_TOKEN
-
-# Remove an env var
-pnpm vercel env rm OPENAI_API_KEY production --token=$VERCEL_TOKEN
+# Add each required environment variable
+curl -X POST "https://api.vercel.com/v10/projects/<PROJECT_ID>/env" \
+  -H "Authorization: Bearer $VERCEL_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"key\": \"OPENAI_API_KEY\",
+    \"value\": \"\$OPENAI_API_KEY\",
+    \"type\": \"encrypted\",
+    \"target\": [\"production\", \"preview\", \"development\"]
+  }"
 ```
 
-## GitHub Actions: Selective Deployment
+### Step 4: Link and Deploy
 
-Deploy only when specific projects change. This is the **recommended approach for monorepos**.
-
-### Setup
-
-1. Get Vercel project IDs (run `vercel link` — see below)
-2. Add secrets to GitHub (via CLI — see below)
-3. Add the workflow file
-
-### Setting GitHub Secrets via CLI
-
-Use the `gh` CLI to set secrets programmatically from your terminal environment:
+From the **monorepo root**:
 
 ```bash
-# Set all required secrets from environment variables
-gh secret set VERCEL_TOKEN --body "$VERCEL_TOKEN"
-gh secret set VERCEL_ORG_ID --body "$VERCEL_ORG_ID"
-gh secret set VERCEL_PROJECT_ID_EXAMPLE_CHAT_WEB --body "$VERCEL_PROJECT_ID"
-gh secret set OPENAI_API_KEY --body "$OPENAI_API_KEY"
+# Remove any existing .vercel folder
+rm -rf .vercel
 
-# List secrets (values are hidden)
-gh secret list
+# Create .vercel/project.json manually (non-interactive)
+mkdir -p .vercel
+cat > .vercel/project.json << PROJ
+{
+  "projectId": "<PROJECT_ID>",
+  "orgId": "<ORG_ID>",
+  "projectName": "<project-name>"
+}
+PROJ
+
+# Deploy
+pnpm exec vercel deploy --prod --yes --token "$VERCEL_TOKEN"
 ```
 
-**Note:** The `gh` CLI uses `GITHUB_TOKEN` or interactive auth. In a headless environment, set `GH_TOKEN`:
+## Project Configuration Files
 
-```bash
-export GH_TOKEN=ghp_your_github_token
-gh secret set VERCEL_TOKEN --body "$VERCEL_TOKEN"
-```
+### vercel.json (in project directory)
 
-### Workflow: `.github/workflows/deploy-example-chat-web.yml`
+Keep it minimal—settings are configured via API:
 
-```yaml
-name: Deploy example-chat-web
-
-on:
-  push:
-    branches: [main]
-    paths:
-      # Trigger only when these paths change
-      - 'projects/example-chat-web/**'
-      - 'packages/openai-utils/**'  # Shared dependency
-      - 'pnpm-lock.yaml'
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Build shared packages
-        run: pnpm b @research/openai-utils build
-
-      - name: Deploy to Vercel
-        working-directory: projects/example-chat-web
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_EXAMPLE_CHAT_WEB }}
-        run: |
-          pnpm vercel pull --yes --environment=production --token=$VERCEL_TOKEN
-          pnpm vercel build --prod --token=$VERCEL_TOKEN
-          pnpm vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
-```
-
-### Getting Vercel Project IDs
-
-Run once locally to get the IDs:
-
-```bash
-cd projects/example-chat-web
-pnpm vercel link --token=$VERCEL_TOKEN
-cat .vercel/project.json
-```
-
-This outputs:
 ```json
-{"orgId":"team_xxx","projectId":"prj_xxx"}
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs"
+}
 ```
 
-Add these as GitHub secrets:
-- `VERCEL_ORG_ID` → `team_xxx`
-- `VERCEL_PROJECT_ID_EXAMPLE_CHAT_WEB` → `prj_xxx`
+### next.config.ts (for Next.js projects)
 
-## Adding a New Project
+Enable transpilation of workspace packages:
 
-When you add a new project to `projects/`:
+```typescript
+import type { NextConfig } from 'next';
 
-1. Create `vercel.json` in the project:
-   ```json
-   {
-     "installCommand": "pnpm install",
-     "buildCommand": "pnpm build",
-     "framework": "nextjs"
-   }
-   ```
+const nextConfig: NextConfig = {
+  transpilePackages: ['@research/openai-utils'],
+};
 
-2. Run `vercel link` to create the Vercel project and get IDs
+export default nextConfig;
+```
 
-3. Copy the workflow file, updating:
-   - Workflow name
-   - `paths` trigger
-   - `working-directory`
-   - `VERCEL_PROJECT_ID_*` secret name
+## Existing Deployments
 
-## Useful Commands
+### example-chat-web
 
-| Command | Description |
-|---------|-------------|
-| `pnpm vercel` | Deploy to preview |
-| `pnpm vercel --prod` | Deploy to production |
-| `pnpm vercel ls` | List deployments |
-| `pnpm vercel logs <url>` | View deployment logs |
-| `pnpm vercel env ls` | List environment variables |
-| `pnpm vercel link` | Link to existing project |
+| Property | Value |
+|----------|-------|
+| Project ID | `prj_3ten4pMxczOKsya7GVc3Dh6VhZTr` |
+| URL | https://research-marofyi.vercel.app |
+| Root Directory | `projects/example-chat-web` |
 
 ## Troubleshooting
 
-### "No framework detected"
-Ensure `vercel.json` has `"framework": "nextjs"` set.
+### "No Next.js version detected"
 
-### Build fails with workspace dependency errors
-The `vercel.json` should have `"installCommand": "pnpm install"` to properly resolve workspace packages.
+**Cause**: `rootDirectory` not set, or Vercel can't find `package.json` with Next.js dependency.
 
-### Token permission errors
-Ensure your token has "Full Account" scope, not just a specific project.
+**Fix**: Ensure `rootDirectory` is set via API to the project subdirectory.
 
-### GitHub Action not triggering
-Check that the `paths` filter matches the files you changed.
+### "workspace:* dependency not found"
+
+**Cause**: `pnpm install` ran from project directory instead of monorepo root.
+
+**Fix**: Set `installCommand` to `pnpm install` (it runs from monorepo root when `rootDirectory` is set).
+
+### 401 Unauthorized on deployment URL
+
+**Cause**: SSO protection is enabled on the Vercel project.
+
+**Fix**:
+```bash
+curl -X PATCH "https://api.vercel.com/v9/projects/<PROJECT_ID>" \
+  -H "Authorization: Bearer $VERCEL_TOKEN" \
+  -d '{"ssoProtection": null}'
+```
+
+### Turbopack workspace root errors
+
+**Cause**: Next.js 16+ with Turbopack may have issues detecting monorepo structure.
+
+**Fix**: Usually resolved by proper `rootDirectory` and `sourceFilesOutsideRootDirectory` settings. If issues persist, the build will still work as Turbopack handles this automatically when configured correctly.
+
+## Redeploying
+
+```bash
+# From monorepo root (with .vercel/project.json configured)
+pnpm exec vercel deploy --prod --yes --token "$VERCEL_TOKEN"
+
+# Force rebuild without cache
+pnpm exec vercel deploy --prod --yes --force --token "$VERCEL_TOKEN"
+```
+
+## References
+
+- [Vercel Monorepos Documentation](https://vercel.com/docs/monorepos)
+- [Vercel pnpm/Corepack Support](https://vercel.com/changelog/improved-support-for-pnpm-corepack-and-monorepos)
+- [Vercel API Reference](https://vercel.com/docs/rest-api)
