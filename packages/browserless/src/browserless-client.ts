@@ -59,6 +59,17 @@ export interface ScreenshotResult {
   };
 }
 
+export interface ScreenshotOptions {
+  /** Image format: 'jpeg' (default, smaller), 'png', or 'webp' */
+  format?: "jpeg" | "png" | "webp";
+  /** Quality 0-100, only applies to jpeg/webp (default: 80) */
+  quality?: number;
+  /** Capture full page instead of viewport (default: false) */
+  fullPage?: boolean;
+  /** Optimize for speed over size (default: true) */
+  optimizeForSpeed?: boolean;
+}
+
 /**
  * Execute a BrowserQL query against Browserless
  */
@@ -187,40 +198,77 @@ export async function getText(): Promise<string> {
 
 /**
  * Take a screenshot (returns base64)
+ *
+ * @param options - Screenshot options (format, quality, fullPage, optimizeForSpeed)
  */
-export async function screenshot(): Promise<string> {
+export async function screenshot(options: ScreenshotOptions = {}): Promise<string> {
+  const {
+    format = "jpeg",
+    quality = 80,
+    fullPage = false,
+    optimizeForSpeed = true,
+  } = options;
+
   const query = `
-    mutation Screenshot {
-      screenshot {
+    mutation Screenshot($type: ScreenshotType!, $quality: Int!, $fullPage: Boolean!, $optimizeForSpeed: Boolean!) {
+      screenshot(type: $type, quality: $quality, fullPage: $fullPage, optimizeForSpeed: $optimizeForSpeed) {
         base64
       }
     }
   `;
-  const result = await executeBql<ScreenshotResult>(query);
+  const result = await executeBql<ScreenshotResult>(query, {
+    type: format.toUpperCase(),
+    quality,
+    fullPage,
+    optimizeForSpeed,
+  });
   return result.screenshot.base64;
+}
+
+export interface ScreenshotToFileOptions extends ScreenshotOptions {
+  /** File path to save screenshot (default: /tmp/screenshot.jpg) */
+  filePath?: string;
 }
 
 /**
  * Take a screenshot and save to a file
  * Returns the file path - use Claude's Read tool to view it
  *
- * @param filePath - Path to save the screenshot (default: ./screenshot.png)
- * @returns The file path where screenshot was saved
+ * Optimized defaults:
+ * - JPEG format (5-10x smaller than PNG)
+ * - 80% quality (good balance of size/clarity)
+ * - Saves to /tmp for faster writes
+ * - optimizeForSpeed enabled
+ *
+ * @param options - Screenshot and file options
+ * @returns The absolute file path where screenshot was saved
  *
  * @example
  * ```typescript
- * const path = await screenshotToFile('./page.png');
- * // Then use Read tool: Read({ file_path: path })
+ * // Quick screenshot with optimized defaults
+ * const path = await screenshotToFile();
+ *
+ * // Custom options
+ * const path = await screenshotToFile({
+ *   filePath: './page.png',
+ *   format: 'png',
+ *   fullPage: true
+ * });
  * ```
  */
 export async function screenshotToFile(
-  filePath: string = "./screenshot.png"
+  options: ScreenshotToFileOptions = {}
 ): Promise<string> {
   const { writeFileSync } = await import("fs");
   const { resolve } = await import("path");
 
-  const base64 = await screenshot();
-  const absolutePath = resolve(filePath);
+  const { filePath, ...screenshotOptions } = options;
+  const format = screenshotOptions.format ?? "jpeg";
+  const ext = format === "jpeg" ? "jpg" : format;
+  const defaultPath = `/tmp/screenshot.${ext}`;
+
+  const base64 = await screenshot(screenshotOptions);
+  const absolutePath = resolve(filePath ?? defaultPath);
   writeFileSync(absolutePath, Buffer.from(base64, "base64"));
 
   return absolutePath;

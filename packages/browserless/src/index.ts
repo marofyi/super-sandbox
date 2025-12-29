@@ -8,16 +8,23 @@
  * ```typescript
  * import { goto, click, type, screenshotToFile } from '@research/browserless';
  *
- * // Navigate and take screenshot (saves to file for Claude to view)
+ * // Navigate and take screenshot (optimized defaults: JPEG, 80% quality, /tmp)
  * await goto('https://example.com');
- * const path = await screenshotToFile('./page.png');
+ * const path = await screenshotToFile();
  * // Claude can then use Read tool to view the screenshot
+ *
+ * // Custom screenshot options
+ * const path2 = await screenshotToFile({
+ *   filePath: './page.png',
+ *   format: 'png',
+ *   fullPage: true
+ * });
  *
  * // Interact with elements
  * await click('button.submit');
  * await type('input[name="email"]', 'test@example.com');
  *
- * // Multi-step flow (single browser session)
+ * // Multi-step flow (single browser session - more efficient)
  * const result = await executeFlow(`
  *   mutation {
  *     goto(url: "https://example.com") { status }
@@ -51,4 +58,6 @@ export type {
   HtmlResult,
   TextResult,
   ScreenshotResult,
+  ScreenshotOptions,
+  ScreenshotToFileOptions,
 } from "./browserless-client.js";
