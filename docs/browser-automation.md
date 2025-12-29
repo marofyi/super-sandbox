@@ -56,7 +56,7 @@ This guide covers setting up AI-powered browser automation for web app developme
 
 - Google Cloud account (free tier works)
 - Node.js 18+ (for Stagehand SDK)
-- Anthropic API key (for AI-powered automation)
+- OpenAI API key (for AI-powered automation)
 
 ## Part 1: Google Cloud Setup
 
@@ -176,7 +176,7 @@ curl "$STEEL_URL/health"
 ### 3.1 Install Dependencies
 
 ```bash
-npm install @anthropic-ai/sdk @browserbase/stagehand zod
+npm install openai @browserbase/stagehand zod
 ```
 
 ### 3.2 Basic Configuration
@@ -187,7 +187,7 @@ import { Stagehand } from "@browserbase/stagehand";
 import { z } from "zod";
 
 const STEEL_URL = process.env.STEEL_URL!;
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY!;
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY!;
 
 export async function createBrowser() {
   const stagehand = new Stagehand({
@@ -195,9 +195,9 @@ export async function createBrowser() {
     localBrowserLaunchOptions: {
       cdpUrl: `${STEEL_URL.replace("https://", "wss://")}/cdp`,
     },
-    modelName: "claude-sonnet-4-20250514",
+    modelName: "openai/gpt-5.2",
     modelClientOptions: {
-      apiKey: ANTHROPIC_API_KEY,
+      apiKey: OPENAI_API_KEY,
     },
     verbose: 1, // 0=silent, 1=info, 2=debug
   });
@@ -213,7 +213,7 @@ Add to `.env`:
 
 ```bash
 STEEL_URL=https://steel-browser-abcd1234-uc.a.run.app
-ANTHROPIC_API_KEY=sk-ant-...
+OPENAI_API_KEY=sk-...
 ```
 
 ## Part 4: Usage Examples
@@ -446,9 +446,9 @@ async function connectToSession(sessionId: string) {
     localBrowserLaunchOptions: {
       cdpUrl: `${STEEL_URL.replace("https://", "wss://")}/sessions/${sessionId}/cdp`,
     },
-    modelName: "claude-sonnet-4-20250514",
+    modelName: "openai/gpt-5.2",
     modelClientOptions: {
-      apiKey: process.env.ANTHROPIC_API_KEY!,
+      apiKey: process.env.OPENAI_API_KEY!,
     },
   });
 
@@ -543,9 +543,9 @@ async function mobileTest() {
         height: 812,
       },
     },
-    modelName: "claude-sonnet-4-20250514",
+    modelName: "openai/gpt-5.2",
     modelClientOptions: {
-      apiKey: process.env.ANTHROPIC_API_KEY!,
+      apiKey: process.env.OPENAI_API_KEY!,
     },
   });
 
@@ -591,9 +591,9 @@ describe("Checkout Flow", () => {
       localBrowserLaunchOptions: {
         cdpUrl: `${process.env.STEEL_URL!.replace("https://", "wss://")}/cdp`,
       },
-      modelName: "claude-sonnet-4-20250514",
+      modelName: "openai/gpt-5.2",
       modelClientOptions: {
-        apiKey: process.env.ANTHROPIC_API_KEY!,
+        apiKey: process.env.OPENAI_API_KEY!,
       },
     });
     await stagehand.init();
@@ -656,7 +656,7 @@ jobs:
       - name: Run E2E tests
         env:
           STEEL_URL: ${{ secrets.STEEL_URL }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: npm run test:e2e
 ```
 
@@ -678,9 +678,9 @@ export class BrowserAutomation {
       localBrowserLaunchOptions: {
         cdpUrl: `${process.env.STEEL_URL!.replace("https://", "wss://")}/cdp`,
       },
-      modelName: "claude-sonnet-4-20250514",
+      modelName: "openai/gpt-5.2",
       modelClientOptions: {
-        apiKey: process.env.ANTHROPIC_API_KEY!,
+        apiKey: process.env.OPENAI_API_KEY!,
       },
     });
 
@@ -833,7 +833,7 @@ open "https://console.cloud.google.com/billing"
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `STEEL_URL` | Yes | Steel Browser Cloud Run URL |
-| `ANTHROPIC_API_KEY` | Yes | Anthropic API key for Claude |
+| `OPENAI_API_KEY` | Yes | OpenAI API key for GPT models |
 | `GCP_PROJECT_ID` | Deploy only | GCP project ID |
 | `GCP_SA_KEY` | Deploy only | Service account JSON key |
 
@@ -865,4 +865,4 @@ open "https://console.cloud.google.com/billing"
 - [Steel Documentation](https://docs.steel.dev/)
 - [Steel GitHub](https://github.com/steel-dev/steel-browser)
 - [Cloud Run Documentation](https://cloud.google.com/run/docs)
-- [Anthropic API](https://docs.anthropic.com/)
+- [OpenAI API](https://platform.openai.com/docs)
