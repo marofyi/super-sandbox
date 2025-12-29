@@ -3,6 +3,12 @@ name: Update README
 on:
   pull_request:
     types: [opened, synchronize]
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to update README on (defaults to current branch)'
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -13,10 +19,10 @@ jobs:
   update-readme:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout PR branch
+      - name: Checkout branch
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
+          ref: ${{ github.head_ref || inputs.branch || github.ref }}
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -31,26 +37,32 @@ jobs:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           sandbox: workspace-write
           prompt: |
-            Analyze all changes in this PR by running: git diff origin/main...HEAD --name-only
+            IMPORTANT: Execute all steps directly. Do not ask for confirmation or approval.
 
-            Update README.md to reflect the current state of the repository:
+            Task: Update README.md based on repository changes.
 
-            1. **Projects** (projects/): List each project with a 2-3 sentence summary and key technologies
-            2. **Packages** (packages/): List shared packages with their purpose
-            3. **Configuration**: Note any significant config changes (.github/, .claude/, etc.)
+            Step 1: Run this command to see what changed:
+            git diff origin/main...HEAD --name-only
 
-            Guidelines:
-            - Keep descriptions concise and factual
-            - Sort items by most recently modified
+            Step 2: Read the current README.md
+
+            Step 3: Update README.md to reflect the repository state:
+            - Projects (projects/): 2-3 sentence summary with key technologies
+            - Packages (packages/): List shared packages with purpose
+            - Configuration: Note significant config changes if relevant
+
+            Step 4: If you made changes to README.md, commit them:
+            git add README.md && git commit -m "docs: update README for PR changes"
+
+            Rules:
+            - Be concise and factual
             - Skip hidden folders and generated files
-            - Preserve existing README structure where possible
-            - Only update sections relevant to the changed files
-
-            If the README already accurately reflects the changes, do not modify it.
-            If updates are needed, stage and commit with message "docs: update README for PR changes".
+            - Preserve existing README structure
+            - If README is already accurate, make no changes and skip the commit
 
       - name: Push changes
         run: |
-          if [ -n "$(git log origin/${{ github.head_ref }}..HEAD)" ]; then
-            git push origin HEAD:${{ github.head_ref }}
+          BRANCH="${{ github.head_ref || inputs.branch || github.ref_name }}"
+          if [ -n "$(git log origin/${BRANCH}..HEAD 2>/dev/null)" ]; then
+            git push origin HEAD:${BRANCH}
           fi
