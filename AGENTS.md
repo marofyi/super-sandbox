@@ -233,3 +233,4 @@ pnpm exec vercel deploy --prod --yes --token "$VERCEL_TOKEN"
 | Project | URL | Project ID |
 |---------|-----|------------|
 | example-chat-web | https://example-chat-web-marofyi.vercel.app | `prj_3ten4pMxczOKsya7GVc3Dh6VhZTr` |
+| tanstack-chat | https://tanstack-chat.vercel.app | `prj_ugAj68LssRkhASeqoqqZ4GihVwQI` |
