@@ -1,0 +1,216 @@
+/**
+ * Browserless BrowserQL Client
+ *
+ * Uses BrowserQL (GraphQL-based) API for browser automation over pure HTTP.
+ * Works from Claude Code Web and other sandboxed environments.
+ *
+ * @see https://docs.browserless.io/browserql-interactions
+ */
+
+const BROWSERLESS_TOKEN = process.env.BROWSERLESS_TOKEN;
+const BROWSERLESS_URL =
+  process.env.BROWSERLESS_URL ||
+  "https://production-sfo.browserless.io/chromium/bql";
+
+export interface BqlResponse<T = unknown> {
+  data?: T;
+  errors?: Array<{ message: string }>;
+}
+
+export interface GotoResult {
+  goto: {
+    status: number;
+    url: string;
+    time: number;
+  };
+}
+
+export interface ClickResult {
+  click: {
+    x: number;
+    y: number;
+    time: number;
+  };
+}
+
+export interface TypeResult {
+  type: {
+    x: number;
+    y: number;
+    time: number;
+  };
+}
+
+export interface HtmlResult {
+  html: {
+    html: string;
+  };
+}
+
+export interface TextResult {
+  text: {
+    text: string;
+  };
+}
+
+export interface ScreenshotResult {
+  screenshot: {
+    base64: string;
+  };
+}
+
+/**
+ * Execute a BrowserQL query against Browserless
+ */
+export async function executeBql<T>(
+  query: string,
+  variables?: Record<string, unknown>
+): Promise<T> {
+  if (!BROWSERLESS_TOKEN) {
+    throw new Error(
+      "BROWSERLESS_TOKEN is required. Get one at https://browserless.io"
+    );
+  }
+
+  const timeout = 5 * 60 * 1000; // 5 minutes
+  const url = `${BROWSERLESS_URL}?token=${BROWSERLESS_TOKEN}&timeout=${timeout}`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      query,
+      variables,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Browserless request failed: ${response.statusText}`);
+  }
+
+  const result = (await response.json()) as BqlResponse<T>;
+
+  if (result.errors && result.errors.length > 0) {
+    const firstError = result.errors[0];
+    throw new Error(`BrowserQL error: ${firstError?.message ?? "Unknown error"}`);
+  }
+
+  if (!result.data) {
+    throw new Error("No data returned from BrowserQL");
+  }
+
+  return result.data;
+}
+
+/**
+ * Navigate to a URL and return status
+ */
+export async function goto(url: string): Promise<GotoResult> {
+  const query = `
+    mutation Navigate($url: String!) {
+      goto(url: $url, waitUntil: networkIdle, timeout: 30000) {
+        status
+        url
+        time
+      }
+    }
+  `;
+  return executeBql<GotoResult>(query, { url });
+}
+
+/**
+ * Click an element by selector
+ */
+export async function click(selector: string): Promise<ClickResult> {
+  const query = `
+    mutation Click($selector: String!) {
+      click(selector: $selector, visible: true, timeout: 10000) {
+        x
+        y
+        time
+      }
+    }
+  `;
+  return executeBql<ClickResult>(query, { selector });
+}
+
+/**
+ * Type text into an element
+ */
+export async function type(
+  selector: string,
+  text: string
+): Promise<TypeResult> {
+  const query = `
+    mutation Type($selector: String!, $text: String!) {
+      type(selector: $selector, text: $text, delay: [50, 100]) {
+        x
+        y
+        time
+      }
+    }
+  `;
+  return executeBql<TypeResult>(query, { selector, text });
+}
+
+/**
+ * Get page HTML
+ */
+export async function getHtml(): Promise<string> {
+  const query = `
+    mutation GetHtml {
+      html {
+        html
+      }
+    }
+  `;
+  const result = await executeBql<HtmlResult>(query);
+  return result.html.html;
+}
+
+/**
+ * Get page text content
+ */
+export async function getText(): Promise<string> {
+  const query = `
+    mutation GetText {
+      text {
+        text
+      }
+    }
+  `;
+  const result = await executeBql<TextResult>(query);
+  return result.text.text;
+}
+
+/**
+ * Take a screenshot (returns base64)
+ */
+export async function screenshot(): Promise<string> {
+  const query = `
+    mutation Screenshot {
+      screenshot {
+        base64
+      }
+    }
+  `;
+  const result = await executeBql<ScreenshotResult>(query);
+  return result.screenshot.base64;
+}
+
+/**
+ * Execute a complete automation flow in a single request
+ * This is more efficient as it uses one browser session for multiple actions
+ */
+export async function executeFlow<T>(query: string): Promise<T> {
+  return executeBql<T>(query);
+}
+
+/**
+ * Check if Browserless is configured
+ */
+export function isConfigured(): boolean {
+  return !!BROWSERLESS_TOKEN;
+}
