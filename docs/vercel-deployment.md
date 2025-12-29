@@ -14,7 +14,13 @@ Each deployable web project in `projects/` gets its own **separate Vercel Projec
 
 ### Critical Configuration
 
-Vercel monorepo deployments require specific settings configured via the **Vercel API** (not `vercel.json`):
+Vercel monorepo deployments require specific settings. These must be configured via **Vercel API** because:
+
+- `vercel link` requires interactive project selection (no `--project` flag)
+- Project settings like `rootDirectory` can only be set via API or dashboard
+- API works in Claude Code Web; interactive CLI does not
+
+Once a project is configured, **deployments use the CLI** (`vercel deploy --yes --token`).
 
 | Setting | Value | Why |
 |---------|-------|-----|
@@ -68,13 +74,8 @@ Ensure source files outside root directory are accessible:
 curl -X PATCH "https://api.vercel.com/v9/projects/<PROJECT_ID>" \
   -H "Authorization: Bearer $VERCEL_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{
-    "sourceFilesOutsideRootDirectory": true,
-    "ssoProtection": null
-  }'
+  -d '{"sourceFilesOutsideRootDirectory": true}'
 ```
-
-Setting `ssoProtection` to `null` makes deployments publicly accessible.
 
 ### Step 3: Add Environment Variables
 
@@ -164,17 +165,6 @@ export default nextConfig;
 
 **Fix**: Set `installCommand` to `pnpm install` (it runs from monorepo root when `rootDirectory` is set).
 
-### 401 Unauthorized on deployment URL
-
-**Cause**: SSO protection is enabled on the Vercel project.
-
-**Fix**:
-```bash
-curl -X PATCH "https://api.vercel.com/v9/projects/<PROJECT_ID>" \
-  -H "Authorization: Bearer $VERCEL_TOKEN" \
-  -d '{"ssoProtection": null}'
-```
-
 ### Turbopack workspace root errors
 
 **Cause**: Next.js 16+ with Turbopack may have issues detecting monorepo structure.
@@ -191,8 +181,46 @@ pnpm exec vercel deploy --prod --yes --token "$VERCEL_TOKEN"
 pnpm exec vercel deploy --prod --yes --force --token "$VERCEL_TOKEN"
 ```
 
+## Auto-Deploy Options
+
+### Option 1: Vercel GitHub Integration (Interactive Setup)
+
+Connect via Vercel dashboard for automatic deployments on every push. Requires one-time interactive setup but then works automatically.
+
+### Option 2: GitHub Actions (Headless)
+
+Add a workflow file for CI/CD deployments:
+
+```yaml
+# .github/workflows/deploy.yml
+name: Deploy to Vercel
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      - run: pnpm install
+      - run: pnpm exec vercel deploy --prod --yes --token ${{ secrets.VERCEL_TOKEN }}
+```
+
+Add `VERCEL_TOKEN` to GitHub repository secrets.
+
+**Status**: Not yet configured for this repo.
+
 ## References
 
 - [Vercel Monorepos Documentation](https://vercel.com/docs/monorepos)
 - [Vercel pnpm/Corepack Support](https://vercel.com/changelog/improved-support-for-pnpm-corepack-and-monorepos)
 - [Vercel API Reference](https://vercel.com/docs/rest-api)
+- [Deploying with GitHub Actions](https://vercel.com/guides/how-can-i-use-github-actions-with-vercel)
