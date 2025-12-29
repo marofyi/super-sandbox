@@ -83,17 +83,17 @@ cp .env.example .env
 
 ### example-chat
 
-A CLI demonstration showcasing all features of the @research/openai-utils package. It includes examples of simple one-liner queries with `ask()`, detailed responses with token usage via `chat()`, custom system prompts for persona-based responses, and real-time streaming output with `chatStream()`. Built with TypeScript and tsx for rapid development without a build step.
+A CLI demonstration of @research/openai-utils showing `ask()`, `chat()`, `chatStream()`, and usage reporting. Built with TypeScript and tsx so it runs without a build step and highlights persona prompts plus streaming responses for quick experiments.
 
 ### example-chat-web
 
-A Next.js web application providing a chat interface using the @research/openai-utils package. Deployed to Vercel.
+A Next.js web application that wires @research/openai-utils into a streaming chat UI with React and Tailwind CSS. Ships as a Vercel deployment for easy sharing.
 
 **Live**: https://example-chat-web-marofyi.vercel.app
 
 ### tanstack-chat
 
-A TanStack Start (React Router + Nitro SSR) demo that showcases multi-provider AI chat with model switching across OpenAI, Anthropic, Gemini, and Ollama connectors. Built with React 19, Vite, Tailwind CSS v4, and @tanstack/ai for streaming, tool calls, and approval flows. Includes a guitar recommendation experience with interactive tool responses and local state for cart and wishlist samples.
+A TanStack Start (React Router + Nitro SSR) demo featuring multi-provider AI chat with model switching across OpenAI, Anthropic, Gemini, and Ollama, plus approval flows for tool calls. Built with React 19, Vite, Tailwind CSS v4, lucide-react icons, and @tanstack/ai for streaming, and includes an expanded guitar recommendation experience with interactive tool-driven responses and slide-in navigation.
 
 ## Deployment
 

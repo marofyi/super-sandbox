@@ -10,6 +10,7 @@ export const MODEL_OPTIONS: Array<ModelOption> = [
   // OpenAI
   { provider: 'openai', model: 'gpt-4o', label: 'OpenAI - GPT-4o' },
   { provider: 'openai', model: 'gpt-4o-mini', label: 'OpenAI - GPT-4o Mini' },
+  { provider: 'openai', model: 'gpt-5', label: 'OpenAI - GPT-5' },
 
   // Anthropic
   {
@@ -50,6 +51,21 @@ export const MODEL_OPTIONS: Array<ModelOption> = [
     provider: 'ollama',
     model: 'mistral',
     label: 'Ollama - Mistral',
+  },
+  {
+    provider: 'ollama',
+    model: 'gpt-oss:20b',
+    label: 'Ollama - GPT-OSS 20B',
+  },
+  {
+    provider: 'ollama',
+    model: 'granite4:3b',
+    label: 'Ollama - Granite4 3B',
+  },
+  {
+    provider: 'ollama',
+    model: 'smollm',
+    label: 'Ollama - SmolLM',
   },
 ]
 

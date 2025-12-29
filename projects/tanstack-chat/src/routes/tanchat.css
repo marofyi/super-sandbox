@@ -30,6 +30,11 @@ html {
   color: #e5e7eb; /* text-gray-200 */
 }
 
+/* .prose p {
+  margin-top: 1.25em;
+  margin-bottom: 1.25em;
+} */
+
 .prose code {
   color: #e5e7eb;
   background-color: rgba(31, 41, 55, 0.5);
@@ -58,6 +63,8 @@ html {
 .prose h3,
 .prose h4 {
   color: #f9fafb; /* text-gray-50 */
+  /* margin-top: 2em; */
+  /* margin-bottom: 1em; */
 }
 
 .prose ul,
@@ -139,6 +146,7 @@ html {
 /* Add/update these styles to match AI formatting capabilities */
 .prose h1 {
   font-size: 2em;
+  /* margin-top: 1em; */
   margin-bottom: 0.5em;
 }
 
