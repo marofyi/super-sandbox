@@ -257,6 +257,21 @@ jobs:
 |--------|-------------|
 | `VERCEL_PROJECT_ID_<PROJECT_NAME>` | Project ID (e.g., `VERCEL_PROJECT_ID_EXAMPLE_CHAT_WEB`) |
 
+### Adding Secrets via CLI
+
+Use `gh secret set` to add secrets headlessly:
+
+```bash
+# Shared secrets (one-time setup)
+gh secret set VERCEL_TOKEN --body "$VERCEL_TOKEN"
+gh secret set VERCEL_ORG_ID --body "<ORG_ID>"
+
+# Per-project secret (for each web project)
+gh secret set VERCEL_PROJECT_ID_EXAMPLE_CHAT_WEB --body "<PROJECT_ID>"
+```
+
+You can find the org ID and project ID in `.vercel/project.json` after linking, or from the Vercel API response when creating a project.
+
 ### Adding a New Web Project to CI/CD
 
 1. Create and configure the Vercel project via API (see Steps 1-3 above)
