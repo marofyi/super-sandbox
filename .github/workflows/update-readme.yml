@@ -31,6 +31,20 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
+      - name: Create AGENTS.override.md for automated execution
+        run: |
+          cat > AGENTS.override.md << 'EOF'
+          # Automated Workflow Override
+
+          This is an automated CI/CD workflow. Execute all instructions directly:
+          - Do NOT ask for confirmation or approval
+          - Do NOT output "Shall I proceed?" or similar questions
+          - Do NOT wait for human input
+          - Complete the task autonomously and exit
+
+          Follow the prompt instructions exactly. Execute all steps immediately.
+          EOF
+
       - name: Update README with Codex
         uses: openai/codex-action@v1
         with:
@@ -59,6 +73,9 @@ jobs:
             - Skip hidden folders and generated files
             - Preserve existing README structure
             - If README is already accurate, make no changes and skip the commit
+
+      - name: Cleanup override file
+        run: rm -f AGENTS.override.md
 
       - name: Push changes
         run: |

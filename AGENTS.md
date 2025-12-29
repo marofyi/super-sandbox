@@ -6,6 +6,16 @@ Instructions for AI coding agents working in this repository.
 
 **This project enforces a strict human-in-the-loop workflow.** Do not jump straight to implementation.
 
+### Exception: Automated CI/CD Workflows
+
+**When running in GitHub Actions or other automated CI/CD pipelines:**
+- Skip the Plan phase entirely
+- Execute tasks directly without asking for confirmation
+- Do not output "Shall I proceed?" or similar approval requests
+- Complete the task autonomously and exit
+
+This exception applies when the prompt explicitly instructs you to execute without confirmation.
+
 ### Phase 1: Plan
 
 Before writing any code:

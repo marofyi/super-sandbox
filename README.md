@@ -83,11 +83,11 @@ cp .env.example .env
 
 ### example-chat
 
-A CLI demonstration of @research/openai-utils showing `ask()`, `chat()`, `chatStream()`, and usage reporting. Built with TypeScript and tsx so it runs without a build step and highlights persona prompts plus streaming responses for quick experiments.
+A CLI demonstration of @research/openai-utils showing `ask()`, `chat()`, `chatStream()`, and usage reporting. Runs on TypeScript with tsx so it skips a build step, making it easy to trial persona prompts and streaming responses for quick experiments.
 
 ### example-chat-web
 
-A Next.js web application that wires @research/openai-utils into a streaming chat UI with React and Tailwind CSS. Ships as a Vercel deployment for easy sharing.
+A Next.js web application that wires @research/openai-utils into a streaming chat UI with React and Tailwind CSS. Ships as a Vercel deployment for easy sharing and mirrors the CLI flows in a browser-friendly UI.
 
 **Live**: https://example-chat-web-marofyi.vercel.app
 
@@ -109,4 +109,5 @@ See [docs/vercel-deployment.md](docs/vercel-deployment.md) for:
 ## Configuration
 
 - GitHub Actions now auto-deploys `projects/tanstack-chat` via `.github/workflows/deploy-tanstack-chat.yml` using the Vercel project `tanstack-chat`.
+- GitHub Actions keeps README.md current on pull requests via `.github/workflows/update-readme.yml`.
 - The `projects/tanstack-chat/.env.example` file documents required `OPENAI_API_KEY` and optional `ANTHROPIC_API_KEY`/`GEMINI_API_KEY` values for the multi-provider chat demos.
