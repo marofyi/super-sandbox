@@ -10,7 +10,7 @@
 const BROWSERLESS_TOKEN = process.env.BROWSERLESS_TOKEN;
 const BROWSERLESS_URL =
   process.env.BROWSERLESS_URL ||
-  "https://production-sfo.browserless.io/chromium/bql";
+  "https://production-sfo.browserless.io/chrome/bql";
 
 export interface BqlResponse<T = unknown> {
   data?: T;
@@ -83,7 +83,7 @@ export async function executeBql<T>(
     );
   }
 
-  const timeout = 5 * 60 * 1000; // 5 minutes
+  const timeout = 60; // 60 seconds
   const url = `${BROWSERLESS_URL}?token=${BROWSERLESS_TOKEN}&timeout=${timeout}`;
 
   const response = await fetch(url, {
