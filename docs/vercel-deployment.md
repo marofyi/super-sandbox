@@ -96,10 +96,12 @@ VERCEL_ORG_ID= VERCEL_PROJECT_ID= pnpm exec vercel deploy --prod --yes \
 
 1. **Add GitHub secret** for the project:
    ```bash
-   gh secret set VERCEL_PROJECT_ID_<PROJECT_NAME> --body "<project-id>"
+   gh secret set VERCEL_PROJECT_ID_<PROJECT_NAME> --body "<project-id>" -R <owner>/<repo>
    ```
 
    Example: `VERCEL_PROJECT_ID_TANSTACK_CHAT` with value `prj_ugAj68LssRkhASeqoqqZ4GihVwQI`
+
+   **Note**: The `-R <owner>/<repo>` flag is required in Claude Code Web where git remotes point to a local proxy instead of GitHub directly.
 
 2. **Create workflow file** at `.github/workflows/deploy-<project-name>.yml`:
    ```yaml
@@ -336,6 +338,15 @@ pnpm exec vercel env add <KEY> production --token "$VERCEL_TOKEN"
 1. Verify token is valid by running a simple CLI command first
 2. Use CLI-based deployment workflow instead of API
 3. Check Vercel dashboard for project status if unsure
+
+### gh secret set fails with "none of the git remotes point to a known GitHub host"
+
+**Cause**: In Claude Code Web, git remotes point to a local proxy (e.g., `http://local_proxy@127.0.0.1:59916/git/...`) instead of GitHub directly. The `gh` CLI can't detect the repository from this URL.
+
+**Fix**: Explicitly specify the repository with the `-R` flag:
+```bash
+gh secret set VERCEL_PROJECT_ID_TANSTACK_CHAT --body "prj_xxx" -R owner/repo
+```
 
 ## Redeploying
 
