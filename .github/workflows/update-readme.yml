@@ -29,6 +29,11 @@ jobs:
             If there are no project changes (e.g., only workflow files changed), do not modify the README.
             Commit changes with message "Update README for PR changes"
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          claude_args: |
-            --system-prompt "This is a research monorepo with coding experiments. You are responsible for keeping the main README up to date with a summary of each project. For each project folder, write a 2-3 sentence summary describing what it does, key technologies used, and any interesting findings. Sort projects by most recently modified. Do not include .github or other hidden folders. Focus only on projects that were added or modified in this PR."
-            --model claude-opus-4-5-20251101
+          model: claude-sonnet-4-20250514
+          custom_instructions: |
+            This is a research monorepo with coding experiments.
+            You are responsible for keeping the main README up to date with a summary of each project.
+            For each project folder, write a 2-3 sentence summary describing what it does, key technologies used, and any interesting findings.
+            Sort projects by most recently modified.
+            Do not include .github or other hidden folders.
+            Focus only on projects that were added or modified in this PR.
