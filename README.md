@@ -23,7 +23,8 @@ research/
 │   └── openai-utils/   # OpenAI API wrapper
 ├── projects/           # Research projects
 │   ├── example-chat/   # CLI demo
-│   └── example-chat-web/ # Web demo (Next.js)
+│   ├── example-chat-web/ # Web demo (Next.js)
+│   └── tanstack-chat/  # TanStack Start demo
 └── docs/               # Documentation
 ```
 
@@ -90,6 +91,10 @@ A Next.js web application providing a chat interface using the @research/openai-
 
 **Live**: https://example-chat-web-marofyi.vercel.app
 
+### tanstack-chat
+
+A TanStack Start (React Router + Nitro SSR) demo that showcases multi-provider AI chat with model switching across OpenAI, Anthropic, Gemini, and Ollama connectors. Built with React 19, Vite, Tailwind CSS v4, and @tanstack/ai for streaming, tool calls, and approval flows. Includes a guitar recommendation experience with interactive tool responses and local state for cart and wishlist samples.
+
 ## Deployment
 
 Web projects are deployed to Vercel. Each project gets its own Vercel Project with independent configuration.
@@ -100,3 +105,8 @@ See [docs/vercel-deployment.md](docs/vercel-deployment.md) for:
 - Adding new web projects
 - Troubleshooting common issues
 - API-based configuration (works in Claude Code Web)
+
+## Configuration
+
+- GitHub Actions now auto-deploys `projects/tanstack-chat` via `.github/workflows/deploy-tanstack-chat.yml` using the Vercel project `tanstack-chat`.
+- The `projects/tanstack-chat/.env.example` file documents required `OPENAI_API_KEY` and optional `ANTHROPIC_API_KEY`/`GEMINI_API_KEY` values for the multi-provider chat demos.
