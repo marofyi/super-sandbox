@@ -51,6 +51,12 @@ Required environment variables (add via Claude Code secrets for web sessions):
 
 This approach is more reliable than the API-based method, especially in Claude Code Web.
 
+**Deployment consists of 4 steps:**
+1. Create and link project
+2. Add environment variables
+3. Initial deploy (manual)
+4. **Set up GitHub Actions for auto-deploy** (required)
+
 #### Step 1: Create and Link Project
 
 ```bash
@@ -66,6 +72,8 @@ VERCEL_ORG_ID= VERCEL_PROJECT_ID= pnpm exec vercel link \
   --project <project-name> --yes --token "$VERCEL_TOKEN"
 ```
 
+After linking, note the `projectId` from `.vercel/project.json` - you'll need it for Step 4.
+
 #### Step 2: Add Environment Variables
 
 ```bash
@@ -74,13 +82,66 @@ VERCEL_ORG_ID= VERCEL_PROJECT_ID= pnpm exec vercel env add OPENAI_API_KEY produc
   --token "$VERCEL_TOKEN" <<< "$OPENAI_API_KEY"
 ```
 
-#### Step 3: Deploy
+#### Step 3: Initial Deploy
 
 ```bash
 # Deploy to production
 VERCEL_ORG_ID= VERCEL_PROJECT_ID= pnpm exec vercel deploy --prod --yes \
   --token "$VERCEL_TOKEN"
 ```
+
+#### Step 4: Set Up GitHub Actions (Required)
+
+**This step is mandatory.** Without it, changes pushed to `main` won't trigger deployments.
+
+1. **Add GitHub secret** for the project:
+   ```bash
+   gh secret set VERCEL_PROJECT_ID_<PROJECT_NAME> --body "<project-id>"
+   ```
+
+   Example: `VERCEL_PROJECT_ID_TANSTACK_CHAT` with value `prj_ugAj68LssRkhASeqoqqZ4GihVwQI`
+
+2. **Create workflow file** at `.github/workflows/deploy-<project-name>.yml`:
+   ```yaml
+   name: Deploy <project-name>
+
+   on:
+     push:
+       branches: [main]
+       paths:
+         - 'projects/<project-name>/**'
+         - 'pnpm-lock.yaml'
+
+   jobs:
+     deploy:
+       runs-on: ubuntu-latest
+       steps:
+         - uses: actions/checkout@v4
+
+         - uses: pnpm/action-setup@v2
+           with:
+             version: 10
+
+         - uses: actions/setup-node@v4
+           with:
+             node-version: '22'
+             cache: 'pnpm'
+
+         - run: pnpm install
+
+         - name: Create Vercel project link
+           run: |
+             mkdir -p .vercel
+             echo '{"projectId":"${{ secrets.VERCEL_PROJECT_ID_<PROJECT_NAME> }}","orgId":"${{ secrets.VERCEL_ORG_ID }}"}' > .vercel/project.json
+
+         - name: Deploy to Vercel
+           run: pnpm exec vercel deploy --prod --yes --token ${{ secrets.VERCEL_TOKEN }}
+           env:
+             VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+             VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_<PROJECT_NAME> }}
+   ```
+
+3. **Commit and push** the workflow file
 
 ### Alternative: API-Based Deployment
 
@@ -301,7 +362,7 @@ Each web project gets its own workflow file. This keeps deployments independent 
 ```
 .github/workflows/
 ├── deploy-example-chat-web.yml
-├── deploy-future-project.yml
+├── deploy-tanstack-chat.yml
 └── ...
 ```
 
@@ -379,12 +440,18 @@ You can find the org ID and project ID in `.vercel/project.json` after linking, 
 
 ### Adding a New Web Project to CI/CD
 
-1. Create and configure the Vercel project via API (see Steps 1-3 above)
+1. Create and configure the Vercel project (see Steps 1-3 above)
 2. Add GitHub secret: `VERCEL_PROJECT_ID_<PROJECT_NAME>` with the project ID
 3. Create workflow file: `.github/workflows/deploy-<project-name>.yml`
 4. Update paths to include the project directory and any shared dependencies
+5. Commit and push the workflow file
 
-**Status**: Not yet configured for this repo.
+### Current Workflow Status
+
+| Project | Workflow | Secret Required |
+|---------|----------|-----------------|
+| example-chat-web | `deploy-example-chat-web.yml` | `VERCEL_PROJECT_ID_EXAMPLE_CHAT_WEB` |
+| tanstack-chat | `deploy-tanstack-chat.yml` | `VERCEL_PROJECT_ID_TANSTACK_CHAT` |
 
 ## References
 

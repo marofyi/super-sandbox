@@ -1,0 +1,36 @@
+name: Deploy tanstack-chat
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'projects/tanstack-chat/**'
+      - 'pnpm-lock.yaml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - run: pnpm install
+
+      - name: Create Vercel project link
+        run: |
+          mkdir -p .vercel
+          echo '{"projectId":"${{ secrets.VERCEL_PROJECT_ID_TANSTACK_CHAT }}","orgId":"${{ secrets.VERCEL_ORG_ID }}"}' > .vercel/project.json
+
+      - name: Deploy to Vercel
+        run: pnpm exec vercel deploy --prod --yes --token ${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_TANSTACK_CHAT }}
