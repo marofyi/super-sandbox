@@ -57,7 +57,10 @@ research/
 ├── packages/           # Shared utilities (publishable)
 │   └── openai-utils/   # OpenAI API wrapper
 ├── projects/           # Research projects (use packages)
-│   └── example-chat/   # Demo project
+│   ├── example-chat/   # CLI demo project
+│   └── example-chat-web/ # Web demo (deployed to Vercel)
+├── docs/               # Documentation
+│   └── vercel-deployment.md  # Deployment guide
 ├── .env                # API keys (never commit)
 └── .env.example        # Template for environment setup
 ```
@@ -204,3 +207,29 @@ fi
 - Environment is ephemeral (tools reinstalled each session)
 - Write access limited to project directory
 - Some network domains require approval
+
+## Deployment
+
+Web projects in `projects/` are deployed to Vercel. See [docs/vercel-deployment.md](docs/vercel-deployment.md) for the complete guide.
+
+### Quick Reference
+
+**Deploy existing project** (from monorepo root):
+```bash
+pnpm exec vercel deploy --prod --yes --token "$VERCEL_TOKEN"
+```
+
+**Add new web project**: Follow steps in [docs/vercel-deployment.md](docs/vercel-deployment.md)
+
+### Key Points
+
+- Each web project gets its own Vercel Project
+- Initial setup via **Vercel API** (works in Claude Code Web)
+- Build command must build workspace dependencies first
+- **Auto-deploy enforced via GitHub Actions** (headless, no dashboard required)
+
+### Current Deployments
+
+| Project | URL | Project ID |
+|---------|-----|------------|
+| example-chat-web | https://example-chat-web-marofyi.vercel.app | `prj_3ten4pMxczOKsya7GVc3Dh6VhZTr` |
