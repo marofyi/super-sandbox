@@ -20,6 +20,7 @@ pnpm b @research/openai-utils build
 ```
 research/
 ├── packages/           # Shared utilities
+│   ├── browserless/    # BrowserQL client for HTTP-only browser automation
 │   └── openai-utils/   # OpenAI API wrapper
 ├── projects/           # Research projects
 │   ├── example-chat/   # CLI demo
@@ -29,6 +30,10 @@ research/
 ```
 
 ## Shared Packages
+
+### @research/browserless
+
+Browser automation client for [Browserless](https://browserless.io) BrowserQL using pure HTTP POST (no WebSocket), making it compatible with sandboxed environments like Claude Code Web. Helpers include `goto`, `click`, `type`, `getText`, `getHtml`, and `screenshot`/`screenshotToFile` (optimized JPEG defaults to `/tmp`) plus `executeFlow` for single-session GraphQL flows. Requires `BROWSERLESS_TOKEN` and optionally `BROWSERLESS_URL`.
 
 ### @research/openai-utils
 
@@ -93,7 +98,7 @@ A Next.js web application that wires @research/openai-utils into a streaming cha
 
 ### tanstack-chat
 
-A TanStack Start (React Router + Nitro SSR) demo featuring multi-provider AI chat with model switching across OpenAI, Anthropic, Gemini, and Ollama, plus approval flows for tool calls. Built with React 19, Vite, Tailwind CSS v4, lucide-react icons, and @tanstack/ai for streaming, and includes an expanded guitar recommendation experience with interactive tool-driven responses and slide-in navigation.
+A TanStack Start (React Router + Nitro SSR) demo for multi-provider AI chat with model switching across OpenAI, Anthropic, Gemini, and Ollama plus approval flows for tool calls. Built with React 19, Vite, Tailwind CSS v4, lucide-react icons, and @tanstack/ai for streaming. Includes a guitar recommendation flow with interactive tool responses and slide-in navigation.
 
 ## Deployment
 
@@ -111,3 +116,5 @@ See [docs/vercel-deployment.md](docs/vercel-deployment.md) for:
 - GitHub Actions now auto-deploys `projects/tanstack-chat` via `.github/workflows/deploy-tanstack-chat.yml` using the Vercel project `tanstack-chat`.
 - GitHub Actions keeps README.md current on pull requests via `.github/workflows/update-readme.yml`.
 - The `projects/tanstack-chat/.env.example` file documents required `OPENAI_API_KEY` and optional `ANTHROPIC_API_KEY`/`GEMINI_API_KEY` values for the multi-provider chat demos.
+- Browser automation utilities in `@research/browserless` need `BROWSERLESS_TOKEN` (and optional `BROWSERLESS_URL`) for BrowserQL HTTP calls; works without WebSockets for sandboxed environments.
+- Browser automation options for sandboxed environments are compared in `docs/cc-web-browser-automation.md`, highlighting Browserless BrowserQL as the HTTP-only approach that succeeds when CDP WebSockets are blocked.
