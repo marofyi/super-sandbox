@@ -31,12 +31,23 @@ jobs:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           sandbox: workspace-write
           prompt: |
-            Analyze the changes in this PR by comparing against origin/main.
-            Update README.md to reflect any new or modified projects in the projects/ directory.
-            For each project, write a 2-3 sentence summary with key technologies used.
-            Sort projects by most recently modified. Skip hidden folders.
-            If no projects changed, do not modify the README.
-            Stage and commit any changes with message "Update README for PR changes".
+            Analyze all changes in this PR by running: git diff origin/main...HEAD --name-only
+
+            Update README.md to reflect the current state of the repository:
+
+            1. **Projects** (projects/): List each project with a 2-3 sentence summary and key technologies
+            2. **Packages** (packages/): List shared packages with their purpose
+            3. **Configuration**: Note any significant config changes (.github/, .claude/, etc.)
+
+            Guidelines:
+            - Keep descriptions concise and factual
+            - Sort items by most recently modified
+            - Skip hidden folders and generated files
+            - Preserve existing README structure where possible
+            - Only update sections relevant to the changed files
+
+            If the README already accurately reflects the changes, do not modify it.
+            If updates are needed, stage and commit with message "docs: update README for PR changes".
 
       - name: Push changes
         run: |
