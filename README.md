@@ -109,7 +109,7 @@ See [docs/vercel-deployment.md](docs/vercel-deployment.md) for:
 - Step-by-step deployment instructions
 - Adding new web projects
 - Troubleshooting common issues
-- API-based configuration (works in Claude Code Web)
+- CLI-first setup with GitHub Actions workflow template (API calls are unreliable)
 
 ## Configuration
 
