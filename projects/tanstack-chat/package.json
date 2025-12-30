@@ -7,7 +7,8 @@
     "dev": "vite dev --port 3000",
     "build": "vite build",
     "serve": "vite preview",
-    "start": "vite dev --port 3000"
+    "start": "vite dev --port 3000",
+    "test:visual": "tsx tests/visual/mobile-responsiveness.test.ts"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
@@ -42,12 +43,14 @@
     "zod": "^4.0.0"
   },
   "devDependencies": {
+    "@research/browserless": "workspace:*",
     "@tanstack/devtools-vite": "^0.3.11",
     "@tanstack/react-ai-devtools": "^0.1.1",
     "@types/node": "^22.10.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.4",
+    "tsx": "^4.21.0",
     "typescript": "^5.7.0",
     "vite": "^7.0.0"
   }

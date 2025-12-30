@@ -66,6 +66,7 @@ Before any commit:
 | `pnpm check` | Type-check all packages (must pass before commits) |
 | `pnpm b @research/<pkg> build` | Build a specific package |
 | `pnpm --filter @research/<pkg> start` | Run a project |
+| `pnpm --filter @research/tanstack-chat test:visual` | Capture TanStack Chat responsiveness screenshots (needs `BROWSERLESS_TOKEN`, optional `TEST_URL`) |
 
 ## Project Structure
 
@@ -104,6 +105,14 @@ research/
 | `VERCEL_TOKEN` / `VERCEL_ORG_ID` | Vercel API/CLI auth | Deploying to Vercel |
 | `VERCEL_PROJECT_ID_<NAME>` | Per-project secret | GitHub Actions deploy workflows |
 | `GH_TOKEN` | GitHub personal access token | Headless `gh` CLI usage |
+
+### Optional (for browser automation/visual QA)
+
+| Variable | Description | When needed |
+|----------|-------------|-------------|
+| `BROWSERLESS_TOKEN` | Browserless BrowserQL auth token | Running visual QA or `@research/browserless` scripts |
+| `BROWSERLESS_URL` | Custom Browserless endpoint | Using a non-default Browserless host |
+| `TEST_URL` | Override TanStack Chat target URL for screenshots | Pointing visual QA at preview deployments |
 
 ### Setup by Environment
 

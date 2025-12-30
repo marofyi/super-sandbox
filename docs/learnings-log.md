@@ -60,6 +60,14 @@ This led to creating `@research/browserless` package.
 
 ---
 
+## 2024-12: Visual QA with Browserless
+
+### Workflow: TanStack Chat responsive screenshots
+
+TanStack Chat ships a BrowserQL-driven visual QA script to cover mobile, tablet, and desktop breakpoints over pure HTTP. Run `pnpm --filter @research/tanstack-chat test:visual` with `BROWSERLESS_TOKEN`; set `TEST_URL` to target preview deployments and reuse `BROWSERLESS_URL` when pointing at a custom Browserless host. Screenshots save as JPEGs in `projects/tanstack-chat/tests/visual/screenshots/` for manual inspection.
+
+---
+
 ## 2024-12: Vercel Deployment Quirks
 
 ### API vs CLI reliability
