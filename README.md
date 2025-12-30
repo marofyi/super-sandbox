@@ -109,12 +109,12 @@ See [docs/vercel-deployment.md](docs/vercel-deployment.md) for:
 - Step-by-step deployment instructions
 - Adding new web projects
 - Troubleshooting common issues
-- API-based configuration (works in Claude Code Web)
+- CLI-first setup with GitHub Actions workflow template (API calls are unreliable)
 
 ## Configuration
 
 - GitHub Actions now auto-deploys `projects/tanstack-chat` via `.github/workflows/deploy-tanstack-chat.yml` using the Vercel project `tanstack-chat`.
-- GitHub Actions keeps README.md current on pull requests via `.github/workflows/update-readme.yml`.
+- GitHub Actions keeps documentation current on pull requests via `.github/workflows/update-docs.yml`.
 - The `projects/tanstack-chat/.env.example` file documents required `OPENAI_API_KEY` and optional `ANTHROPIC_API_KEY`/`GEMINI_API_KEY` values for the multi-provider chat demos.
 - Browser automation utilities in `@research/browserless` need `BROWSERLESS_TOKEN` (and optional `BROWSERLESS_URL`) for BrowserQL HTTP calls; works without WebSockets for sandboxed environments and now routes through the CC Web proxy when `HTTPS_PROXY` is present.
 - Browser automation options for sandboxed environments are compared in `docs/cc-web-browser-automation.md`, highlighting Browserless BrowserQL as the HTTP-only approach that succeeds when CDP WebSockets are blocked. See `docs/cc-web-network-guide.md` for CC Web proxy/DNS behavior and a proxy-aware fetch pattern.
