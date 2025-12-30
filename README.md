@@ -125,4 +125,5 @@ See [docs/vercel-deployment.md](docs/vercel-deployment.md) for:
 - GitHub Actions keeps documentation current on pull requests via `.github/workflows/update-docs.yml`.
 - The `projects/tanstack-chat/.env.example` file documents required `OPENAI_API_KEY` and optional `ANTHROPIC_API_KEY`/`GEMINI_API_KEY` values for the multi-provider chat demos.
 - Browser automation utilities in `@research/browserless` need `BROWSERLESS_TOKEN` (and optional `BROWSERLESS_URL`) for BrowserQL HTTP calls; works without WebSockets for sandboxed environments and now routes through the CC Web proxy when `HTTPS_PROXY` is present.
+- TanStack Chat visual QA (`pnpm --filter @research/tanstack-chat test:visual`) captures Browserless screenshots across viewports; set `TEST_URL` to point at preview deployments and reuse `BROWSERLESS_URL` for custom Browserless hosts.
 - Browser automation options for sandboxed environments are compared in `docs/cc-web-browser-automation.md`, highlighting Browserless BrowserQL as the HTTP-only approach that succeeds when CDP WebSockets are blocked. See `docs/cc-web-network-guide.md` for CC Web proxy/DNS behavior and a proxy-aware fetch pattern.
