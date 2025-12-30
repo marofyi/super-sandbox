@@ -38,7 +38,7 @@
  */
 
 // Core execution
-export { executeBql, executeFlow, isConfigured } from "./browserless-client.js";
+export { executeBql, executeFlow, isConfigured, isClaudeCodeWeb } from "./browserless-client.js";
 
 // Navigation
 export { goto } from "./browserless-client.js";

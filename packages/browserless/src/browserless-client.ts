@@ -7,10 +7,32 @@
  * @see https://docs.browserless.io/browserql-interactions
  */
 
+import { ProxyAgent, fetch as undiciFetch } from "undici";
+
 const BROWSERLESS_TOKEN = process.env.BROWSERLESS_TOKEN;
 const BROWSERLESS_URL =
   process.env.BROWSERLESS_URL ||
-  "https://production-sfo.browserless.io/chromium/bql";
+  "https://production-sfo.browserless.io/chrome/bql";
+
+/**
+ * Get a fetch function that works in CC Web (uses proxy) or locally (direct)
+ */
+function getProxyAwareFetch(): typeof globalThis.fetch {
+  const proxyUrl = process.env.HTTPS_PROXY;
+
+  if (proxyUrl) {
+    // CC Web environment - use undici with ProxyAgent
+    const agent = new ProxyAgent(proxyUrl);
+    return ((url: string | URL | Request, init?: RequestInit) =>
+      undiciFetch(url as string, {
+        ...init,
+        dispatcher: agent,
+      } as Parameters<typeof undiciFetch>[1])) as typeof globalThis.fetch;
+  }
+
+  // Local environment - use native fetch
+  return globalThis.fetch;
+}
 
 export interface BqlResponse<T = unknown> {
   data?: T;
@@ -83,10 +105,11 @@ export async function executeBql<T>(
     );
   }
 
-  const timeout = 5 * 60 * 1000; // 5 minutes
+  const timeout = 60_000; // 60 seconds in milliseconds
   const url = `${BROWSERLESS_URL}?token=${BROWSERLESS_TOKEN}&timeout=${timeout}`;
 
-  const response = await fetch(url, {
+  const proxyFetch = getProxyAwareFetch();
+  const response = await proxyFetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -217,7 +240,7 @@ export async function screenshot(options: ScreenshotOptions = {}): Promise<strin
     }
   `;
   const result = await executeBql<ScreenshotResult>(query, {
-    type: format.toUpperCase(),
+    type: format, // BrowserQL expects lowercase enum values
     quality,
     fullPage,
     optimizeForSpeed,
@@ -287,4 +310,11 @@ export async function executeFlow<T>(query: string): Promise<T> {
  */
 export function isConfigured(): boolean {
   return !!BROWSERLESS_TOKEN;
+}
+
+/**
+ * Check if running in Claude Code Web environment
+ */
+export function isClaudeCodeWeb(): boolean {
+  return process.env.CLAUDE_CODE_REMOTE === "true";
 }
