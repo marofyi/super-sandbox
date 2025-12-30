@@ -75,6 +75,11 @@ jobs:
             - Update project structure if directories added/removed
             - Update environment variables if new ones required
             - Update workflow instructions if processes changed
+            - **Maintain Agent Skills table**: If skills in `.skills/` were added, removed, or modified:
+              - Read each `.skills/*/SKILL.md` file to extract `name`, `description`, and `allowed-tools` from YAML frontmatter
+              - Update the "Agent Skills" table to reflect current skills
+              - Keep table sorted alphabetically by skill name
+              - Link each skill name to its SKILL.md file
 
             ### docs/learnings-log.md
             - Add new entries for significant discoveries or gotchas found during the PR

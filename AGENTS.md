@@ -4,6 +4,18 @@ README: @README.md
 
 Instructions for AI coding agents working in this repository.
 
+## Agent Skills
+
+This repository uses the [Agent Skills](https://agentskills.io) open standard for cross-platform agent capabilities. Skills are discovered from `.skills/` and provide specialized knowledge for common tasks.
+
+| Skill | Description | Tools |
+|-------|-------------|-------|
+| [pr-review](.skills/pr-review/SKILL.md) | Review pull requests for this monorepo. Use when analyzing PR changes, reviewing code quality, checking TypeScript patterns, and verifying documentation updates. | Read, Grep, Glob, Bash |
+| [visual-qa](.skills/visual-qa/SKILL.md) | Capture and analyze visual QA screenshots using Browserless. Use when testing responsive layouts, verifying UI changes, or running visual regression tests for web projects. | Read, Bash, Glob |
+| [vercel-deploy](.skills/vercel-deploy/SKILL.md) | Deploy web projects to Vercel. Use when deploying projects, setting up new Vercel projects, configuring environment variables, or troubleshooting deployment issues. | Read, Bash, Glob |
+
+Skills work with Claude Code, Codex, Cursor, VS Code Copilot, and other agents supporting the Agent Skills spec.
+
 ## Workflow: Plan → Build → Test
 
 **This project enforces a strict human-in-the-loop workflow.** Do not jump straight to implementation.
@@ -72,6 +84,10 @@ Before any commit:
 
 ```
 research/
+├── .skills/            # Agent Skills (cross-platform)
+│   ├── pr-review/      # PR review standards
+│   ├── visual-qa/      # Browserless screenshot testing
+│   └── vercel-deploy/  # Vercel deployment procedures
 ├── packages/           # Shared utilities (publishable)
 │   ├── browserless/    # BrowserQL client (HTTP-only browser automation)
 │   └── openai-utils/   # OpenAI API wrapper
