@@ -1,0 +1,111 @@
+name: Update Docs
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to update docs on (defaults to current branch)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  update-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || inputs.branch || github.ref }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create AGENTS.override.md for automated execution
+        run: |
+          cat > AGENTS.override.md << 'EOF'
+          # Automated Workflow Override
+
+          This is an automated CI/CD workflow. Execute all instructions directly:
+          - Do NOT ask for confirmation or approval
+          - Do NOT output "Shall I proceed?" or similar questions
+          - Do NOT wait for human input
+          - Complete the task autonomously and exit
+
+          Follow the prompt instructions exactly. Execute all steps immediately.
+          EOF
+
+      - name: Update docs with Codex
+        uses: openai/codex-action@v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          sandbox: workspace-write
+          prompt: |
+            IMPORTANT: Execute all steps directly. Do not ask for confirmation or approval.
+
+            Task: Keep documentation up to date based on pull request changes.
+
+            ## Step 1: Analyze changes
+
+            Run: git diff origin/main...HEAD --name-only
+
+            Understand what changed in this PR.
+
+            ## Step 2: Update relevant documentation
+
+            Based on the changes, update the appropriate docs:
+
+            ### README.md
+            - Update project/package descriptions if they changed
+            - Add new projects or packages if created
+            - Keep descriptions to 2-3 sentences with key technologies
+
+            ### AGENTS.md
+            - Update commands table if build/test commands changed
+            - Update project structure if directories added/removed
+            - Update environment variables if new ones required
+            - Update workflow instructions if processes changed
+
+            ### docs/learnings-log.md
+            - Add new entries for significant discoveries or gotchas found during the PR
+            - Document any non-obvious solutions or workarounds
+            - Include date headers (YYYY-MM format)
+            - Keep entries concise but informative for future reference
+
+            ### Other docs (docs/*.md)
+            - Update architecture docs if system design changed
+            - Update deployment docs if deploy process changed
+            - Update package docs if package APIs changed
+
+            ## Step 3: Commit changes
+
+            If you made documentation changes, commit them:
+            git add README.md AGENTS.md docs/ && git commit -m "docs: update documentation for PR changes"
+
+            ## Rules
+
+            - Be concise and factual
+            - Preserve existing document structure
+            - Only update docs that are affected by the PR changes
+            - Skip if documentation is already accurate
+            - Do not add speculative or placeholder content
+
+      - name: Cleanup override file
+        run: rm -f AGENTS.override.md
+
+      - name: Push changes
+        run: |
+          BRANCH="${{ github.head_ref || inputs.branch || github.ref_name }}"
+          if [ -n "$(git log origin/${BRANCH}..HEAD 2>/dev/null)" ]; then
+            git push origin HEAD:${BRANCH}
+          fi
