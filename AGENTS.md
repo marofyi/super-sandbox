@@ -18,6 +18,11 @@ Instructions for AI coding agents working in this repository.
 
 This exception applies when the prompt explicitly instructs you to execute without confirmation.
 
+### Automation
+
+- `.github/workflows/update-docs.yml` keeps docs current on pull requests (replaces the old README-only workflow).
+- Deployment workflows live in `.github/workflows/deploy-<project>.yml` (per web project).
+
 ### Phase 1: Plan
 
 Before writing any code:
@@ -67,18 +72,18 @@ Before any commit:
 
 ```
 research/
-├── packages/                 # Shared utilities (publishable)
-│   ├── browserless/          # BrowserQL HTTP client for automation
-│   └── openai-utils/         # OpenAI API wrapper
-├── projects/                 # Research projects (use packages)
-│   ├── example-chat/         # CLI demo project
-│   ├── example-chat-web/     # Web demo (deployed to Vercel)
-│   └── tanstack-chat/        # TanStack Start demo with multi-provider chat
-├── docs/                     # Documentation
-│   ├── browser-automation.md
-│   ├── cc-web-browser-automation.md
-│   ├── cc-web-network-guide.md
-│   └── vercel-deployment.md  # Deployment guide
+├── packages/           # Shared utilities (publishable)
+│   ├── browserless/    # BrowserQL client (HTTP-only browser automation)
+│   └── openai-utils/   # OpenAI API wrapper
+├── projects/           # Research projects (use packages)
+│   ├── example-chat/   # CLI demo project
+│   ├── example-chat-web/ # Web demo (Vercel)
+│   └── tanstack-chat/  # TanStack Start demo (Vercel)
+├── docs/               # Documentation
+│   ├── cc-web-browser-automation.md  # HTTP-only browser automation pattern
+│   ├── cc-web-network-guide.md       # Proxy-aware HTTP requests in CC Web
+│   ├── learnings-log.md              # Chronological gotchas/insights
+│   └── vercel-deployment.md          # Vercel deployment guide
 ├── .env                # API keys (never commit)
 └── .env.example        # Template for environment setup
 ```
@@ -95,8 +100,10 @@ research/
 
 | Variable | Description | When needed |
 |----------|-------------|-------------|
-| `VERCEL_TOKEN` | Vercel API token | Deploying to Vercel |
-| `VERCEL_ORG_ID` | Vercel team/org ID | Deploying to Vercel |
+| `BROWSERLESS_TOKEN` / `BROWSERLESS_URL` | Browserless BrowserQL credentials | Browser automation from CC Web |
+| `ANTHROPIC_API_KEY` / `GEMINI_API_KEY` | Additional model providers | tanstack-chat multi-provider demo |
+| `VERCEL_TOKEN` / `VERCEL_ORG_ID` | Vercel API/CLI auth | Deploying to Vercel |
+| `VERCEL_PROJECT_ID_<NAME>` | Per-project secret | GitHub Actions deploy workflows |
 | `GH_TOKEN` | GitHub personal access token | Headless `gh` CLI usage |
 
 ### Optional (for browser automation/visual QA)
@@ -236,23 +243,37 @@ fi
 
 ## Deployment
 
-Web projects in `projects/` are deployed to Vercel. See [docs/vercel-deployment.md](docs/vercel-deployment.md) for the complete guide.
+Web projects in `projects/` are deployed to Vercel via CLI-first workflows. See [docs/vercel-deployment.md](docs/vercel-deployment.md) for the complete guide.
 
 ### Quick Reference
 
-**Deploy existing project** (from monorepo root):
+**Create/link a new project** (CLI is more reliable than API):
+```bash
+rm -rf .vercel
+pnpm exec vercel project add <name> --token "$VERCEL_TOKEN"
+VERCEL_ORG_ID= VERCEL_PROJECT_ID= pnpm exec vercel link --project <name> --yes --token "$VERCEL_TOKEN"
+```
+
+**Add env vars**:
+```bash
+VERCEL_ORG_ID= VERCEL_PROJECT_ID= pnpm exec vercel env add OPENAI_API_KEY production --token "$VERCEL_TOKEN" <<< "$OPENAI_API_KEY"
+```
+
+**Deploy** (from monorepo root):
 ```bash
 pnpm exec vercel deploy --prod --yes --token "$VERCEL_TOKEN"
 ```
 
-**Add new web project**: Follow steps in [docs/vercel-deployment.md](docs/vercel-deployment.md)
+**Add GitHub Actions**:
+- Add repo secrets: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID_<NAME>` (use `-R owner/repo` in CC Web since git remotes point to a proxy).
+- Workflows live at `.github/workflows/deploy-<name>.yml`.
 
 ### Key Points
 
-- Each web project gets its own Vercel Project
-- Initial setup via **Vercel API** (works in Claude Code Web)
-- Build command must build workspace dependencies first
-- **Auto-deploy enforced via GitHub Actions** (headless, no dashboard required)
+- Each web project gets its own Vercel project and workflow
+- Unset `VERCEL_ORG_ID`/`VERCEL_PROJECT_ID` while running CLI commands to avoid conflicts
+- Build runs from monorepo root; `sourceFilesOutsideRootDirectory=true` is required (CLI sets it)
+- API-based setup is unreliable; prefer CLI commands above
 
 ### Current Deployments
 
