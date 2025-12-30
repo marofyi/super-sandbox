@@ -23,6 +23,9 @@ importers:
 
   packages/browserless:
     dependencies:
+      undici:
+        specifier: ^7.16.0
+        version: 7.16.0
       zod:
         specifier: ^3.24.1
         version: 3.25.76
