@@ -61,17 +61,23 @@ Before any commit:
 | `pnpm check` | Type-check all packages (must pass before commits) |
 | `pnpm b @research/<pkg> build` | Build a specific package |
 | `pnpm --filter @research/<pkg> start` | Run a project |
+| `pnpm --filter @research/tanstack-chat test:visual` | Capture TanStack Chat responsiveness screenshots (needs `BROWSERLESS_TOKEN`, optional `TEST_URL`) |
 
 ## Project Structure
 
 ```
 research/
-├── packages/           # Shared utilities (publishable)
-│   └── openai-utils/   # OpenAI API wrapper
-├── projects/           # Research projects (use packages)
-│   ├── example-chat/   # CLI demo project
-│   └── example-chat-web/ # Web demo (deployed to Vercel)
-├── docs/               # Documentation
+├── packages/                 # Shared utilities (publishable)
+│   ├── browserless/          # BrowserQL HTTP client for automation
+│   └── openai-utils/         # OpenAI API wrapper
+├── projects/                 # Research projects (use packages)
+│   ├── example-chat/         # CLI demo project
+│   ├── example-chat-web/     # Web demo (deployed to Vercel)
+│   └── tanstack-chat/        # TanStack Start demo with multi-provider chat
+├── docs/                     # Documentation
+│   ├── browser-automation.md
+│   ├── cc-web-browser-automation.md
+│   ├── cc-web-network-guide.md
 │   └── vercel-deployment.md  # Deployment guide
 ├── .env                # API keys (never commit)
 └── .env.example        # Template for environment setup
@@ -92,6 +98,14 @@ research/
 | `VERCEL_TOKEN` | Vercel API token | Deploying to Vercel |
 | `VERCEL_ORG_ID` | Vercel team/org ID | Deploying to Vercel |
 | `GH_TOKEN` | GitHub personal access token | Headless `gh` CLI usage |
+
+### Optional (for browser automation/visual QA)
+
+| Variable | Description | When needed |
+|----------|-------------|-------------|
+| `BROWSERLESS_TOKEN` | Browserless BrowserQL auth token | Running visual QA or `@research/browserless` scripts |
+| `BROWSERLESS_URL` | Custom Browserless endpoint | Using a non-default Browserless host |
+| `TEST_URL` | Override TanStack Chat target URL for screenshots | Pointing visual QA at preview deployments |
 
 ### Setup by Environment
 

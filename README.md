@@ -76,6 +76,14 @@ pnpm --filter @research/example-chat start
 pnpm --filter @research/example-chat-web dev
 ```
 
+### Visual QA
+
+Capture responsive screenshots for TanStack Chat (requires `BROWSERLESS_TOKEN` and optional `TEST_URL` override):
+
+```bash
+pnpm --filter @research/tanstack-chat test:visual
+```
+
 ## Environment Setup
 
 Copy `.env.example` to `.env` and add your OpenAI API key:
@@ -98,7 +106,7 @@ A Next.js web application that wires @research/openai-utils into a streaming cha
 
 ### tanstack-chat
 
-A TanStack Start (React Router + Nitro SSR) demo for multi-provider AI chat with model switching across OpenAI, Anthropic, Gemini, and Ollama plus approval flows for tool calls. Built with React 19, Vite, Tailwind CSS v4, lucide-react icons, and @tanstack/ai for streaming. Includes a guitar recommendation flow with interactive tool responses and slide-in navigation.
+A TanStack Start (React Router + Nitro SSR) demo for multi-provider AI chat with model switching across OpenAI, Anthropic, Gemini, and Ollama plus approval flows for tool calls. Built with React 19, Vite, Tailwind CSS v4, lucide-react icons, and @tanstack/ai for streaming, with Browserless-powered visual QA screenshots via `pnpm --filter @research/tanstack-chat test:visual` (needs `BROWSERLESS_TOKEN`). Includes a guitar recommendation flow with interactive tool responses and slide-in navigation.
 
 ## Deployment
 
