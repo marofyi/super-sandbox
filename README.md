@@ -19,6 +19,7 @@ pnpm b @research/openai-utils build
 
 ```
 research/
+├── .skills/            # Agent Skills (cross-platform capabilities)
 ├── packages/           # Shared utilities
 │   ├── browserless/    # BrowserQL client for HTTP-only browser automation
 │   └── openai-utils/   # OpenAI API wrapper
@@ -28,6 +29,13 @@ research/
 │   └── tanstack-chat/  # TanStack Start demo
 └── docs/               # Documentation
 ```
+
+## Agent Skills
+
+This repo exposes cross-platform agent capabilities via `.skills/` using the Agent Skills open standard. Each skill includes a `SKILL.md` with usage docs and allowed tools for sandboxed environments:
+
+- `.skills/browserless` — Browserless BrowserQL automation for scraping, screenshots, and form flows over HTTP-only requests.
+- `.skills/vercel-deploy` — Vercel deployment playbook covering CLI setup, env vars, and per-project URLs.
 
 ## Shared Packages
 

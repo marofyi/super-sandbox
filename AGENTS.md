@@ -4,6 +4,17 @@ README: @README.md
 
 Instructions for AI coding agents working in this repository.
 
+## Agent Skills
+
+This repository uses the [Agent Skills](https://agentskills.io) open standard for cross-platform agent capabilities. Skills are discovered from `.skills/` and provide specialized knowledge for common tasks.
+
+| Skill | Description | Tools |
+|-------|-------------|-------|
+| [browserless](.skills/browserless/SKILL.md) | Browser automation using Browserless BrowserQL. Use for web scraping, UI testing, screenshot capture, form interaction, content extraction, and any task requiring browser control from sandboxed environments like Claude Code Web. | Read Bash Glob |
+| [vercel-deploy](.skills/vercel-deploy/SKILL.md) | Deploy web projects to Vercel. Use when deploying projects, setting up new Vercel projects, configuring environment variables, or troubleshooting deployment issues. | Read Bash Glob |
+
+Skills work with Claude Code, Codex, Cursor, VS Code Copilot, and other agents supporting the Agent Skills spec.
+
 ## Workflow: Plan → Build → Test
 
 **This project enforces a strict human-in-the-loop workflow.** Do not jump straight to implementation.
@@ -72,6 +83,9 @@ Before any commit:
 
 ```
 research/
+├── .skills/            # Agent Skills (cross-platform)
+│   ├── browserless/    # Browser automation (scraping, screenshots, forms)
+│   └── vercel-deploy/  # Vercel deployment procedures
 ├── packages/           # Shared utilities (publishable)
 │   ├── browserless/    # BrowserQL client (HTTP-only browser automation)
 │   └── openai-utils/   # OpenAI API wrapper
