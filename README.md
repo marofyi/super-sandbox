@@ -86,12 +86,16 @@ pnpm --filter @research/example-chat start
 pnpm --filter @research/example-chat-web dev
 ```
 
-### Visual QA
+### Screenshot Capture
 
-Capture responsive screenshots (requires `BROWSERLESS_TOKEN`):
+Capture screenshots using the browserless CLI (requires `BROWSERLESS_TOKEN`):
 
 ```bash
-pnpm --filter @research/tanstack-chat test:visual https://your-app.com
+# Single desktop screenshot
+pnpm --filter @research/browserless screenshot https://your-app.com
+
+# Responsive screenshots (all viewports)
+pnpm --filter @research/browserless screenshot https://your-app.com --responsive
 ```
 
 ## Environment Setup
@@ -116,7 +120,7 @@ A Next.js web application that wires @research/openai-utils into a streaming cha
 
 ### tanstack-chat
 
-A TanStack Start (React Router + Nitro SSR) demo for multi-provider AI chat with model switching across OpenAI, Anthropic, Gemini, and Ollama plus approval flows for tool calls. Built with React 19, Vite, Tailwind CSS v4, lucide-react icons, and @tanstack/ai for streaming, featuring a guitar recommendation flow with interactive tool responses and slide-in navigation. Supports visual QA via `pnpm --filter @research/tanstack-chat test:visual <url>` (needs `BROWSERLESS_TOKEN`).
+A TanStack Start (React Router + Nitro SSR) demo for multi-provider AI chat with model switching across OpenAI, Anthropic, Gemini, and Ollama plus approval flows for tool calls. Built with React 19, Vite, Tailwind CSS v4, lucide-react icons, and @tanstack/ai for streaming, featuring a guitar recommendation flow with interactive tool responses and slide-in navigation.
 
 ## Deployment
 

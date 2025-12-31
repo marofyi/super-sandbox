@@ -77,7 +77,8 @@ Before any commit:
 | `pnpm check` | Type-check all packages (must pass before commits) |
 | `pnpm b @research/<pkg> build` | Build a specific package |
 | `pnpm --filter @research/<pkg> start` | Run a project |
-| `pnpm --filter @research/tanstack-chat test:visual <url>` | Capture responsive screenshots (needs `BROWSERLESS_TOKEN`) |
+| `pnpm --filter @research/browserless screenshot <url>` | Capture screenshot (needs `BROWSERLESS_TOKEN`) |
+| `pnpm --filter @research/browserless screenshot <url> --responsive` | Capture responsive screenshots |
 
 ## Project Structure
 

@@ -119,13 +119,25 @@ const result = await captureAtViewport('https://your-app.com', {
 });
 ```
 
-## Visual QA Script
+## CLI
 
-For responsive testing:
+The `@research/browserless` package provides a standalone CLI for capturing screenshots:
 
 ```bash
-pnpm --filter @research/tanstack-chat test:visual https://your-app.com
+# Single desktop screenshot
+pnpm --filter @research/browserless screenshot https://example.com
+
+# Responsive screenshots (all default viewports)
+pnpm --filter @research/browserless screenshot https://example.com --responsive
+
+# Specific viewport preset
+pnpm --filter @research/browserless screenshot https://example.com --viewport iphone14
+
+# Custom output
+pnpm --filter @research/browserless screenshot https://example.com --output ./my-screenshot.jpg
 ```
+
+Run `pnpm --filter @research/browserless screenshot --help` for all options.
 
 ## Screenshot Options
 
