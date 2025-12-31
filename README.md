@@ -100,7 +100,7 @@ pnpm --filter @research/browserless screenshot https://your-app.com --responsive
 
 ## Environment Setup
 
-Copy `.env.example` to `.env` and add your OpenAI API key. Optional placeholders cover TanStack Chat multi-provider demos (`ANTHROPIC_API_KEY`, `GEMINI_API_KEY`), Browserless automation and visual QA (`BROWSERLESS_TOKEN`, optional `BROWSERLESS_URL`, `TEST_URL`), and deployment helpers (`VERCEL_TOKEN`, `VERCEL_ORG_ID`, `GH_TOKEN`).
+Copy `.env.example` to `.env` and add your OpenAI API key. Optional placeholders cover TanStack Chat multi-provider demos (`ANTHROPIC_API_KEY`, `GEMINI_API_KEY`), Browserless automation and visual QA (`BROWSERLESS_TOKEN`, optional `BROWSERLESS_URL`), and deployment helpers (`VERCEL_TOKEN`, `VERCEL_ORG_ID`, `GH_TOKEN`).
 
 ```bash
 cp .env.example .env
@@ -153,8 +153,9 @@ See [docs/vercel-deployment.md](docs/vercel-deployment.md) for:
 ## Configuration
 
 - GitHub Actions now auto-deploys `projects/tanstack-chat` via `.github/workflows/deploy-tanstack-chat.yml` using the Vercel project `tanstack-chat`.
-- GitHub Actions keeps documentation current on pull requests via `.github/workflows/update-docs.yml`.
+- Single-file HTML prototypes under `projects/*.html` deploy to GitHub Pages via `.github/workflows/deploy-github-pages.yml`; the landing page `projects/index.html` is refreshed by `.github/workflows/update-docs.yml`.
+- GitHub Actions keeps documentation (including `projects/index.html`) current on pull requests via `.github/workflows/update-docs.yml`.
 - The `projects/tanstack-chat/.env.example` file documents required `OPENAI_API_KEY` and optional `ANTHROPIC_API_KEY`/`GEMINI_API_KEY` values for the multi-provider chat demos.
 - Browser automation utilities in `@research/browserless` need `BROWSERLESS_TOKEN` (and optional `BROWSERLESS_URL`) for BrowserQL HTTP calls; works without WebSockets for sandboxed environments and now routes through the CC Web proxy when `HTTPS_PROXY` is present.
-- Visual QA scripts take URL as a CLI argument and require `BROWSERLESS_TOKEN`; the `@research/browserless` package provides reusable `captureResponsiveScreenshots()` and `captureAtViewport()` utilities for any project.
+- Screenshot capture is centralized in the `@research/browserless` CLI: run `pnpm --filter @research/browserless screenshot <url>` (add `--responsive` for multi-viewport). Helpers `captureResponsiveScreenshots()` and `captureAtViewport()` back the CLI and can be reused in any project.
 - Browser automation options for sandboxed environments are compared in `docs/cc-web-browser-automation.md`, highlighting Browserless BrowserQL as the HTTP-only approach that succeeds when CDP WebSockets are blocked. See `docs/cc-web-network-guide.md` for CC Web proxy/DNS behavior and a proxy-aware fetch pattern.

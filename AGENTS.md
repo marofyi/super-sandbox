@@ -31,8 +31,9 @@ This exception applies when the prompt explicitly instructs you to execute witho
 
 ### Automation
 
-- `.github/workflows/update-docs.yml` keeps docs current on pull requests (replaces the old README-only workflow).
-- Deployment workflows live in `.github/workflows/deploy-<project>.yml` (per web project).
+- `.github/workflows/update-docs.yml` keeps README/AGENTS/docs and `projects/index.html` current on pull requests.
+- `.github/workflows/deploy-github-pages.yml` publishes static `.html` prototypes in `projects/` to GitHub Pages.
+- Deployment workflows for Vercel web apps live in `.github/workflows/deploy-<project>.yml` (per project).
 
 ### Phase 1: Plan
 
@@ -90,14 +91,17 @@ research/
 ├── packages/           # Shared utilities (publishable)
 │   ├── browserless/    # BrowserQL client (HTTP-only browser automation)
 │   └── openai-utils/   # OpenAI API wrapper
-├── projects/           # Research projects (use packages)
+├── projects/           # Research projects (use packages) + static prototypes
+│   ├── index.html      # Landing page (GitHub Pages)
 │   ├── example-chat/   # CLI demo project
 │   ├── example-chat-web/ # Web demo (Vercel)
-│   └── tanstack-chat/  # TanStack Start demo (Vercel)
+│   ├── tanstack-chat/  # TanStack Start demo (Vercel)
+│   └── *.html          # Single-file prototypes (GitHub Pages)
 ├── docs/               # Documentation
 │   ├── cc-web-browser-automation.md  # HTTP-only browser automation pattern
 │   ├── cc-web-network-guide.md       # Proxy-aware HTTP requests in CC Web
 │   ├── learnings-log.md              # Chronological gotchas/insights
+│   ├── static-html-guide.md          # Single-file prototype best practices
 │   └── vercel-deployment.md          # Vercel deployment guide
 ├── .env                # API keys (never commit)
 └── .env.example        # Template for environment setup
@@ -267,6 +271,8 @@ fi
 - Some network domains require approval
 
 ## Deployment
+
+Static HTML prototypes in `projects/*.html` deploy to GitHub Pages via `.github/workflows/deploy-github-pages.yml`. The landing page at `projects/index.html` lists projects and prototypes and is refreshed automatically by `update-docs.yml`.
 
 Web projects in `projects/` are deployed to Vercel via CLI-first workflows. See [docs/vercel-deployment.md](docs/vercel-deployment.md) for the complete guide.
 

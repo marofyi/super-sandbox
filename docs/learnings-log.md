@@ -21,6 +21,7 @@ pnpm --filter @research/browserless screenshot https://example.com --viewport ip
 
 - Shared `@research/browserless` helpers `captureResponsiveScreenshots()` and `captureAtViewport()` consolidate viewport lists and full-page options for any project.
 - Errors surface per-viewport with counts, so CI can fail fast when Browserless responses are missing or a viewport configuration is invalid.
+- Static HTML prototypes in `projects/*.html` auto-deploy to GitHub Pages via `.github/workflows/deploy-github-pages.yml`; keep everything in one file and let `update-docs.yml` refresh `projects/index.html`.
 
 ---
 
