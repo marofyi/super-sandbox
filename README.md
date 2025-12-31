@@ -23,10 +23,12 @@ research/
 ├── packages/           # Shared utilities
 │   ├── browserless/    # BrowserQL client for HTTP-only browser automation
 │   └── openai-utils/   # OpenAI API wrapper
-├── projects/           # Research projects
+├── projects/           # Research projects and prototypes
+│   ├── index.html      # Landing page (GitHub Pages)
 │   ├── example-chat/   # CLI demo
-│   ├── example-chat-web/ # Web demo (Next.js)
-│   └── tanstack-chat/  # TanStack Start demo
+│   ├── example-chat-web/ # Web demo (Next.js → Vercel)
+│   ├── tanstack-chat/  # TanStack Start demo (Vercel)
+│   └── *.html          # Single-file prototypes (GitHub Pages)
 └── docs/               # Documentation
 ```
 
@@ -118,7 +120,24 @@ A TanStack Start (React Router + Nitro SSR) demo for multi-provider AI chat with
 
 ## Deployment
 
-Web projects are deployed to Vercel. Each project gets its own Vercel Project with independent configuration.
+Projects can be deployed via two hosting options depending on complexity:
+
+| Project Type | Hosting | When to Use |
+|--------------|---------|-------------|
+| Single-file HTML prototypes | GitHub Pages | Quick experiments, tools, demos |
+| Full web apps (SSR, API routes) | Vercel | Complex state, server-side logic |
+
+### GitHub Pages (Static HTML)
+
+Single `.html` files in `projects/` are automatically deployed to GitHub Pages:
+
+- **Workflow:** `.github/workflows/deploy-github-pages.yml`
+- **Landing page:** `projects/index.html` (auto-maintained by `update-docs.yml`)
+- **Guide:** [docs/static-html-guide.md](docs/static-html-guide.md)
+
+### Vercel (Full Web Apps)
+
+Web projects with `package.json` are deployed to Vercel. Each project gets its own Vercel Project with independent configuration.
 
 See [docs/vercel-deployment.md](docs/vercel-deployment.md) for:
 
