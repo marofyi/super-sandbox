@@ -10,8 +10,8 @@ This repository uses the [Agent Skills](https://agentskills.io) open standard fo
 
 | Skill | Description | Tools |
 |-------|-------------|-------|
-| [browserless](.skills/browserless/SKILL.md) | Browser automation using Browserless BrowserQL. Use for web scraping, UI testing, screenshot capture, form interaction, content extraction, and any task requiring browser control from sandboxed environments like Claude Code Web. | Read, Bash, Glob |
-| [vercel-deploy](.skills/vercel-deploy/SKILL.md) | Deploy web projects to Vercel. Use when deploying projects, setting up new Vercel projects, configuring environment variables, or troubleshooting deployment issues. | Read, Bash, Glob |
+| [browserless](.skills/browserless/SKILL.md) | Browser automation using Browserless BrowserQL. Use for web scraping, UI testing, screenshot capture, form interaction, content extraction, and any task requiring browser control from sandboxed environments like Claude Code Web. | Read Bash Glob |
+| [vercel-deploy](.skills/vercel-deploy/SKILL.md) | Deploy web projects to Vercel. Use when deploying projects, setting up new Vercel projects, configuring environment variables, or troubleshooting deployment issues. | Read Bash Glob |
 
 Skills work with Claude Code, Codex, Cursor, VS Code Copilot, and other agents supporting the Agent Skills spec.
 
