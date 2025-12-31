@@ -77,7 +77,7 @@ Before any commit:
 | `pnpm check` | Type-check all packages (must pass before commits) |
 | `pnpm b @research/<pkg> build` | Build a specific package |
 | `pnpm --filter @research/<pkg> start` | Run a project |
-| `pnpm --filter @research/tanstack-chat test:visual` | Capture TanStack Chat responsiveness screenshots (needs `BROWSERLESS_TOKEN`, optional `TEST_URL`) |
+| `pnpm --filter @research/tanstack-chat test:visual <url>` | Capture responsive screenshots (needs `BROWSERLESS_TOKEN`) |
 
 ## Project Structure
 
@@ -117,13 +117,17 @@ research/
 | `ANTHROPIC_API_KEY` | Anthropic API key | TanStack Chat multi-provider demo |
 | `GEMINI_API_KEY` | Google Gemini API key | TanStack Chat multi-provider demo |
 
-### Optional - Browser Automation
+### Required (for browser automation/visual QA)
 
 | Variable | Description | When needed |
 |----------|-------------|-------------|
 | `BROWSERLESS_TOKEN` | Browserless BrowserQL auth token | Running visual QA or `@research/browserless` scripts |
+
+### Optional (for browser automation)
+
+| Variable | Description | When needed |
+|----------|-------------|-------------|
 | `BROWSERLESS_URL` | Custom Browserless endpoint | Using a non-default Browserless host |
-| `TEST_URL` | Override TanStack Chat target URL for screenshots | Pointing visual QA at preview deployments |
 
 ### Optional - Deployment and CI
 

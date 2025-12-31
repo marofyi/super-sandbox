@@ -4,6 +4,14 @@ A chronological record of discoveries, gotchas, and insights from building in th
 
 ---
 
+## 2025-12: Visual QA Utility Upgrade
+
+- `pnpm --filter @research/tanstack-chat test:visual` now requires an explicit target URL argument (`pnpm --filter @research/tanstack-chat test:visual https://your-app.com`) instead of relying on `TEST_URL`, preventing accidental captures against the wrong host.
+- Shared `@research/browserless` helpers `captureResponsiveScreenshots()` and `captureAtViewport()` consolidate viewport lists and full-page options for any project; TanStack Chat consumes them and adds a project-specific nav-open capture via BrowserQL clicks.
+- Errors now surface per-viewport with counts, so CI can fail fast when Browserless responses are missing or a viewport configuration is invalid.
+
+---
+
 ## 2024-12: Claude Code Web Network Architecture
 
 ### Discovery: Node.js fetch fails, curl works
@@ -64,7 +72,7 @@ This led to creating `@research/browserless` package.
 
 ### Workflow: TanStack Chat responsive screenshots
 
-TanStack Chat ships a BrowserQL-driven visual QA script to cover mobile, tablet, and desktop breakpoints over pure HTTP. Run `pnpm --filter @research/tanstack-chat test:visual` with `BROWSERLESS_TOKEN`; set `TEST_URL` to target preview deployments and reuse `BROWSERLESS_URL` when pointing at a custom Browserless host. Screenshots save as JPEGs in `projects/tanstack-chat/tests/visual/screenshots/` for manual inspection.
+TanStack Chat ships a BrowserQL-driven visual QA script to cover mobile, tablet, and desktop breakpoints over pure HTTP. Run `pnpm --filter @research/tanstack-chat test:visual <url>` with `BROWSERLESS_TOKEN`; pass the target deployment URL explicitly and reuse `BROWSERLESS_URL` when pointing at a custom Browserless host. Screenshots save as JPEGs in `projects/tanstack-chat/tests/visual/screenshots/` for manual inspection.
 
 ---
 

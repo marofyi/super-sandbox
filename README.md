@@ -41,7 +41,7 @@ This repo exposes cross-platform agent capabilities via `.skills/` using the Age
 
 ### @research/browserless
 
-Browser automation client for [Browserless](https://browserless.io) BrowserQL using pure HTTP POST (no WebSocket), making it compatible with sandboxed environments like Claude Code Web. Helpers include `goto`, `click`, `type`, `getText`, `getHtml`, and `screenshot`/`screenshotToFile` (optimized JPEG defaults to `/tmp`) plus `executeFlow` for single-session GraphQL flows. Uses an `undici` ProxyAgent when `HTTPS_PROXY` is set (CC Web) and defaults to the Chrome BQL endpoint with a 60-second timeout. Requires `BROWSERLESS_TOKEN` and optionally `BROWSERLESS_URL`.
+Browser automation client for [Browserless](https://browserless.io) BrowserQL using pure HTTP POST (no WebSocket), making it compatible with sandboxed environments like Claude Code Web. Helpers include `goto`, `click`, `type`, `getText`, `getHtml`, `screenshot`/`screenshotToFile` (optimized JPEG defaults to `/tmp`), `executeFlow` for single-session GraphQL flows, and responsive capture utilities `captureResponsiveScreenshots`/`captureAtViewport`. Uses an `undici` ProxyAgent when `HTTPS_PROXY` is set (CC Web) and defaults to the Chrome BQL endpoint with a 60-second timeout. Requires `BROWSERLESS_TOKEN` and optionally `BROWSERLESS_URL`.
 
 ### @research/openai-utils
 
@@ -86,10 +86,10 @@ pnpm --filter @research/example-chat-web dev
 
 ### Visual QA
 
-Capture responsive screenshots for TanStack Chat (requires `BROWSERLESS_TOKEN` and optional `TEST_URL` override):
+Capture responsive screenshots (requires `BROWSERLESS_TOKEN`):
 
 ```bash
-pnpm --filter @research/tanstack-chat test:visual
+pnpm --filter @research/tanstack-chat test:visual https://your-app.com
 ```
 
 ## Environment Setup
@@ -114,7 +114,7 @@ A Next.js web application that wires @research/openai-utils into a streaming cha
 
 ### tanstack-chat
 
-A TanStack Start (React Router + Nitro SSR) demo for multi-provider AI chat with model switching across OpenAI, Anthropic, Gemini, and Ollama plus approval flows for tool calls. Built with React 19, Vite, Tailwind CSS v4, lucide-react icons, and @tanstack/ai for streaming, with Browserless-powered visual QA screenshots via `pnpm --filter @research/tanstack-chat test:visual` (needs `BROWSERLESS_TOKEN`). Includes a guitar recommendation flow with interactive tool responses and slide-in navigation.
+A TanStack Start (React Router + Nitro SSR) demo for multi-provider AI chat with model switching across OpenAI, Anthropic, Gemini, and Ollama plus approval flows for tool calls. Built with React 19, Vite, Tailwind CSS v4, lucide-react icons, and @tanstack/ai for streaming, featuring a guitar recommendation flow with interactive tool responses and slide-in navigation. Supports visual QA via `pnpm --filter @research/tanstack-chat test:visual <url>` (needs `BROWSERLESS_TOKEN`).
 
 ## Deployment
 
@@ -133,5 +133,5 @@ See [docs/vercel-deployment.md](docs/vercel-deployment.md) for:
 - GitHub Actions keeps documentation current on pull requests via `.github/workflows/update-docs.yml`.
 - The `projects/tanstack-chat/.env.example` file documents required `OPENAI_API_KEY` and optional `ANTHROPIC_API_KEY`/`GEMINI_API_KEY` values for the multi-provider chat demos.
 - Browser automation utilities in `@research/browserless` need `BROWSERLESS_TOKEN` (and optional `BROWSERLESS_URL`) for BrowserQL HTTP calls; works without WebSockets for sandboxed environments and now routes through the CC Web proxy when `HTTPS_PROXY` is present.
-- TanStack Chat visual QA (`pnpm --filter @research/tanstack-chat test:visual`) captures Browserless screenshots across viewports; set `TEST_URL` to point at preview deployments and reuse `BROWSERLESS_URL` for custom Browserless hosts.
+- Visual QA scripts take URL as a CLI argument and require `BROWSERLESS_TOKEN`; the `@research/browserless` package provides reusable `captureResponsiveScreenshots()` and `captureAtViewport()` utilities for any project.
 - Browser automation options for sandboxed environments are compared in `docs/cc-web-browser-automation.md`, highlighting Browserless BrowserQL as the HTTP-only approach that succeeds when CDP WebSockets are blocked. See `docs/cc-web-network-guide.md` for CC Web proxy/DNS behavior and a proxy-aware fetch pattern.

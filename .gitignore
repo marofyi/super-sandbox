@@ -28,3 +28,4 @@ npm-debug.log*
 coverage/
 .vercel
 .env*.local
+projects/tanstack-chat/tests/visual/screenshots/

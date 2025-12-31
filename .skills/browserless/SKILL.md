@@ -12,6 +12,7 @@ HTTP-only browser automation using [Browserless](https://browserless.io) Browser
 
 ```typescript
 import {
+  // Core functions
   goto,           // Navigate to URL
   click,          // Click element by selector
   type,           // Type text into element
@@ -21,7 +22,13 @@ import {
   screenshotToFile, // Save screenshot to file
   executeFlow,    // Run multi-step GraphQL flow
   isConfigured,   // Check if BROWSERLESS_TOKEN set
-  isClaudeCodeWeb // Detect CC Web environment
+  isClaudeCodeWeb, // Detect CC Web environment
+
+  // Responsive capture utility
+  captureResponsiveScreenshots, // Capture across multiple viewports
+  captureAtViewport,            // Single viewport capture
+  VIEWPORT_PRESETS,             // Common device presets
+  DEFAULT_VIEWPORTS,            // Default viewport list
 } from '@research/browserless';
 ```
 
@@ -83,25 +90,41 @@ const result = await executeFlow(`
 ### Responsive Screenshots
 
 ```typescript
-// Set viewport before screenshot
-const result = await executeFlow(`
-  mutation {
-    goto(url: "https://example.com", waitUntil: networkIdle) { status }
-    viewport(width: 375, height: 812, deviceScaleFactor: 2) { width height }
-    screenshot(type: jpeg) { base64 }
-  }
-`);
+import { captureResponsiveScreenshots, VIEWPORT_PRESETS } from '@research/browserless';
+
+// Capture all default viewports (8 device sizes)
+const results = await captureResponsiveScreenshots('https://your-app.com', {
+  outputDir: './screenshots',
+  includeFullPage: true, // Also capture full-page for mobile
+});
+
+// Capture specific viewports only
+const results = await captureResponsiveScreenshots('https://your-app.com', {
+  outputDir: './screenshots',
+  viewports: [VIEWPORT_PRESETS.iphone14, VIEWPORT_PRESETS.desktop1080p],
+});
+
+console.log(`Captured ${results.screenshots.length} screenshots`);
+```
+
+### Single Viewport Capture
+
+```typescript
+import { captureAtViewport, VIEWPORT_PRESETS } from '@research/browserless';
+
+const result = await captureAtViewport('https://your-app.com', {
+  viewport: VIEWPORT_PRESETS.iphone14,
+  outputPath: './screenshot.jpg',
+  fullPage: true,
+});
 ```
 
 ## Visual QA Script
 
-For TanStack Chat responsive testing:
+For responsive testing:
 
 ```bash
-pnpm --filter @research/tanstack-chat test:visual
-
-# With custom target URL
-TEST_URL="https://preview.vercel.app" pnpm --filter @research/tanstack-chat test:visual
+pnpm --filter @research/tanstack-chat test:visual https://your-app.com
 ```
 
 ## Screenshot Options

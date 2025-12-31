@@ -49,6 +49,14 @@ export { click, type } from "./browserless-client.js";
 // Content extraction & screenshots
 export { getHtml, getText, screenshot, screenshotToFile } from "./browserless-client.js";
 
+// Responsive capture utility
+export {
+  captureAtViewport,
+  captureResponsiveScreenshots,
+  VIEWPORT_PRESETS,
+  DEFAULT_VIEWPORTS,
+} from "./responsive-capture.js";
+
 // Types
 export type {
   BqlResponse,
@@ -61,3 +69,12 @@ export type {
   ScreenshotOptions,
   ScreenshotToFileOptions,
 } from "./browserless-client.js";
+
+export type {
+  ViewportConfig,
+  CaptureOptions,
+  SingleCaptureOptions,
+  CaptureResult,
+  ResponsiveCaptureOptions,
+  ResponsiveCaptureResult,
+} from "./responsive-capture.js";
