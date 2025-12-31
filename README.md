@@ -94,7 +94,7 @@ pnpm --filter @research/tanstack-chat test:visual https://your-app.com
 
 ## Environment Setup
 
-Copy `.env.example` to `.env` and add your OpenAI API key:
+Copy `.env.example` to `.env` and add your OpenAI API key. Optional placeholders cover TanStack Chat multi-provider demos (`ANTHROPIC_API_KEY`, `GEMINI_API_KEY`), Browserless automation and visual QA (`BROWSERLESS_TOKEN`, optional `BROWSERLESS_URL`, `TEST_URL`), and deployment helpers (`VERCEL_TOKEN`, `VERCEL_ORG_ID`, `GH_TOKEN`).
 
 ```bash
 cp .env.example .env

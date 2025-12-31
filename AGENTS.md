@@ -110,15 +110,12 @@ research/
 |----------|-------------|-------------|
 | `OPENAI_API_KEY` | OpenAI API key | https://platform.openai.com/api-keys |
 
-### Optional (for deployment)
+### Optional - Additional Model Providers
 
 | Variable | Description | When needed |
 |----------|-------------|-------------|
-| `BROWSERLESS_TOKEN` / `BROWSERLESS_URL` | Browserless BrowserQL credentials | Browser automation from CC Web |
-| `ANTHROPIC_API_KEY` / `GEMINI_API_KEY` | Additional model providers | tanstack-chat multi-provider demo |
-| `VERCEL_TOKEN` / `VERCEL_ORG_ID` | Vercel API/CLI auth | Deploying to Vercel |
-| `VERCEL_PROJECT_ID_<NAME>` | Per-project secret | GitHub Actions deploy workflows |
-| `GH_TOKEN` | GitHub personal access token | Headless `gh` CLI usage |
+| `ANTHROPIC_API_KEY` | Anthropic API key | TanStack Chat multi-provider demo |
+| `GEMINI_API_KEY` | Google Gemini API key | TanStack Chat multi-provider demo |
 
 ### Required (for browser automation/visual QA)
 
@@ -131,6 +128,15 @@ research/
 | Variable | Description | When needed |
 |----------|-------------|-------------|
 | `BROWSERLESS_URL` | Custom Browserless endpoint | Using a non-default Browserless host |
+
+### Optional - Deployment and CI
+
+| Variable | Description | When needed |
+|----------|-------------|-------------|
+| `VERCEL_TOKEN` | Vercel API/CLI auth | Deploying to Vercel |
+| `VERCEL_ORG_ID` | Vercel organization/team ID | Vercel CLI and GitHub Actions |
+| `VERCEL_PROJECT_ID_<NAME>` | Per-project secret | GitHub Actions deploy workflows |
+| `GH_TOKEN` | GitHub personal access token | Headless `gh` CLI usage |
 
 ### Setup by Environment
 
