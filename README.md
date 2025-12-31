@@ -41,7 +41,7 @@ This repo exposes cross-platform agent capabilities via `.skills/` using the Age
 
 ### @research/browserless
 
-Browser automation client for [Browserless](https://browserless.io) BrowserQL using pure HTTP POST (no WebSocket), making it compatible with sandboxed environments like Claude Code Web. Helpers include `goto`, `click`, `type`, `getText`, `getHtml`, and `screenshot`/`screenshotToFile` (optimized JPEG defaults to `/tmp`) plus `executeFlow` for single-session GraphQL flows. Uses an `undici` ProxyAgent when `HTTPS_PROXY` is set (CC Web) and defaults to the Chrome BQL endpoint with a 60-second timeout. Requires `BROWSERLESS_TOKEN` and optionally `BROWSERLESS_URL`.
+Browser automation client for [Browserless](https://browserless.io) BrowserQL using pure HTTP POST (no WebSocket), making it compatible with sandboxed environments like Claude Code Web. Helpers include `goto`, `click`, `type`, `getText`, `getHtml`, `screenshot`/`screenshotToFile` (optimized JPEG defaults to `/tmp`), `executeFlow` for single-session GraphQL flows, and responsive capture utilities `captureResponsiveScreenshots`/`captureAtViewport`. Uses an `undici` ProxyAgent when `HTTPS_PROXY` is set (CC Web) and defaults to the Chrome BQL endpoint with a 60-second timeout. Requires `BROWSERLESS_TOKEN` and optionally `BROWSERLESS_URL`.
 
 ### @research/openai-utils
 
@@ -114,7 +114,7 @@ A Next.js web application that wires @research/openai-utils into a streaming cha
 
 ### tanstack-chat
 
-A TanStack Start (React Router + Nitro SSR) demo for multi-provider AI chat with model switching across OpenAI, Anthropic, Gemini, and Ollama plus approval flows for tool calls. Built with React 19, Vite, Tailwind CSS v4, lucide-react icons, and @tanstack/ai for streaming. Includes a guitar recommendation flow with interactive tool responses and slide-in navigation. Supports visual QA via `pnpm --filter @research/tanstack-chat test:visual <url>` (needs `BROWSERLESS_TOKEN`).
+A TanStack Start (React Router + Nitro SSR) demo for multi-provider AI chat with model switching across OpenAI, Anthropic, Gemini, and Ollama plus approval flows for tool calls. Built with React 19, Vite, Tailwind CSS v4, lucide-react icons, and @tanstack/ai for streaming, featuring a guitar recommendation flow with interactive tool responses and slide-in navigation. Supports visual QA via `pnpm --filter @research/tanstack-chat test:visual <url>` (needs `BROWSERLESS_TOKEN`).
 
 ## Deployment
 
