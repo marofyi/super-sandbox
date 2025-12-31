@@ -10,6 +10,9 @@
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "bin": {
+    "browserless-screenshot": "./dist/bin/screenshot.js"
+  },
   "files": [
     "dist",
     "src"
@@ -17,13 +20,15 @@
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf dist *.tsbuildinfo",
-    "dev": "tsc --watch"
+    "dev": "tsc --watch",
+    "screenshot": "node ./dist/bin/screenshot.js"
   },
   "dependencies": {
     "undici": "^7.16.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@types/node": "^22.0.0",
     "typescript": "^5.7.0"
   }
 }

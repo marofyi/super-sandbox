@@ -4,39 +4,6 @@ A chronological record of discoveries, gotchas, and insights from building in th
 
 ---
 
-## 2025-12: Browserless CLI Coupling Issue (TODO)
-
-**Problem**: The `@research/browserless` package exports utilities like `captureAtViewport()` and `captureResponsiveScreenshots()`, but has no standalone CLI. Currently, to capture screenshots you must go through a project's script (e.g., `pnpm --filter @research/tanstack-chat test:visual`).
-
-This creates **bad coupling**:
-- Projects depend on other projects for utility functionality
-- Can't capture screenshots for standalone HTML prototypes without a project wrapper
-- Violates separation of concerns (packages = utilities, projects = applications)
-
-**Solution (TODO)**: Add a CLI entry point to `@research/browserless`:
-
-```
-packages/browserless/
-├── bin/
-│   └── screenshot.ts    # CLI entry point
-└── package.json         # Add "bin" field
-```
-
-```json
-{
-  "bin": {
-    "browserless-screenshot": "./dist/bin/screenshot.js"
-  }
-}
-```
-
-**Usage goal**:
-```bash
-pnpm --filter @research/browserless screenshot https://example.com --output ./screenshot.jpg
-```
-
----
-
 ## 2025-12: Visual QA Utility Upgrade
 
 - `pnpm --filter @research/tanstack-chat test:visual` now requires an explicit target URL argument (`pnpm --filter @research/tanstack-chat test:visual https://your-app.com`) instead of relying on `TEST_URL`, preventing accidental captures against the wrong host.
