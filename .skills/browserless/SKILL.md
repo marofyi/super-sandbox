@@ -121,11 +121,10 @@ const result = await captureAtViewport('https://your-app.com', {
 
 ## Visual QA Script
 
-For responsive testing (requires `TEST_URL`):
+For responsive testing:
 
 ```bash
-# TEST_URL is required - no hardcoded defaults
-TEST_URL="https://your-app.com" pnpm --filter @research/tanstack-chat test:visual
+pnpm --filter @research/tanstack-chat test:visual https://your-app.com
 ```
 
 ## Screenshot Options

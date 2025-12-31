@@ -77,7 +77,7 @@ Before any commit:
 | `pnpm check` | Type-check all packages (must pass before commits) |
 | `pnpm b @research/<pkg> build` | Build a specific package |
 | `pnpm --filter @research/<pkg> start` | Run a project |
-| `pnpm --filter @research/tanstack-chat test:visual` | Capture responsive screenshots (needs `BROWSERLESS_TOKEN` and `TEST_URL`) |
+| `pnpm --filter @research/tanstack-chat test:visual <url>` | Capture responsive screenshots (needs `BROWSERLESS_TOKEN`) |
 
 ## Project Structure
 
@@ -125,7 +125,6 @@ research/
 | Variable | Description | When needed |
 |----------|-------------|-------------|
 | `BROWSERLESS_TOKEN` | Browserless BrowserQL auth token | Running visual QA or `@research/browserless` scripts |
-| `TEST_URL` | Target URL for visual QA screenshots | Running `test:visual` scripts |
 
 ### Optional (for browser automation)
 

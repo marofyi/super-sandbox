@@ -4,16 +4,11 @@
  * Uses @research/browserless to capture screenshots at various viewport sizes
  * for visual inspection of mobile responsiveness.
  *
- * Run: pnpm --filter @research/tanstack-chat test:visual
- *
- * Environment variables:
- * - TEST_URL: Target URL to capture (required)
- * - BROWSERLESS_TOKEN: Browserless API token (required)
+ * Run: pnpm --filter @research/tanstack-chat test:visual https://your-app.com
  */
 
 import {
   captureResponsiveScreenshots,
-  captureAtViewport,
   executeFlow,
   isConfigured,
   VIEWPORT_PRESETS,
@@ -24,9 +19,6 @@ import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-
-// URL must be provided via environment variable - no hardcoded defaults
-const TARGET_URL = process.env.TEST_URL;
 const OUTPUT_DIR = resolve(__dirname, "screenshots");
 
 interface ClickFlowResult {
@@ -38,7 +30,6 @@ interface ClickFlowResult {
 
 /**
  * Project-specific: Capture navigation menu open state
- * This test is specific to tanstack-chat's UI and kept here
  */
 async function captureNavigation(url: string, viewport: ViewportConfig): Promise<string> {
   console.log(`  Capturing navigation menu for ${viewport.name}...`);
@@ -74,16 +65,9 @@ async function captureNavigation(url: string, viewport: ViewportConfig): Promise
   return filePath;
 }
 
-async function main() {
+async function main(url: string) {
   console.log("Mobile Responsiveness Visual QA Test\n");
-
-  if (!TARGET_URL) {
-    console.error("ERROR: TEST_URL environment variable is required");
-    console.error("Usage: TEST_URL=https://your-app.com pnpm --filter @research/tanstack-chat test:visual");
-    process.exit(1);
-  }
-
-  console.log(`Target: ${TARGET_URL}\n`);
+  console.log(`Target: ${url}\n`);
 
   if (!isConfigured()) {
     console.error("ERROR: BROWSERLESS_TOKEN not configured");
@@ -92,7 +76,7 @@ async function main() {
 
   // Use shared utility for responsive screenshots
   console.log("Capturing responsive screenshots...");
-  const results = await captureResponsiveScreenshots(TARGET_URL, {
+  const results = await captureResponsiveScreenshots(url, {
     outputDir: OUTPUT_DIR,
     includeFullPage: true,
     onCapture: (viewport, index, total) => {
@@ -103,7 +87,7 @@ async function main() {
   // Project-specific: Navigation menu test
   console.log("\nNavigation Menu Test:");
   try {
-    await captureNavigation(TARGET_URL, VIEWPORT_PRESETS.iphone14);
+    await captureNavigation(url, VIEWPORT_PRESETS.iphone14);
     results.screenshots.push({
       viewport: VIEWPORT_PRESETS.iphone14,
       base64: "",
@@ -130,7 +114,15 @@ async function main() {
   }
 }
 
-main().catch((error) => {
+// Parse URL from command line argument
+const url = process.argv[2];
+if (!url) {
+  console.error("Usage: pnpm --filter @research/tanstack-chat test:visual <url>");
+  console.error("Example: pnpm --filter @research/tanstack-chat test:visual https://your-app.com");
+  process.exit(1);
+}
+
+main(url).catch((error) => {
   console.error("Test failed:", error);
   process.exit(1);
 });
