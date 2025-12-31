@@ -23,10 +23,12 @@ research/
 ├── packages/           # Shared utilities
 │   ├── browserless/    # BrowserQL client for HTTP-only browser automation
 │   └── openai-utils/   # OpenAI API wrapper
-├── projects/           # Research projects
+├── projects/           # Research projects and prototypes
+│   ├── index.html      # Landing page (GitHub Pages)
 │   ├── example-chat/   # CLI demo
-│   ├── example-chat-web/ # Web demo (Next.js)
-│   └── tanstack-chat/  # TanStack Start demo
+│   ├── example-chat-web/ # Web demo (Next.js → Vercel)
+│   ├── tanstack-chat/  # TanStack Start demo (Vercel)
+│   └── *.html          # Single-file prototypes (GitHub Pages)
 └── docs/               # Documentation
 ```
 
@@ -84,17 +86,21 @@ pnpm --filter @research/example-chat start
 pnpm --filter @research/example-chat-web dev
 ```
 
-### Visual QA
+### Screenshot Capture
 
-Capture responsive screenshots (requires `BROWSERLESS_TOKEN`):
+Capture screenshots using the browserless CLI (requires `BROWSERLESS_TOKEN`):
 
 ```bash
-pnpm --filter @research/tanstack-chat test:visual https://your-app.com
+# Single desktop screenshot
+pnpm --filter @research/browserless screenshot https://your-app.com
+
+# Responsive screenshots (all viewports)
+pnpm --filter @research/browserless screenshot https://your-app.com --responsive
 ```
 
 ## Environment Setup
 
-Copy `.env.example` to `.env` and add your OpenAI API key. Optional placeholders cover TanStack Chat multi-provider demos (`ANTHROPIC_API_KEY`, `GEMINI_API_KEY`), Browserless automation and visual QA (`BROWSERLESS_TOKEN`, optional `BROWSERLESS_URL`, `TEST_URL`), and deployment helpers (`VERCEL_TOKEN`, `VERCEL_ORG_ID`, `GH_TOKEN`).
+Copy `.env.example` to `.env` and add your OpenAI API key. Optional placeholders cover TanStack Chat multi-provider demos (`ANTHROPIC_API_KEY`, `GEMINI_API_KEY`), Browserless automation and visual QA (`BROWSERLESS_TOKEN`, optional `BROWSERLESS_URL`), and deployment helpers (`VERCEL_TOKEN`, `VERCEL_ORG_ID`, `GH_TOKEN`).
 
 ```bash
 cp .env.example .env
@@ -114,11 +120,28 @@ A Next.js web application that wires @research/openai-utils into a streaming cha
 
 ### tanstack-chat
 
-A TanStack Start (React Router + Nitro SSR) demo for multi-provider AI chat with model switching across OpenAI, Anthropic, Gemini, and Ollama plus approval flows for tool calls. Built with React 19, Vite, Tailwind CSS v4, lucide-react icons, and @tanstack/ai for streaming, featuring a guitar recommendation flow with interactive tool responses and slide-in navigation. Supports visual QA via `pnpm --filter @research/tanstack-chat test:visual <url>` (needs `BROWSERLESS_TOKEN`).
+A TanStack Start (React Router + Nitro SSR) demo for multi-provider AI chat with model switching across OpenAI, Anthropic, Gemini, and Ollama plus approval flows for tool calls. Built with React 19, Vite, Tailwind CSS v4, lucide-react icons, and @tanstack/ai for streaming, featuring a guitar recommendation flow with interactive tool responses and slide-in navigation.
 
 ## Deployment
 
-Web projects are deployed to Vercel. Each project gets its own Vercel Project with independent configuration.
+Projects can be deployed via two hosting options depending on complexity:
+
+| Project Type | Hosting | When to Use |
+|--------------|---------|-------------|
+| Single-file HTML prototypes | GitHub Pages | Quick experiments, tools, demos |
+| Full web apps (SSR, API routes) | Vercel | Complex state, server-side logic |
+
+### GitHub Pages (Static HTML)
+
+Single `.html` files in `projects/` are automatically deployed to GitHub Pages:
+
+- **Workflow:** `.github/workflows/deploy-github-pages.yml`
+- **Landing page:** `projects/index.html` (auto-maintained by `update-docs.yml`)
+- **Guide:** [docs/static-html-guide.md](docs/static-html-guide.md)
+
+### Vercel (Full Web Apps)
+
+Web projects with `package.json` are deployed to Vercel. Each project gets its own Vercel Project with independent configuration.
 
 See [docs/vercel-deployment.md](docs/vercel-deployment.md) for:
 
@@ -130,8 +153,9 @@ See [docs/vercel-deployment.md](docs/vercel-deployment.md) for:
 ## Configuration
 
 - GitHub Actions now auto-deploys `projects/tanstack-chat` via `.github/workflows/deploy-tanstack-chat.yml` using the Vercel project `tanstack-chat`.
-- GitHub Actions keeps documentation current on pull requests via `.github/workflows/update-docs.yml`.
+- Single-file HTML prototypes under `projects/*.html` deploy to GitHub Pages via `.github/workflows/deploy-github-pages.yml`; the landing page `projects/index.html` is refreshed by `.github/workflows/update-docs.yml`.
+- GitHub Actions keeps documentation (including `projects/index.html`) current on pull requests via `.github/workflows/update-docs.yml`.
 - The `projects/tanstack-chat/.env.example` file documents required `OPENAI_API_KEY` and optional `ANTHROPIC_API_KEY`/`GEMINI_API_KEY` values for the multi-provider chat demos.
 - Browser automation utilities in `@research/browserless` need `BROWSERLESS_TOKEN` (and optional `BROWSERLESS_URL`) for BrowserQL HTTP calls; works without WebSockets for sandboxed environments and now routes through the CC Web proxy when `HTTPS_PROXY` is present.
-- Visual QA scripts take URL as a CLI argument and require `BROWSERLESS_TOKEN`; the `@research/browserless` package provides reusable `captureResponsiveScreenshots()` and `captureAtViewport()` utilities for any project.
+- Screenshot capture is centralized in the `@research/browserless` CLI: run `pnpm --filter @research/browserless screenshot <url>` (add `--responsive` for multi-viewport). Helpers `captureResponsiveScreenshots()` and `captureAtViewport()` back the CLI and can be reused in any project.
 - Browser automation options for sandboxed environments are compared in `docs/cc-web-browser-automation.md`, highlighting Browserless BrowserQL as the HTTP-only approach that succeeds when CDP WebSockets are blocked. See `docs/cc-web-network-guide.md` for CC Web proxy/DNS behavior and a proxy-aware fetch pattern.

@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ github.head_ref || inputs.branch || github.ref }}
           fetch-depth: 0
@@ -92,10 +92,24 @@ jobs:
             - Update deployment docs if deploy process changed
             - Update package docs if package APIs changed
 
+            ### projects/index.html (Project Landing Page)
+            If projects were added, removed, or modified:
+            - Scan `projects/` for subdirectories with `package.json` (full projects)
+            - Scan `projects/` for standalone `.html` files (prototypes, excluding index.html)
+            - For each project, extract:
+              - **Title**: from package.json `name` field or HTML `<title>` tag
+              - **Description**: from package.json `description` or first paragraph in README.md
+              - **Live URL**: from existing Vercel deployments or relative path for static HTML
+              - **Type**: "Web Application", "CLI Tool", or "Prototype"
+            - Update the HTML cards in the appropriate section (Web Applications, CLI Tools, Prototypes)
+            - Preserve the existing HTML structure and Tailwind CSS classes
+            - Add new project cards following the existing card template pattern
+            - Remove cards for deleted projects
+
             ## Step 3: Commit changes
 
             If you made documentation changes, commit them:
-            git add README.md AGENTS.md docs/ && git commit -m "docs: update documentation for PR changes"
+            git add README.md AGENTS.md docs/ projects/index.html && git commit -m "docs: update documentation for PR changes"
 
             ## Rules
 

@@ -4,11 +4,24 @@ A chronological record of discoveries, gotchas, and insights from building in th
 
 ---
 
-## 2025-12: Visual QA Utility Upgrade
+## 2025-12: Browserless Standalone CLI
 
-- `pnpm --filter @research/tanstack-chat test:visual` now requires an explicit target URL argument (`pnpm --filter @research/tanstack-chat test:visual https://your-app.com`) instead of relying on `TEST_URL`, preventing accidental captures against the wrong host.
-- Shared `@research/browserless` helpers `captureResponsiveScreenshots()` and `captureAtViewport()` consolidate viewport lists and full-page options for any project; TanStack Chat consumes them and adds a project-specific nav-open capture via BrowserQL clicks.
-- Errors now surface per-viewport with counts, so CI can fail fast when Browserless responses are missing or a viewport configuration is invalid.
+The `@research/browserless` package now includes a standalone CLI for capturing screenshots without coupling to any specific project:
+
+```bash
+# Single screenshot
+pnpm --filter @research/browserless screenshot https://example.com
+
+# Responsive (all viewports)
+pnpm --filter @research/browserless screenshot https://example.com --responsive
+
+# Specific viewport preset
+pnpm --filter @research/browserless screenshot https://example.com --viewport iphone14
+```
+
+- Shared `@research/browserless` helpers `captureResponsiveScreenshots()` and `captureAtViewport()` consolidate viewport lists and full-page options for any project.
+- Errors surface per-viewport with counts, so CI can fail fast when Browserless responses are missing or a viewport configuration is invalid.
+- Static HTML prototypes in `projects/*.html` auto-deploy to GitHub Pages via `.github/workflows/deploy-github-pages.yml`; keep everything in one file and let `update-docs.yml` refresh `projects/index.html`.
 
 ---
 
@@ -70,9 +83,9 @@ This led to creating `@research/browserless` package.
 
 ## 2024-12: Visual QA with Browserless
 
-### Workflow: TanStack Chat responsive screenshots
+### Responsive screenshot capture
 
-TanStack Chat ships a BrowserQL-driven visual QA script to cover mobile, tablet, and desktop breakpoints over pure HTTP. Run `pnpm --filter @research/tanstack-chat test:visual <url>` with `BROWSERLESS_TOKEN`; pass the target deployment URL explicitly and reuse `BROWSERLESS_URL` when pointing at a custom Browserless host. Screenshots save as JPEGs in `projects/tanstack-chat/tests/visual/screenshots/` for manual inspection.
+The `@research/browserless` package provides BrowserQL-driven screenshot utilities for responsive visual QA. Use the standalone CLI (`pnpm --filter @research/browserless screenshot <url> --responsive`) or the programmatic API (`captureResponsiveScreenshots()`) to capture mobile, tablet, and desktop breakpoints over pure HTTP. Requires `BROWSERLESS_TOKEN`; optionally set `BROWSERLESS_URL` for a custom Browserless host. Screenshots save as JPEGs to the specified output directory.
 
 ---
 
