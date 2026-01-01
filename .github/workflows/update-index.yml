@@ -138,8 +138,6 @@ jobs:
         run: rm -f AGENTS.override.md
 
       - name: Push changes
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Check if there are any commits to push
           if [ -z "$(git log origin/${{ github.ref_name }}..HEAD 2>/dev/null)" ]; then
@@ -149,12 +147,12 @@ jobs:
 
           BRANCH="${{ steps.pr-branch.outputs.branch || github.head_ref || github.ref_name }}"
 
-          # If triggered manually on main, create a new branch and open a PR
+          # If triggered manually on main, create a new branch
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "$BRANCH" = "main" ]; then
             NEW_BRANCH="docs/update-index-$(date +%Y%m%d-%H%M%S)"
             git checkout -b "$NEW_BRANCH"
             git push -u origin "$NEW_BRANCH"
-            gh pr create --title "docs: update projects index" --body "Automated projects index update triggered via workflow dispatch."
+            echo "::notice::Branch $NEW_BRANCH created. Create PR at: https://github.com/${{ github.repository }}/pull/new/$NEW_BRANCH"
           else
             git push origin HEAD:${BRANCH}
           fi
