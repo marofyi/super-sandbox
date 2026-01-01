@@ -164,7 +164,7 @@
         decrypt(encrypted, password);
 
         // Success - switch to viewer
-        history.replaceState({}, '', '?g=' + gistId);
+        try { history.replaceState({}, '', '?g=' + gistId); } catch(e) {}
         document.getElementById('setup').style.display = 'none';
         document.getElementById('viewer').style.display = 'block';
 
