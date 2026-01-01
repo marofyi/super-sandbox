@@ -162,8 +162,8 @@ Start here for navigation. README is the homepage for humans; AGENTS is the home
 |----------|-------------|
 | [AGENTS.md](./AGENTS.md) | Instructions for AI coding agents |
 | [CONTRIBUTING.md](./CONTRIBUTING.md) | Code style and git workflow |
+| [CHANGELOG.md](./CHANGELOG.md) | Notable changes, releases, and discoveries |
 | [docs/browserless.md](./docs/browserless.md) | Browserless browser automation guide |
 | [docs/cc-web.md](./docs/cc-web.md) | Claude Code Web guide (setup, network, browser automation) |
 | [docs/vercel-deployment.md](./docs/vercel-deployment.md) | Vercel deployment guide |
 | [docs/static-html-guide.md](./docs/static-html-guide.md) | Single-file prototype best practices |
-| [docs/learnings-log.md](./docs/learnings-log.md) | Historical discoveries and gotchas |

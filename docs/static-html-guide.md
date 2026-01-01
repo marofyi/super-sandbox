@@ -218,4 +218,4 @@ Move from static HTML to a full project in `projects/<name>/` when you need:
 
 - [README.md](../README.md) - Project overview and directory structure
 - [docs/vercel-deployment.md](./vercel-deployment.md) - When a full Vercel app is required
-- [docs/learnings-log.md](./learnings-log.md) - Prior lessons from static HTML deployments
+- [CHANGELOG.md](../CHANGELOG.md) - Recent deployment and documentation changes
