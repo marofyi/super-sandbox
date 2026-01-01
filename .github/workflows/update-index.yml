@@ -12,6 +12,10 @@ on:
   # Manual trigger via Actions tab
   workflow_dispatch:
     inputs:
+      pr_number:
+        description: 'PR number to analyze (required when running on main)'
+        required: false
+        type: number
       additional_instructions:
         description: 'Additional instructions for the agent'
         required: false
@@ -46,6 +50,21 @@ jobs:
             });
             core.setOutput('branch', pr.data.head.ref);
 
+      - name: Get PR info (for workflow_dispatch with pr_number)
+        id: pr-info
+        if: github.event_name == 'workflow_dispatch' && inputs.pr_number
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: ${{ inputs.pr_number || 0 }}
+            });
+            core.setOutput('branch', pr.data.head.ref);
+            core.setOutput('base', pr.data.base.ref);
+            core.setOutput('head_sha', pr.data.head.sha);
+
       - name: Extract instructions from comment
         id: comment-instructions
         if: github.event_name == 'issue_comment'
@@ -60,7 +79,7 @@ jobs:
       - name: Checkout branch
         uses: actions/checkout@v5
         with:
-          ref: ${{ steps.pr-branch.outputs.branch || github.head_ref || github.ref }}
+          ref: ${{ steps.pr-info.outputs.head_sha || steps.pr-branch.outputs.branch || github.head_ref || github.ref }}
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -87,6 +106,7 @@ jobs:
         uses: openai/codex-action@v1
         env:
           ADDITIONAL_INSTRUCTIONS: ${{ steps.comment-instructions.outputs.instructions || inputs.additional_instructions || '' }}
+          BASE_REF: ${{ steps.pr-info.outputs.base || 'main' }}
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           sandbox: workspace-write
@@ -101,7 +121,7 @@ jobs:
 
             ## Step 1: Analyze project changes
 
-            Run: git diff origin/main...HEAD --name-only -- projects/
+            Run: git diff origin/${{ env.BASE_REF }}...HEAD --name-only -- projects/
 
             Understand what projects were added, modified, or removed.
 
@@ -145,9 +165,9 @@ jobs:
             exit 0
           fi
 
-          BRANCH="${{ steps.pr-branch.outputs.branch || github.head_ref || github.ref_name }}"
+          BRANCH="${{ steps.pr-info.outputs.branch || steps.pr-branch.outputs.branch || github.head_ref || github.ref_name }}"
 
-          # If triggered manually on main, create a new branch
+          # If triggered manually on main without pr_number, create a new branch
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "$BRANCH" = "main" ]; then
             NEW_BRANCH="docs/update-index-$(date +%Y%m%d-%H%M%S)"
             git checkout -b "$NEW_BRANCH"
