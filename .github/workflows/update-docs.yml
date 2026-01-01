@@ -65,7 +65,6 @@ jobs:
             | README.md | Project overview for humans | Structure, commands, env vars, getting started |
             | CONTRIBUTING.md | How to contribute code | Code style, git workflow, PR process |
             | docs/*.md | Deep-dive guides | Deployment, CC Web, browser automation |
-            | .skills/*/SKILL.md | Agent capabilities | Step-by-step procedures for specific tasks |
 
             ## Step 1: Analyze changes
 
@@ -89,11 +88,6 @@ jobs:
             - Update workflow instructions if agent processes changed
             - Update boundaries section if new rules apply
             - Update completion criteria if requirements changed
-            - **Maintain Agent Skills table**: If skills in `.skills/` were added, removed, or modified:
-              - Read each `.skills/*/SKILL.md` file to extract `name`, `description`, and `allowed-tools` from YAML frontmatter
-              - Update the "Agent Skills" table to reflect current skills
-              - Keep table sorted alphabetically by skill name
-              - Link each skill name to its SKILL.md file
             - Do NOT put project structure, commands, or env vars here (those go in README.md)
 
             ### CONTRIBUTING.md (Code Style)
@@ -115,7 +109,7 @@ jobs:
             ## Step 3: Commit changes
 
             If you made documentation changes, commit them:
-            git add README.md AGENTS.md CONTRIBUTING.md docs/ .skills/ && git commit -m "docs: update documentation for PR changes"
+            git add README.md AGENTS.md CONTRIBUTING.md docs/ && git commit -m "docs: update documentation for PR changes"
 
             ## Rules
 
