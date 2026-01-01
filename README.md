@@ -19,7 +19,6 @@ pnpm b @research/openai-utils build
 
 ```
 research/
-├── .skills/            # Agent Skills (cross-platform capabilities)
 ├── packages/           # Shared utilities
 │   ├── browserless/    # BrowserQL client for HTTP-only browser automation
 │   └── openai-utils/   # OpenAI API wrapper
@@ -33,13 +32,6 @@ research/
 ├── AGENTS.md           # AI agent instructions
 └── CONTRIBUTING.md     # Code style and git workflow
 ```
-
-## Agent Skills
-
-This repo exposes cross-platform agent capabilities via `.skills/` using the Agent Skills open standard. Each skill includes a `SKILL.md` with usage docs and allowed tools for sandboxed environments:
-
-- `.skills/browserless` — Browserless BrowserQL automation for scraping, screenshots, and form flows over HTTP-only requests.
-- `.skills/vercel-deploy` — Vercel deployment playbook covering CLI setup, env vars, and per-project URLs.
 
 ## Shared Packages
 
@@ -168,6 +160,7 @@ See [docs/vercel-deployment.md](docs/vercel-deployment.md) for:
 |----------|-------------|
 | [AGENTS.md](./AGENTS.md) | Instructions for AI coding agents |
 | [CONTRIBUTING.md](./CONTRIBUTING.md) | Code style and git workflow |
+| [docs/browserless.md](./docs/browserless.md) | Browserless browser automation guide |
 | [docs/cc-web.md](./docs/cc-web.md) | Claude Code Web guide (setup, network, browser automation) |
 | [docs/vercel-deployment.md](./docs/vercel-deployment.md) | Vercel deployment guide |
 | [docs/static-html-guide.md](./docs/static-html-guide.md) | Single-file prototype best practices |
