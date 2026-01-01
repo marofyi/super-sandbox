@@ -55,6 +55,18 @@ jobs:
 
             Task: Keep documentation up to date based on pull request changes.
 
+            ## Documentation Structure
+
+            This project separates agent behavior from project knowledge. Route content correctly:
+
+            | Document | Purpose | Content Type |
+            |----------|---------|--------------|
+            | AGENTS.md | How agents should behave | Workflow rules, boundaries, completion criteria |
+            | README.md | Project overview for humans | Structure, commands, env vars, getting started |
+            | CONTRIBUTING.md | How to contribute code | Code style, git workflow, PR process |
+            | docs/*.md | Deep-dive guides | Deployment, CC Web, browser automation |
+            | .skills/*/SKILL.md | Agent capabilities | Step-by-step procedures for specific tasks |
+
             ## Step 1: Analyze changes
 
             Run: git diff origin/main...HEAD --name-only
@@ -63,23 +75,31 @@ jobs:
 
             ## Step 2: Update relevant documentation
 
-            Based on the changes, update the appropriate docs:
+            Based on the changes, update the appropriate docs following the structure above:
 
-            ### README.md
+            ### README.md (Project Knowledge)
             - Update project/package descriptions if they changed
             - Add new projects or packages if created
+            - Update project structure section if directories added/removed
+            - Update commands section if build/test commands changed
+            - Update environment setup if new env vars required
             - Keep descriptions to 2-3 sentences with key technologies
 
-            ### AGENTS.md
-            - Update commands table if build/test commands changed
-            - Update project structure if directories added/removed
-            - Update environment variables if new ones required
-            - Update workflow instructions if processes changed
+            ### AGENTS.md (Agent Behavior)
+            - Update workflow instructions if agent processes changed
+            - Update boundaries section if new rules apply
+            - Update completion criteria if requirements changed
             - **Maintain Agent Skills table**: If skills in `.skills/` were added, removed, or modified:
               - Read each `.skills/*/SKILL.md` file to extract `name`, `description`, and `allowed-tools` from YAML frontmatter
               - Update the "Agent Skills" table to reflect current skills
               - Keep table sorted alphabetically by skill name
               - Link each skill name to its SKILL.md file
+            - Do NOT put project structure, commands, or env vars here (those go in README.md)
+
+            ### CONTRIBUTING.md (Code Style)
+            - Update code style guidelines if conventions changed
+            - Update git workflow instructions if process changed
+            - Update PR process if requirements changed
 
             ### docs/learnings-log.md
             - Add new entries for significant discoveries or gotchas found during the PR
@@ -109,7 +129,7 @@ jobs:
             ## Step 3: Commit changes
 
             If you made documentation changes, commit them:
-            git add README.md AGENTS.md docs/ projects/index.html && git commit -m "docs: update documentation for PR changes"
+            git add README.md AGENTS.md CONTRIBUTING.md docs/ projects/index.html && git commit -m "docs: update documentation for PR changes"
 
             ## Rules
 
@@ -118,6 +138,7 @@ jobs:
             - Only update docs that are affected by the PR changes
             - Skip if documentation is already accurate
             - Do not add speculative or placeholder content
+            - Follow the documentation structure: agent behavior in AGENTS.md, project knowledge in README.md
 
       - name: Cleanup override file
         run: rm -f AGENTS.override.md
