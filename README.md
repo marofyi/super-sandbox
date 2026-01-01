@@ -29,7 +29,9 @@ research/
 │   ├── example-chat-web/ # Web demo (Next.js → Vercel)
 │   ├── tanstack-chat/  # TanStack Start demo (Vercel)
 │   └── *.html          # Single-file prototypes (GitHub Pages)
-└── docs/               # Documentation
+├── docs/               # Documentation
+├── AGENTS.md           # AI agent instructions
+└── CONTRIBUTING.md     # Code style and git workflow
 ```
 
 ## Agent Skills
@@ -159,3 +161,15 @@ See [docs/vercel-deployment.md](docs/vercel-deployment.md) for:
 - Browser automation utilities in `@research/browserless` need `BROWSERLESS_TOKEN` (and optional `BROWSERLESS_URL`) for BrowserQL HTTP calls; works without WebSockets for sandboxed environments and now routes through the CC Web proxy when `HTTPS_PROXY` is present.
 - Screenshot capture is centralized in the `@research/browserless` CLI: run `pnpm --filter @research/browserless screenshot <url>` (add `--responsive` for multi-viewport). Helpers `captureResponsiveScreenshots()` and `captureAtViewport()` back the CLI and can be reused in any project.
 - Browser automation options for sandboxed environments are compared in `docs/cc-web-browser-automation.md`, highlighting Browserless BrowserQL as the HTTP-only approach that succeeds when CDP WebSockets are blocked. See `docs/cc-web-network-guide.md` for CC Web proxy/DNS behavior and a proxy-aware fetch pattern.
+
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [AGENTS.md](./AGENTS.md) | Instructions for AI coding agents |
+| [CONTRIBUTING.md](./CONTRIBUTING.md) | Code style and git workflow |
+| [docs/vercel-deployment.md](./docs/vercel-deployment.md) | Vercel deployment guide |
+| [docs/cc-web-setup.md](./docs/cc-web-setup.md) | Claude Code Web session setup |
+| [docs/cc-web-network-guide.md](./docs/cc-web-network-guide.md) | CC Web proxy/DNS behavior |
+| [docs/cc-web-browser-automation.md](./docs/cc-web-browser-automation.md) | HTTP-only browser automation |
+| [docs/static-html-guide.md](./docs/static-html-guide.md) | Single-file prototype best practices |
