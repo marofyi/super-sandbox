@@ -124,8 +124,9 @@
         }
         dot.className = 'dot';
       } catch (e) {
+        console.error('Render error:', e);
         dot.className = 'dot err';
-        status.textContent = 'Error: ' + e.message;
+        status.textContent = 'Error: ' + (e.message || String(e));
       }
     }
 
@@ -171,7 +172,8 @@
         fetchAndRender();
         interval = setInterval(fetchAndRender, 3000);
       } catch (e) {
-        errDiv.textContent = e.message;
+        console.error('Start error:', e);
+        errDiv.textContent = e.message || String(e);
         errDiv.style.display = 'block';
         btn.disabled = false;
         btn.textContent = 'Decrypt & Watch';
