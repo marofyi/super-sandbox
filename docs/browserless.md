@@ -159,3 +159,9 @@ await screenshotToFile({
 - [BrowserQL Docs](https://docs.browserless.io/browserql-interactions)
 - [Package Source](../packages/browserless/src/browserless-client.ts)
 - [CC Web Guide](./cc-web.md)
+
+## See Also
+
+- [README.md](../README.md) - Project overview and entry point for humans
+- [docs/cc-web.md](./cc-web.md) - Proxy-aware networking for sandboxed environments
+- [docs/learnings-log.md](./learnings-log.md) - Historical context for automation choices

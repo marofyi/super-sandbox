@@ -72,6 +72,35 @@ Is it a DETAILED GUIDE for a specific topic?
 2. **Agent behavior vs project knowledge** - AGENTS.md stays lean
 3. **README is the entry point** - Links to everything else
 
+### Cross-References (Navigation)
+
+Think of documentation like a website: clear entry points and internal links that guide readers to what they need.
+
+**Entry Points:**
+- `README.md` — Homepage for humans (project overview, setup, links to everything)
+- `AGENTS.md` — Homepage for AI agents (behavior rules, References table)
+
+**Every doc should:**
+1. **Link to related docs** — Add a "See Also" or "Related" section at the bottom
+2. **Link upward** — Reference parent/overview docs (e.g., `docs/*.md` should link back to README)
+3. **Link sideways** — Connect docs that are often used together (e.g., browserless ↔ cc-web)
+4. **Nudge the reader** — Anticipate what they'll need next and provide the path
+
+**Cross-reference patterns:**
+```markdown
+## See Also
+- [README.md](../README.md) - Project overview
+- [Related Topic](./related-topic.md) - When you also need X
+```
+
+**When adding or updating docs:**
+- Check if new content should link to existing docs
+- Check if existing docs should link to new content
+- Update the References table in AGENTS.md if adding a new guide
+- Update the Documentation table in README.md for new docs
+
+**Navigation principle:** A reader should never hit a dead end. From any doc, they should be able to find their way to related information or back to an entry point.
+
 ## Workflow: Plan → Build → Test
 
 **This project enforces a strict human-in-the-loop workflow.** Do not jump straight to implementation.
@@ -216,3 +245,4 @@ The `.github/workflows/update-docs.yml` workflow automatically updates documenta
 | [docs/cc-web.md](./docs/cc-web.md) | Network constraints, proxy setup | Working in Claude Code Web or any sandboxed environment |
 | [docs/static-html-guide.md](./docs/static-html-guide.md) | Single-file prototypes, GitHub Pages | Creating standalone HTML tools or demos in projects/ |
 | [docs/vercel-deployment.md](./docs/vercel-deployment.md) | CLI commands, env vars, GitHub Actions | Deploying to Vercel, adding env vars, or setting up GitHub Actions for deploy |
+| [docs/learnings-log.md](./docs/learnings-log.md) | Historical discoveries, failures, and fixes | Investigating regressions or repeating past automation/deploy tasks |

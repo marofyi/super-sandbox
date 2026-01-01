@@ -112,6 +112,10 @@ jobs:
             | CONTRIBUTING.md | How to contribute code | Code style, git workflow, PR process |
             | docs/*.md | Deep-dive guides | Deployment, CC Web, browser automation |
 
+            **Entry points:** README.md is the homepage for humans; AGENTS.md is the homepage for AI agents.
+
+            **Navigation:** Docs should link to each other like pages on a website. No dead ends.
+
             ## Step 1: Analyze changes
 
             Run: git diff origin/main...HEAD --name-only
@@ -152,6 +156,43 @@ jobs:
             - Update deployment docs if deploy process changed
             - Update package docs if package APIs changed
 
+            ## Step 2.5: Maintain Cross-References
+
+            Documentation should work like a website with clear navigation. After updating any doc:
+
+            ### Check and update links
+
+            1. **Add "See Also" sections** - Every doc in `docs/` should end with related links:
+               ```markdown
+               ## See Also
+               - [README.md](../README.md) - Project overview
+               - [Related Doc](./related.md) - When you also need X
+               ```
+
+            2. **Link sideways to related docs** - Connect docs often used together:
+               - `browserless.md` ↔ `cc-web.md` (browser automation in sandboxed env)
+               - `static-html-guide.md` ↔ `vercel-deployment.md` (deployment options)
+               - New feature docs → existing docs they depend on
+
+            3. **Update entry point indexes** when adding new docs:
+               - Add to `README.md` Documentation table
+               - Add to `AGENTS.md` References table (if agents need it)
+
+            4. **Anticipate reader needs** - If someone reading doc A will likely need doc B next, add a link
+
+            ### Cross-reference checklist
+
+            For each doc you modify or create:
+            - [ ] Does it link back to README.md?
+            - [ ] Does it link to related docs in `docs/`?
+            - [ ] Is it listed in README.md's Documentation table?
+            - [ ] If agent-relevant, is it in AGENTS.md's References table?
+            - [ ] Do related existing docs link to this new/updated doc?
+
+            ### Navigation principle
+
+            A reader should never hit a dead end. From any doc, they should find their way to related information or back to an entry point.
+
             ## Step 3: Commit changes
 
             If you made documentation changes, commit them:
@@ -165,6 +206,8 @@ jobs:
             - Skip if documentation is already accurate
             - Do not add speculative or placeholder content
             - Follow the documentation structure: agent behavior in AGENTS.md, project knowledge in README.md
+            - Maintain cross-references: every doc should link to related docs and back to entry points
+            - No orphan docs: new docs must be linked from README.md and/or AGENTS.md
 
       - name: Cleanup override file
         run: rm -f AGENTS.override.md
