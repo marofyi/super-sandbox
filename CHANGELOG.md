@@ -8,6 +8,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## 2026-01
 
+### Fixed
+
+- GitHub CLI (`gh`) workflow commands failing in CC Web with "no known GitHub host" error
+  - Root cause: Git remotes point to local proxy (`127.0.0.1:50619`), not github.com
+  - `gh auth status` works (uses `GH_TOKEN`), but `gh workflow` needs a "known host" in config
+  - Old/corrupted configs trigger migration requiring `dbus-launch` (unavailable in sandbox)
+  - Solution: Create fresh empty config before using gh:
+    ```bash
+    rm -rf ~/.config/gh && mkdir -p ~/.config/gh && touch ~/.config/gh/hosts.yml
+    ```
+  - Added to `.claude/scripts/setup-web-session.sh` for automatic setup
+
 ### Documentation
 
 - Introduced documentation navigation principle: docs now work like a website with clear entry points
