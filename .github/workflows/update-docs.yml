@@ -15,10 +15,10 @@ on:
         required: false
         type: number
       commits_back:
-        description: 'Number of recent commits to analyze when no PR specified (default: 10)'
+        description: 'Number of recent commits to analyze when no PR specified (default: 5)'
         required: false
         type: number
-        default: 10
+        default: 5
       additional_instructions:
         description: 'Additional instructions for the agent'
         required: false
@@ -110,7 +110,7 @@ jobs:
         env:
           ADDITIONAL_INSTRUCTIONS: ${{ steps.comment-instructions.outputs.instructions || inputs.additional_instructions || '' }}
           BASE_REF: ${{ steps.pr-info.outputs.base || 'main' }}
-          COMMITS_BACK: ${{ inputs.commits_back || 10 }}
+          COMMITS_BACK: ${{ inputs.commits_back || 5 }}
           HAS_PR_CONTEXT: ${{ steps.pr-info.outputs.head_sha != '' || github.event_name == 'pull_request' || github.event_name == 'issue_comment' }}
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
