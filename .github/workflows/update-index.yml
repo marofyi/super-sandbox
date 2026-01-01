@@ -5,7 +5,7 @@ on:
   pull_request:
     types: [opened, synchronize]
     paths:
-      - 'projects/**/package.json'
+      - 'projects/**'
   # Manual trigger via PR comment: /update-index [optional instructions]
   issue_comment:
     types: [created]
@@ -93,7 +93,7 @@ jobs:
           prompt: |
             IMPORTANT: Execute all steps directly. Do not ask for confirmation or approval.
 
-            Task: Update projects/index.html to reflect changes in the projects folder.
+            Task: Update index.html to reflect changes in the projects folder.
 
             ## Additional Instructions
 
@@ -105,7 +105,7 @@ jobs:
 
             Understand what projects were added, modified, or removed.
 
-            ## Step 2: Update projects/index.html
+            ## Step 2: Update index.html
 
             Scan the projects folder and update the index.html landing page:
 
@@ -124,7 +124,7 @@ jobs:
             ## Step 3: Commit changes
 
             If you made changes, commit them:
-            git add projects/index.html && git commit -m "docs: update projects index"
+            git add index.html && git commit -m "docs: update projects index"
 
             ## Rules
 
