@@ -183,9 +183,13 @@ The `.github/workflows/update-docs.yml` workflow automatically updates documenta
 
 ## References
 
-- [README.md](./README.md) - Project structure, commands, environment setup
-- [CONTRIBUTING.md](./CONTRIBUTING.md) - Code style and git workflow
-- [docs/browserless.md](./docs/browserless.md) - Browser automation guide
-- [docs/cc-web.md](./docs/cc-web.md) - Claude Code Web guide
-- [docs/vercel-deployment.md](./docs/vercel-deployment.md) - Deployment guide
-- [.github/workflows/update-docs.yml](./.github/workflows/update-docs.yml) - Automated documentation workflow (keep in sync with Documentation Structure)
+**Read before acting.** These docs contain critical context. Skipping them causes errors.
+
+| Document | Read Before |
+|----------|-------------|
+| [README.md](./README.md) | Running commands, understanding project structure, setting up environment |
+| [CONTRIBUTING.md](./CONTRIBUTING.md) | Writing or modifying any code in this repository |
+| [docs/browserless.md](./docs/browserless.md) | Any browser automation, screenshots, scraping, or form interaction |
+| [docs/cc-web.md](./docs/cc-web.md) | Working in Claude Code Web or any sandboxed environment |
+| [docs/vercel-deployment.md](./docs/vercel-deployment.md) | Deploying to Vercel, adding env vars, or setting up GitHub Actions for deploy |
+| [.github/workflows/update-docs.yml](./.github/workflows/update-docs.yml) | Modifying AGENTS.md Documentation Structure (keep in sync) |
