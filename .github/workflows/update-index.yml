@@ -1,0 +1,104 @@
+name: Update Projects Index
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    paths:
+      - 'projects/**'
+      - '!projects/index.html'
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to update index on (defaults to current branch)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  update-index:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.head_ref || inputs.branch || github.ref }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create AGENTS.override.md for automated execution
+        run: |
+          cat > AGENTS.override.md << 'EOF'
+          # Automated Workflow Override
+
+          This is an automated CI/CD workflow. Execute all instructions directly:
+          - Do NOT ask for confirmation or approval
+          - Do NOT output "Shall I proceed?" or similar questions
+          - Do NOT wait for human input
+          - Complete the task autonomously and exit
+
+          Follow the prompt instructions exactly. Execute all steps immediately.
+          EOF
+
+      - name: Update projects index with Codex
+        uses: openai/codex-action@v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          sandbox: workspace-write
+          prompt: |
+            IMPORTANT: Execute all steps directly. Do not ask for confirmation or approval.
+
+            Task: Update projects/index.html to reflect changes in the projects folder.
+
+            ## Step 1: Analyze project changes
+
+            Run: git diff origin/main...HEAD --name-only -- projects/
+
+            Understand what projects were added, modified, or removed.
+
+            ## Step 2: Update projects/index.html
+
+            Scan the projects folder and update the index.html landing page:
+
+            - Scan `projects/` for subdirectories with `package.json` (full projects)
+            - Scan `projects/` for standalone `.html` files (prototypes, excluding index.html)
+            - For each project, extract:
+              - **Title**: from package.json `name` field or HTML `<title>` tag
+              - **Description**: from package.json `description` or first paragraph in README.md
+              - **Live URL**: from existing Vercel deployments or relative path for static HTML
+              - **Type**: "Web Application", "CLI Tool", or "Prototype"
+            - Update the HTML cards in the appropriate section (Web Applications, CLI Tools, Prototypes)
+            - Preserve the existing HTML structure and Tailwind CSS classes
+            - Add new project cards following the existing card template pattern
+            - Remove cards for deleted projects
+
+            ## Step 3: Commit changes
+
+            If you made changes, commit them:
+            git add projects/index.html && git commit -m "docs: update projects index"
+
+            ## Rules
+
+            - Be concise and factual
+            - Preserve existing HTML structure and styling
+            - Only update if projects were actually added, removed, or modified
+            - Skip if index.html is already accurate
+            - Do not add speculative or placeholder content
+
+      - name: Cleanup override file
+        run: rm -f AGENTS.override.md
+
+      - name: Push changes
+        run: |
+          BRANCH="${{ github.head_ref || inputs.branch || github.ref_name }}"
+          if [ -n "$(git log origin/${BRANCH}..HEAD 2>/dev/null)" ]; then
+            git push origin HEAD:${BRANCH}
+          fi
