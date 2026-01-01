@@ -213,3 +213,9 @@ Move from static HTML to a full project in `projects/<name>/` when you need:
 - [Alpine.js](https://alpinejs.dev/)
 - [htmx](https://htmx.org/)
 - [esm.sh](https://esm.sh/) — ESM CDN for npm packages
+
+## See Also
+
+- [README.md](../README.md) - Project overview and directory structure
+- [docs/vercel-deployment.md](./vercel-deployment.md) - When a full Vercel app is required
+- [docs/learnings-log.md](./learnings-log.md) - Prior lessons from static HTML deployments

@@ -119,5 +119,7 @@ These are configured automatically when using the CLI:
 
 ## See Also
 
+- [README.md](../README.md) - Project overview and entry point for humans
+- [docs/static-html-guide.md](./static-html-guide.md) - When a single HTML file is sufficient
+- [docs/learnings-log.md](./learnings-log.md) - CLI vs API quirks and deployment history
 - [Vercel Monorepos](https://vercel.com/docs/monorepos)
-- [Learnings Log](./learnings-log.md) - CLI vs API quirks

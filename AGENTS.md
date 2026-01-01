@@ -245,3 +245,4 @@ The `.github/workflows/update-docs.yml` workflow automatically updates documenta
 | [docs/cc-web.md](./docs/cc-web.md) | Network constraints, proxy setup | Working in Claude Code Web or any sandboxed environment |
 | [docs/static-html-guide.md](./docs/static-html-guide.md) | Single-file prototypes, GitHub Pages | Creating standalone HTML tools or demos in projects/ |
 | [docs/vercel-deployment.md](./docs/vercel-deployment.md) | CLI commands, env vars, GitHub Actions | Deploying to Vercel, adding env vars, or setting up GitHub Actions for deploy |
+| [docs/learnings-log.md](./docs/learnings-log.md) | Historical discoveries, failures, and fixes | Investigating regressions or repeating past automation/deploy tasks |

@@ -156,6 +156,8 @@ See [docs/vercel-deployment.md](docs/vercel-deployment.md) for:
 
 ## Documentation
 
+Start here for navigation. README is the homepage for humans; AGENTS is the homepage for AI agents. Each deep-dive doc links back and sideways to related guides.
+
 | Document | Description |
 |----------|-------------|
 | [AGENTS.md](./AGENTS.md) | Instructions for AI coding agents |
@@ -164,3 +166,4 @@ See [docs/vercel-deployment.md](docs/vercel-deployment.md) for:
 | [docs/cc-web.md](./docs/cc-web.md) | Claude Code Web guide (setup, network, browser automation) |
 | [docs/vercel-deployment.md](./docs/vercel-deployment.md) | Vercel deployment guide |
 | [docs/static-html-guide.md](./docs/static-html-guide.md) | Single-file prototype best practices |
+| [docs/learnings-log.md](./docs/learnings-log.md) | Historical discoveries and gotchas |

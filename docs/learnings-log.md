@@ -4,6 +4,13 @@ A chronological record of discoveries, gotchas, and insights from building in th
 
 ---
 
+## 2026-01: Documentation Navigation Principle
+
+- Docs now work like a website: `README.md` is the homepage for humans and `AGENTS.md` is the homepage for AI agents.
+- Every doc should include a "See Also" section that links back to entry points and related guides so readers never hit a dead end.
+
+---
+
 ## 2025-12: Browserless Standalone CLI
 
 The `@research/browserless` package now includes a standalone CLI for capturing screenshots without coupling to any specific project:
@@ -169,3 +176,9 @@ mutation { screenshot(type: jpeg) { base64 } }
 - [Browserless BrowserQL Docs](https://docs.browserless.io/browserql-interactions)
 - [Steel Browser](https://github.com/steel-dev/steel-browser)
 - [Vercel Monorepos](https://vercel.com/docs/monorepos)
+
+## See Also
+
+- [README.md](../README.md) - Entry point for project overview and navigation
+- [AGENTS.md](../AGENTS.md) - Agent workflow and documentation structure
+- [docs/cc-web.md](./cc-web.md) - Sandbox networking and automation guidance
