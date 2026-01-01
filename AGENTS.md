@@ -190,5 +190,5 @@ A task is only complete when:
 
 - [README.md](./README.md) - Project structure, commands, environment setup
 - [CONTRIBUTING.md](./CONTRIBUTING.md) - Code style and git workflow
-- [docs/cc-web-setup.md](./docs/cc-web-setup.md) - Claude Code Web sessions
+- [docs/cc-web.md](./docs/cc-web.md) - Claude Code Web guide
 - [docs/vercel-deployment.md](./docs/vercel-deployment.md) - Deployment guide

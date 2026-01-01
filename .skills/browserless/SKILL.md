@@ -164,4 +164,4 @@ await screenshotToFile({
 
 - [BrowserQL Docs](https://docs.browserless.io/browserql-interactions)
 - [Package Source](../packages/browserless/src/browserless-client.ts)
-- [CC Web Browser Automation Guide](../docs/cc-web-browser-automation.md)
+- [CC Web Guide](../docs/cc-web.md)
