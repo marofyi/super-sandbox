@@ -25,6 +25,13 @@ pnpm --filter @research/browserless screenshot https://example.com --viewport ip
 
 ---
 
+## 2025-02: CC Web Guide Consolidation
+
+- Replaced split CC Web docs (`cc-web-setup`, `cc-web-network-guide`, `cc-web-browser-automation`) with a single `docs/cc-web.md` covering session setup, proxy-aware `undici` fetch, and Browserless BrowserQL usage for HTTP-only automation.
+- Archived the Steel/Stagehand Cloud Run playbook (`docs/archive/browser-automation.md`) because WebSocket-based CDP remains blocked in CC Web; Browserless BrowserQL is the supported path.
+
+---
+
 ## 2024-12: Claude Code Web Network Architecture
 
 ### Discovery: Node.js fetch fails, curl works
