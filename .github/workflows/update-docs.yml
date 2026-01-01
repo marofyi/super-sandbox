@@ -1,13 +1,9 @@
 name: Update Docs
 
 on:
-  # Auto-trigger when new packages, projects, or docs are added
+  # Auto-trigger on all PRs
   pull_request:
     types: [opened, synchronize]
-    paths:
-      - 'packages/**/package.json'
-      - 'projects/**/package.json'
-      - 'docs/**'
   # Manual trigger via PR comment: /update-docs [optional instructions]
   issue_comment:
     types: [created]
