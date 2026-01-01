@@ -1,15 +1,23 @@
 name: Update Projects Index
 
 on:
+  # Auto-trigger when new projects are added
   pull_request:
     types: [opened, synchronize]
     paths:
-      - 'projects/**'
-      - '!projects/index.html'
+      - 'projects/**/package.json'
+  # Manual trigger via PR comment: /update-index [optional instructions]
+  issue_comment:
+    types: [created]
+  # Manual trigger via Actions tab
   workflow_dispatch:
     inputs:
       branch:
-        description: 'Branch to update index on (defaults to current branch)'
+        description: 'Branch to update index on'
+        required: false
+        type: string
+      additional_instructions:
+        description: 'Additional instructions for the agent'
         required: false
         type: string
 
@@ -21,11 +29,42 @@ permissions:
 jobs:
   update-index:
     runs-on: ubuntu-latest
+    # Run if: PR with matching paths, OR /update-index comment on PR, OR manual dispatch
+    if: |
+      github.event_name == 'pull_request' ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request &&
+       startsWith(github.event.comment.body, '/update-index'))
     steps:
+      - name: Get PR branch (for comment trigger)
+        id: pr-branch
+        if: github.event_name == 'issue_comment'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            core.setOutput('branch', pr.data.head.ref);
+
+      - name: Extract instructions from comment
+        id: comment-instructions
+        if: github.event_name == 'issue_comment'
+        run: |
+          COMMENT="${{ github.event.comment.body }}"
+          INSTRUCTIONS="${COMMENT#/update-index}"
+          INSTRUCTIONS="${INSTRUCTIONS#"${INSTRUCTIONS%%[![:space:]]*}"}"
+          echo "instructions<<EOF" >> $GITHUB_OUTPUT
+          echo "$INSTRUCTIONS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
       - name: Checkout branch
         uses: actions/checkout@v5
         with:
-          ref: ${{ github.head_ref || inputs.branch || github.ref }}
+          ref: ${{ steps.pr-branch.outputs.branch || github.head_ref || inputs.branch || github.ref }}
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -50,6 +89,8 @@ jobs:
 
       - name: Update projects index with Codex
         uses: openai/codex-action@v1
+        env:
+          ADDITIONAL_INSTRUCTIONS: ${{ steps.comment-instructions.outputs.instructions || inputs.additional_instructions || '' }}
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           sandbox: workspace-write
@@ -57,6 +98,10 @@ jobs:
             IMPORTANT: Execute all steps directly. Do not ask for confirmation or approval.
 
             Task: Update projects/index.html to reflect changes in the projects folder.
+
+            ## Additional Instructions
+
+            ${{ env.ADDITIONAL_INSTRUCTIONS }}
 
             ## Step 1: Analyze project changes
 
@@ -98,7 +143,7 @@ jobs:
 
       - name: Push changes
         run: |
-          BRANCH="${{ github.head_ref || inputs.branch || github.ref_name }}"
+          BRANCH="${{ steps.pr-branch.outputs.branch || github.head_ref || inputs.branch || github.ref_name }}"
           if [ -n "$(git log origin/${BRANCH}..HEAD 2>/dev/null)" ]; then
             git push origin HEAD:${BRANCH}
           fi

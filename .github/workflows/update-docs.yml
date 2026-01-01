@@ -1,12 +1,25 @@
 name: Update Docs
 
 on:
+  # Auto-trigger when new packages, projects, or docs are added
   pull_request:
-    types: [opened]
+    types: [opened, synchronize]
+    paths:
+      - 'packages/**/package.json'
+      - 'projects/**/package.json'
+      - 'docs/**'
+  # Manual trigger via PR comment: /update-docs [optional instructions]
+  issue_comment:
+    types: [created]
+  # Manual trigger via Actions tab
   workflow_dispatch:
     inputs:
       branch:
-        description: 'Branch to update docs on (defaults to current branch)'
+        description: 'Branch to update docs on'
+        required: false
+        type: string
+      additional_instructions:
+        description: 'Additional instructions for the agent'
         required: false
         type: string
 
@@ -18,11 +31,42 @@ permissions:
 jobs:
   update-docs:
     runs-on: ubuntu-latest
+    # Run if: PR with matching paths, OR /update-docs comment on PR, OR manual dispatch
+    if: |
+      github.event_name == 'pull_request' ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request &&
+       startsWith(github.event.comment.body, '/update-docs'))
     steps:
+      - name: Get PR branch (for comment trigger)
+        id: pr-branch
+        if: github.event_name == 'issue_comment'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            core.setOutput('branch', pr.data.head.ref);
+
+      - name: Extract instructions from comment
+        id: comment-instructions
+        if: github.event_name == 'issue_comment'
+        run: |
+          COMMENT="${{ github.event.comment.body }}"
+          INSTRUCTIONS="${COMMENT#/update-docs}"
+          INSTRUCTIONS="${INSTRUCTIONS#"${INSTRUCTIONS%%[![:space:]]*}"}"
+          echo "instructions<<EOF" >> $GITHUB_OUTPUT
+          echo "$INSTRUCTIONS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
       - name: Checkout branch
         uses: actions/checkout@v5
         with:
-          ref: ${{ github.head_ref || inputs.branch || github.ref }}
+          ref: ${{ steps.pr-branch.outputs.branch || github.head_ref || inputs.branch || github.ref }}
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -47,6 +91,8 @@ jobs:
 
       - name: Update docs with Codex
         uses: openai/codex-action@v1
+        env:
+          ADDITIONAL_INSTRUCTIONS: ${{ steps.comment-instructions.outputs.instructions || inputs.additional_instructions || '' }}
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           sandbox: workspace-write
@@ -54,6 +100,10 @@ jobs:
             IMPORTANT: Execute all steps directly. Do not ask for confirmation or approval.
 
             Task: Keep documentation up to date based on pull request changes.
+
+            ## Additional Instructions
+
+            ${{ env.ADDITIONAL_INSTRUCTIONS }}
 
             ## Documentation Structure
 
@@ -125,7 +175,7 @@ jobs:
 
       - name: Push changes
         run: |
-          BRANCH="${{ github.head_ref || inputs.branch || github.ref_name }}"
+          BRANCH="${{ steps.pr-branch.outputs.branch || github.head_ref || inputs.branch || github.ref_name }}"
           if [ -n "$(git log origin/${BRANCH}..HEAD 2>/dev/null)" ]; then
             git push origin HEAD:${BRANCH}
           fi
