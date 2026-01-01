@@ -21,4 +21,14 @@ else
   echo "GitHub CLI already installed: $(gh --version | head -1)"
 fi
 
+# Setup gh config to use GH_TOKEN without migration issues
+# Fresh sandbox has no config, and old/corrupted configs trigger
+# a migration that requires dbus-launch (not available here)
+if [ -n "$GH_TOKEN" ]; then
+  rm -rf ~/.config/gh
+  mkdir -p ~/.config/gh
+  touch ~/.config/gh/hosts.yml
+  echo "GitHub CLI configured for token auth"
+fi
+
 echo "Web session setup complete"
