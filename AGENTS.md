@@ -182,6 +182,8 @@ Only escalate to a webapp when the user EXPLICITLY needs:
 
 **The threshold is impossibility, not inconvenience.** If it CAN be done in a single HTML file, do it that way. Complex client-side state, multiple components, even React—all work fine via CDN.
 
+**Less is more. Form follows function.** Don't add interactivity or visual polish unless explicitly requested. Interfaces should be usable, minimal, and focused solely on user goals.
+
 See [docs/static-html-guide.md](./docs/static-html-guide.md) for templates and CDN library references.
 
 ## Proof of Completion
