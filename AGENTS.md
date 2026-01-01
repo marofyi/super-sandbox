@@ -49,7 +49,6 @@ This project separates **agent behavior** from **project knowledge**. Use this g
 | `README.md` | Project overview for humans | Structure, commands, env vars, getting started |
 | `CONTRIBUTING.md` | How to contribute code | Code style, git workflow, PR process |
 | `docs/*.md` | Deep-dive guides | Deployment, CC Web, browser automation |
-| `.skills/*/SKILL.md` | Agent capabilities | Step-by-step procedures for specific tasks |
 
 ### Where to Put New Content
 
@@ -65,9 +64,6 @@ Is it about HOW TO WRITE CODE?
 
 Is it a DETAILED GUIDE for a specific topic?
   → docs/<topic>.md
-
-Is it a REPEATABLE PROCEDURE agents should follow?
-  → .skills/<name>/SKILL.md
 ```
 
 ### Principles
@@ -75,16 +71,6 @@ Is it a REPEATABLE PROCEDURE agents should follow?
 1. **No duplication** - Each fact lives in one place
 2. **Agent behavior vs project knowledge** - AGENTS.md stays lean
 3. **README is the entry point** - Links to everything else
-4. **Skills are procedures** - Step-by-step, not reference docs
-
-## Agent Skills
-
-This repository uses the [Agent Skills](https://agentskills.io) open standard for cross-platform agent capabilities. Skills are discovered from `.skills/` and provide specialized knowledge for common tasks.
-
-| Skill | Description | Tools |
-|-------|-------------|-------|
-| [browserless](.skills/browserless/SKILL.md) | Browser automation using Browserless BrowserQL. Use for web scraping, UI testing, screenshot capture, form interaction, content extraction, and any task requiring browser control from sandboxed environments like Claude Code Web. | Read Bash Glob |
-| [vercel-deploy](.skills/vercel-deploy/SKILL.md) | Deploy web projects to Vercel. Use when deploying projects, setting up new Vercel projects, configuring environment variables, or troubleshooting deployment issues. | Read Bash Glob |
 
 ## Workflow: Plan → Build → Test
 
@@ -199,6 +185,7 @@ The `.github/workflows/update-docs.yml` workflow automatically updates documenta
 
 - [README.md](./README.md) - Project structure, commands, environment setup
 - [CONTRIBUTING.md](./CONTRIBUTING.md) - Code style and git workflow
+- [docs/browserless.md](./docs/browserless.md) - Browser automation guide
 - [docs/cc-web.md](./docs/cc-web.md) - Claude Code Web guide
 - [docs/vercel-deployment.md](./docs/vercel-deployment.md) - Deployment guide
 - [.github/workflows/update-docs.yml](./.github/workflows/update-docs.yml) - Automated documentation workflow (keep in sync with Documentation Structure)

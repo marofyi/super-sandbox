@@ -1,9 +1,3 @@
----
-name: browserless
-description: Browser automation using Browserless BrowserQL. Use for web scraping, UI testing, screenshot capture, form interaction, content extraction, and any task requiring browser control from sandboxed environments like Claude Code Web.
-allowed-tools: Read Bash Glob
----
-
 # Browserless Browser Automation
 
 HTTP-only browser automation using [Browserless](https://browserless.io) BrowserQL. Works in Claude Code Web and other sandboxed environments where WebSocket-based tools (Playwright, Puppeteer) are blocked.
@@ -164,4 +158,4 @@ await screenshotToFile({
 
 - [BrowserQL Docs](https://docs.browserless.io/browserql-interactions)
 - [Package Source](../packages/browserless/src/browserless-client.ts)
-- [CC Web Guide](../docs/cc-web.md)
+- [CC Web Guide](./cc-web.md)
