@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Preview v3</title>
+  <style>
+    body{font:14px system-ui;background:#111;color:#eee;padding:16px}
+    input{width:100%;padding:12px;margin:8px 0;background:#222;border:1px solid #444;color:#eee;border-radius:4px;font-size:14px}
+    button{width:100%;padding:12px;background:#4ade80;color:#000;border:0;border-radius:4px;font-size:14px;cursor:pointer}
+    #log{background:#222;padding:12px;margin:16px 0;border-radius:4px;font-family:monospace;font-size:12px;max-height:150px;overflow:auto}
+    iframe{width:100%;height:60vh;border:1px solid #444;background:#fff;margin-top:16px}
+  </style>
+</head>
+<body>
+  <h3>CC Web Preview v3</h3>
+  <input type="text" id="url" placeholder="Paste Gist raw URL here">
+  <button onclick="go()">Start</button>
+  <div id="log">Ready...</div>
+  <iframe id="f"></iframe>
+
+  <script>
+    var log = function(msg) {
+      document.getElementById('log').innerHTML += '<br>' + msg;
+      console.log(msg);
+    };
+
+    var lastContent = '';
+
+    async function fetchAndRender() {
+      var url = document.getElementById('url').value.trim();
+      log('Fetching: ' + url.substring(0, 50) + '...');
+
+      try {
+        var res = await fetch(url + '?t=' + Date.now());
+        log('Status: ' + res.status);
+
+        if (!res.ok) {
+          log('Error: ' + res.statusText);
+          return;
+        }
+
+        var html = await res.text();
+        log('Got ' + html.length + ' chars');
+
+        if (html !== lastContent) {
+          lastContent = html;
+          document.getElementById('f').srcdoc = html;
+          log('Updated iframe!');
+        } else {
+          log('No change');
+        }
+      } catch (e) {
+        log('Error: ' + e.message);
+      }
+    }
+
+    var interval;
+    function go() {
+      log('Starting...');
+      var url = document.getElementById('url').value.trim();
+      if (!url) {
+        log('No URL entered!');
+        alert('Enter a URL first');
+        return;
+      }
+      log('URL: ' + url.substring(0, 60));
+      fetchAndRender();
+      interval = setInterval(fetchAndRender, 3000);
+      log('Polling every 3s');
+    }
+  </script>
+</body>
+</html>
