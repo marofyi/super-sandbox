@@ -186,9 +186,19 @@ A task is only complete when:
 - [ ] Changes are committed with a clear message
 - [ ] Human has reviewed and approved (for PRs)
 
+## Automated Documentation
+
+The `.github/workflows/update-docs.yml` workflow automatically updates documentation on PRs. It uses the Documentation Structure defined above to route content correctly.
+
+**When modifying AGENTS.md**, ensure the workflow agent instructions stay in sync:
+- If the Documentation Structure table changes, update the workflow's embedded copy
+- If document purposes change, update the workflow's routing rules
+- The workflow must reflect the same content boundaries defined here
+
 ## References
 
 - [README.md](./README.md) - Project structure, commands, environment setup
 - [CONTRIBUTING.md](./CONTRIBUTING.md) - Code style and git workflow
 - [docs/cc-web.md](./docs/cc-web.md) - Claude Code Web guide
 - [docs/vercel-deployment.md](./docs/vercel-deployment.md) - Deployment guide
+- [.github/workflows/update-docs.yml](./.github/workflows/update-docs.yml) - Automated documentation workflow (keep in sync with Documentation Structure)
