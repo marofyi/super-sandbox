@@ -1,21 +1,19 @@
-name: Update Docs
+name: Update Projects Index
 
 on:
-  # Auto-trigger when new packages, projects, or docs are added
+  # Auto-trigger when new projects are added
   pull_request:
     types: [opened, synchronize]
     paths:
-      - 'packages/**/package.json'
       - 'projects/**/package.json'
-      - 'docs/**'
-  # Manual trigger via PR comment: /update-docs [optional instructions]
+  # Manual trigger via PR comment: /update-index [optional instructions]
   issue_comment:
     types: [created]
   # Manual trigger via Actions tab
   workflow_dispatch:
     inputs:
       branch:
-        description: 'Branch to update docs on'
+        description: 'Branch to update index on'
         required: false
         type: string
       additional_instructions:
@@ -29,15 +27,15 @@ permissions:
   id-token: write
 
 jobs:
-  update-docs:
+  update-index:
     runs-on: ubuntu-latest
-    # Run if: PR with matching paths, OR /update-docs comment on PR, OR manual dispatch
+    # Run if: PR with matching paths, OR /update-index comment on PR, OR manual dispatch
     if: |
       github.event_name == 'pull_request' ||
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'issue_comment' &&
        github.event.issue.pull_request &&
-       startsWith(github.event.comment.body, '/update-docs'))
+       startsWith(github.event.comment.body, '/update-index'))
     steps:
       - name: Get PR branch (for comment trigger)
         id: pr-branch
@@ -57,7 +55,7 @@ jobs:
         if: github.event_name == 'issue_comment'
         run: |
           COMMENT="${{ github.event.comment.body }}"
-          INSTRUCTIONS="${COMMENT#/update-docs}"
+          INSTRUCTIONS="${COMMENT#/update-index}"
           INSTRUCTIONS="${INSTRUCTIONS#"${INSTRUCTIONS%%[![:space:]]*}"}"
           echo "instructions<<EOF" >> $GITHUB_OUTPUT
           echo "$INSTRUCTIONS" >> $GITHUB_OUTPUT
@@ -89,7 +87,7 @@ jobs:
           Follow the prompt instructions exactly. Execute all steps immediately.
           EOF
 
-      - name: Update docs with Codex
+      - name: Update projects index with Codex
         uses: openai/codex-action@v1
         env:
           ADDITIONAL_INSTRUCTIONS: ${{ steps.comment-instructions.outputs.instructions || inputs.additional_instructions || '' }}
@@ -99,76 +97,46 @@ jobs:
           prompt: |
             IMPORTANT: Execute all steps directly. Do not ask for confirmation or approval.
 
-            Task: Keep documentation up to date based on pull request changes.
+            Task: Update projects/index.html to reflect changes in the projects folder.
 
             ## Additional Instructions
 
             ${{ env.ADDITIONAL_INSTRUCTIONS }}
 
-            ## Documentation Structure
+            ## Step 1: Analyze project changes
 
-            This project separates agent behavior from project knowledge. Route content correctly:
+            Run: git diff origin/main...HEAD --name-only -- projects/
 
-            | Document | Purpose | Content Type |
-            |----------|---------|--------------|
-            | AGENTS.md | How agents should behave | Workflow rules, boundaries, completion criteria |
-            | README.md | Project overview for humans | Structure, commands, env vars, getting started |
-            | CONTRIBUTING.md | How to contribute code | Code style, git workflow, PR process |
-            | docs/*.md | Deep-dive guides | Deployment, CC Web, browser automation |
+            Understand what projects were added, modified, or removed.
 
-            ## Step 1: Analyze changes
+            ## Step 2: Update projects/index.html
 
-            Run: git diff origin/main...HEAD --name-only
+            Scan the projects folder and update the index.html landing page:
 
-            Understand what changed in this PR.
-
-            ## Step 2: Update relevant documentation
-
-            Based on the changes, update the appropriate docs following the structure above:
-
-            ### README.md (Project Knowledge)
-            - Update project/package descriptions if they changed
-            - Add new projects or packages if created
-            - Update project structure section if directories added/removed
-            - Update commands section if build/test commands changed
-            - Update environment setup if new env vars required
-            - Keep descriptions to 2-3 sentences with key technologies
-
-            ### AGENTS.md (Agent Behavior)
-            - Update workflow instructions if agent processes changed
-            - Update boundaries section if new rules apply
-            - Update completion criteria if requirements changed
-            - Do NOT put project structure, commands, or env vars here (those go in README.md)
-
-            ### CONTRIBUTING.md (Code Style)
-            - Update code style guidelines if conventions changed
-            - Update git workflow instructions if process changed
-            - Update PR process if requirements changed
-
-            ### docs/learnings-log.md
-            - Add new entries for significant discoveries or gotchas found during the PR
-            - Document any non-obvious solutions or workarounds
-            - Include date headers (YYYY-MM format)
-            - Keep entries concise but informative for future reference
-
-            ### Other docs (docs/*.md)
-            - Update architecture docs if system design changed
-            - Update deployment docs if deploy process changed
-            - Update package docs if package APIs changed
+            - Scan `projects/` for subdirectories with `package.json` (full projects)
+            - Scan `projects/` for standalone `.html` files (prototypes, excluding index.html)
+            - For each project, extract:
+              - **Title**: from package.json `name` field or HTML `<title>` tag
+              - **Description**: from package.json `description` or first paragraph in README.md
+              - **Live URL**: from existing Vercel deployments or relative path for static HTML
+              - **Type**: "Web Application", "CLI Tool", or "Prototype"
+            - Update the HTML cards in the appropriate section (Web Applications, CLI Tools, Prototypes)
+            - Preserve the existing HTML structure and Tailwind CSS classes
+            - Add new project cards following the existing card template pattern
+            - Remove cards for deleted projects
 
             ## Step 3: Commit changes
 
-            If you made documentation changes, commit them:
-            git add README.md AGENTS.md CONTRIBUTING.md docs/ && git commit -m "docs: update documentation for PR changes"
+            If you made changes, commit them:
+            git add projects/index.html && git commit -m "docs: update projects index"
 
             ## Rules
 
             - Be concise and factual
-            - Preserve existing document structure
-            - Only update docs that are affected by the PR changes
-            - Skip if documentation is already accurate
+            - Preserve existing HTML structure and styling
+            - Only update if projects were actually added, removed, or modified
+            - Skip if index.html is already accurate
             - Do not add speculative or placeholder content
-            - Follow the documentation structure: agent behavior in AGENTS.md, project knowledge in README.md
 
       - name: Cleanup override file
         run: rm -f AGENTS.override.md
