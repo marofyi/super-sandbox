@@ -1,7 +1,5 @@
 # AGENTS.md
 
-README: @README.md
-
 Instructions for AI coding agents working in this repository.
 
 > **Rule #1:** Exception to ANY rule requires explicit permission from the human first.
@@ -88,21 +86,9 @@ This repository uses the [Agent Skills](https://agentskills.io) open standard fo
 | [browserless](.skills/browserless/SKILL.md) | Browser automation using Browserless BrowserQL. Use for web scraping, UI testing, screenshot capture, form interaction, content extraction, and any task requiring browser control from sandboxed environments like Claude Code Web. | Read Bash Glob |
 | [vercel-deploy](.skills/vercel-deploy/SKILL.md) | Deploy web projects to Vercel. Use when deploying projects, setting up new Vercel projects, configuring environment variables, or troubleshooting deployment issues. | Read Bash Glob |
 
-Skills work with Claude Code, Codex, Cursor, VS Code Copilot, and other agents supporting the Agent Skills spec.
-
 ## Workflow: Plan → Build → Test
 
 **This project enforces a strict human-in-the-loop workflow.** Do not jump straight to implementation.
-
-### Exception: Automated CI/CD Workflows
-
-**When running in GitHub Actions or other automated CI/CD pipelines:**
-- Skip the Plan phase entirely
-- Execute tasks directly without asking for confirmation
-- Do not output "Shall I proceed?" or similar approval requests
-- Complete the task autonomously and exit
-
-This exception applies when the prompt explicitly instructs you to execute without confirmation.
 
 ### Phase 1: Plan
 
@@ -138,6 +124,7 @@ Before any commit:
 1. Run type checking: `pnpm check`
 2. Build affected packages: `pnpm b @research/<package-name> build`
 3. Verify the build succeeds with no errors
+4. Conduct pragmatic e2e testing with real data
 
 ## TDD Workflow
 
@@ -174,13 +161,6 @@ For medium to high complexity features, follow Test-Driven Development:
 
 ## Boundaries
 
-### Always Do
-
-- Run `pnpm check` before committing
-- Follow existing TypeScript patterns (strict mode enabled)
-- Use existing utilities from `packages/` when available
-- Keep commits atomic and focused
-
 ### Ask First
 
 - Adding new dependencies
@@ -194,8 +174,6 @@ For medium to high complexity features, follow Test-Driven Development:
 
 - Commit `.env` or any file containing secrets
 - Skip the plan phase for non-trivial changes
-- Push directly to main without PR review
-- Modify `node_modules/` or `dist/` directories
 - Make breaking API changes without discussion
 - Delete failing tests without permission
 
@@ -203,7 +181,7 @@ For medium to high complexity features, follow Test-Driven Development:
 
 A task is only complete when:
 
-- [ ] Type checking passes (`pnpm check`)
+- [ ] Type checking and test suite passes
 - [ ] Build succeeds for affected packages
 - [ ] Changes are committed with a clear message
 - [ ] Human has reviewed and approved (for PRs)
