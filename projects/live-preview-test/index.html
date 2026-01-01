@@ -6,33 +6,45 @@
     body {
       font-family: system-ui, sans-serif;
       padding: 2rem;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
       color: white;
       min-height: 100vh;
       margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .card {
-      background: rgba(255,255,255,0.1);
-      padding: 2rem;
-      border-radius: 1rem;
-      max-width: 500px;
+      background: rgba(255,255,255,0.15);
+      padding: 2.5rem;
+      border-radius: 1.5rem;
+      max-width: 400px;
+      text-align: center;
       backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
     }
-    h1 { margin-top: 0; }
+    h1 { margin: 0 0 1rem; font-size: 2rem; }
+    .pulse {
+      font-size: 3rem;
+      animation: pulse 1s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+    }
+    .time {
+      font-size: 0.875rem;
+      opacity: 0.8;
+      margin-top: 1.5rem;
+    }
   </style>
 </head>
 <body>
   <div class="card">
-    <h1>Live Preview Works!</h1>
-    <p>This content was:</p>
-    <ol>
-      <li>Edited in CC Web</li>
-      <li>Compressed with LZMA</li>
-      <li>Pushed to a GitHub Gist</li>
-      <li>Polled by your browser</li>
-      <li>Rendered via itty.bitty</li>
-    </ol>
-    <p><strong>Mobile-friendly, auth-free, instant.</strong></p>
+    <div class="pulse">🔴</div>
+    <h1>LIVE UPDATE!</h1>
+    <p>If you see this pink gradient with a pulsing dot, the live preview is working!</p>
+    <p class="time">Updated: Jan 1, 2026 @ 16:25 UTC</p>
   </div>
 </body>
 </html>
