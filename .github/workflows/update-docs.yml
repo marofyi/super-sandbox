@@ -11,9 +11,14 @@ on:
   workflow_dispatch:
     inputs:
       pr_number:
-        description: 'PR number to analyze (required when running on main)'
+        description: 'PR number to analyze changes from (optional)'
         required: false
         type: number
+      commits_back:
+        description: 'Number of recent commits to analyze when no PR specified (default: 10)'
+        required: false
+        type: number
+        default: 10
       additional_instructions:
         description: 'Additional instructions for the agent'
         required: false
@@ -105,13 +110,15 @@ jobs:
         env:
           ADDITIONAL_INSTRUCTIONS: ${{ steps.comment-instructions.outputs.instructions || inputs.additional_instructions || '' }}
           BASE_REF: ${{ steps.pr-info.outputs.base || 'main' }}
+          COMMITS_BACK: ${{ inputs.commits_back || 10 }}
+          HAS_PR_CONTEXT: ${{ steps.pr-info.outputs.head_sha != '' || github.event_name == 'pull_request' || github.event_name == 'issue_comment' }}
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           sandbox: workspace-write
           prompt: |
             IMPORTANT: Execute all steps directly. Do not ask for confirmation or approval.
 
-            Task: Keep documentation up to date based on pull request changes.
+            Task: Keep documentation up to date based on recent changes.
 
             ## Additional Instructions
 
@@ -134,9 +141,9 @@ jobs:
 
             ## Step 1: Analyze changes
 
-            Run: git diff origin/${{ env.BASE_REF }}...HEAD --name-only
+            ${{ env.HAS_PR_CONTEXT == 'true' && format('Run: git diff origin/{0}...HEAD --name-only', env.BASE_REF) || format('Run: git diff HEAD~{0}...HEAD --name-only', env.COMMITS_BACK) }}
 
-            Understand what changed in this PR.
+            ${{ env.HAS_PR_CONTEXT == 'true' && 'Understand what changed in this PR.' || format('Understand what changed in the last {0} commits on main.', env.COMMITS_BACK) }}
 
             ## Step 2: Update relevant documentation
 
@@ -230,20 +237,24 @@ jobs:
 
       - name: Push changes
         run: |
-          # Check if there are any commits to push
-          if [ -z "$(git log origin/${{ github.ref_name }}..HEAD 2>/dev/null)" ]; then
-            echo "No changes to push"
+          # Check if there are any new commits
+          if ! git log --oneline -1 --format="%s" | grep -q "^docs:"; then
+            echo "No documentation commits to push"
             exit 0
           fi
 
-          BRANCH="${{ steps.pr-info.outputs.branch || steps.pr-branch.outputs.branch || github.head_ref || github.ref_name }}"
-
-          # If triggered manually on main without pr_number, create a new branch
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "$BRANCH" = "main" ]; then
-            NEW_BRANCH="docs/update-$(date +%Y%m%d-%H%M%S)"
+          # For workflow_dispatch, always create a new branch (original PR branch may be deleted)
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            if [ -n "${{ inputs.pr_number }}" ]; then
+              NEW_BRANCH="docs/update-pr-${{ inputs.pr_number }}-$(date +%Y%m%d-%H%M%S)"
+            else
+              NEW_BRANCH="docs/update-$(date +%Y%m%d-%H%M%S)"
+            fi
             git checkout -b "$NEW_BRANCH"
             git push -u origin "$NEW_BRANCH"
             echo "::notice::Branch $NEW_BRANCH created. Create PR at: https://github.com/${{ github.repository }}/pull/new/$NEW_BRANCH"
           else
+            # For PR triggers and issue_comment, push to the PR branch
+            BRANCH="${{ steps.pr-branch.outputs.branch || github.head_ref }}"
             git push origin HEAD:${BRANCH}
           fi
