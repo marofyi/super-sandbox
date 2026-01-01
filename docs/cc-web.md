@@ -110,5 +110,5 @@ const img = await screenshot();
 
 - [README.md](../README.md) - Project overview and entry point for humans
 - [docs/browserless.md](./browserless.md) - HTTP-only BrowserQL client for automation
-- [docs/learnings-log.md](./learnings-log.md) - Historical context on why CDP failed
+- [CHANGELOG.md](../CHANGELOG.md) - Current network and automation findings
 - [Browserless BrowserQL Docs](https://docs.browserless.io/browserql-interactions)

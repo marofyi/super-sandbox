@@ -121,5 +121,5 @@ These are configured automatically when using the CLI:
 
 - [README.md](../README.md) - Project overview and entry point for humans
 - [docs/static-html-guide.md](./static-html-guide.md) - When a single HTML file is sufficient
-- [docs/learnings-log.md](./learnings-log.md) - CLI vs API quirks and deployment history
+- [CHANGELOG.md](../CHANGELOG.md) - Deployment and workflow changes
 - [Vercel Monorepos](https://vercel.com/docs/monorepos)

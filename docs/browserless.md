@@ -164,4 +164,4 @@ await screenshotToFile({
 
 - [README.md](../README.md) - Project overview and entry point for humans
 - [docs/cc-web.md](./cc-web.md) - Proxy-aware networking for sandboxed environments
-- [docs/learnings-log.md](./learnings-log.md) - Historical context for automation choices
+- [CHANGELOG.md](../CHANGELOG.md) - Latest automation changes and discoveries

@@ -102,4 +102,4 @@ The proxy handles DNS resolution, not the container. Node.js native `fetch` fail
 
 - [README.md](./README.md) - Project overview and navigation
 - [AGENTS.md](./AGENTS.md) - Agent workflow and documentation structure
-- [docs/learnings-log.md](./docs/learnings-log.md) - Original learnings log with full context
+- [docs/browserless.md](./docs/browserless.md) - Browser automation client and CLI usage
