@@ -185,11 +185,11 @@ The `.github/workflows/update-docs.yml` workflow automatically updates documenta
 
 **Read before acting.** These docs contain critical context. Skipping them causes errors.
 
-| Document | Read Before |
-|----------|-------------|
-| [README.md](./README.md) | Running commands, understanding project structure, setting up environment |
-| [CONTRIBUTING.md](./CONTRIBUTING.md) | Writing or modifying any code in this repository |
-| [docs/browserless.md](./docs/browserless.md) | Any browser automation, screenshots, scraping, or form interaction |
-| [docs/cc-web.md](./docs/cc-web.md) | Working in Claude Code Web or any sandboxed environment |
-| [docs/vercel-deployment.md](./docs/vercel-deployment.md) | Deploying to Vercel, adding env vars, or setting up GitHub Actions for deploy |
-| [.github/workflows/update-docs.yml](./.github/workflows/update-docs.yml) | Modifying AGENTS.md Documentation Structure (keep in sync) |
+| Document | Description | Read Before |
+|----------|-------------|-------------|
+| [README.md](./README.md) | Project structure, commands, env vars | Running commands, understanding project structure, setting up environment |
+| [CONTRIBUTING.md](./CONTRIBUTING.md) | Code style, git workflow, PR process | Writing or modifying any code in this repository |
+| [docs/browserless.md](./docs/browserless.md) | BrowserQL API, CLI, patterns | Any browser automation, screenshots, scraping, or form interaction |
+| [docs/cc-web.md](./docs/cc-web.md) | Network constraints, proxy setup | Working in Claude Code Web or any sandboxed environment |
+| [docs/vercel-deployment.md](./docs/vercel-deployment.md) | CLI commands, env vars, GitHub Actions | Deploying to Vercel, adding env vars, or setting up GitHub Actions for deploy |
+| [.github/workflows/update-docs.yml](./.github/workflows/update-docs.yml) | Automated doc updates on PRs | Modifying AGENTS.md Documentation Structure (keep in sync) |
