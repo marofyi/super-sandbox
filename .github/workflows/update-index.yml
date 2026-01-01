@@ -5,7 +5,7 @@ on:
   pull_request:
     types: [opened, synchronize]
     paths:
-      - 'projects/**/package.json'
+      - 'projects/**'
   # Manual trigger via PR comment: /update-index [optional instructions]
   issue_comment:
     types: [created]
@@ -93,7 +93,7 @@ jobs:
           prompt: |
             IMPORTANT: Execute all steps directly. Do not ask for confirmation or approval.
 
-            Task: Update projects/index.html to reflect changes in the projects folder.
+            Task: Update index.html to reflect changes in the projects folder.
 
             ## Additional Instructions
 
@@ -105,7 +105,7 @@ jobs:
 
             Understand what projects were added, modified, or removed.
 
-            ## Step 2: Update projects/index.html
+            ## Step 2: Update index.html
 
             Scan the projects folder and update the index.html landing page:
 
@@ -124,7 +124,7 @@ jobs:
             ## Step 3: Commit changes
 
             If you made changes, commit them:
-            git add projects/index.html && git commit -m "docs: update projects index"
+            git add index.html && git commit -m "docs: update projects index"
 
             ## Rules
 
@@ -138,8 +138,6 @@ jobs:
         run: rm -f AGENTS.override.md
 
       - name: Push changes
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Check if there are any commits to push
           if [ -z "$(git log origin/${{ github.ref_name }}..HEAD 2>/dev/null)" ]; then
@@ -149,12 +147,12 @@ jobs:
 
           BRANCH="${{ steps.pr-branch.outputs.branch || github.head_ref || github.ref_name }}"
 
-          # If triggered manually on main, create a new branch and open a PR
+          # If triggered manually on main, create a new branch
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "$BRANCH" = "main" ]; then
             NEW_BRANCH="docs/update-index-$(date +%Y%m%d-%H%M%S)"
             git checkout -b "$NEW_BRANCH"
             git push -u origin "$NEW_BRANCH"
-            gh pr create --title "docs: update projects index" --body "Automated projects index update triggered via workflow dispatch."
+            echo "::notice::Branch $NEW_BRANCH created. Create PR at: https://github.com/${{ github.repository }}/pull/new/$NEW_BRANCH"
           else
             git push origin HEAD:${BRANCH}
           fi
