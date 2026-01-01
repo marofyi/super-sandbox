@@ -80,14 +80,41 @@
       </div>
     </section>
 
-    <!-- Prototypes Section (placeholder for future single-file HTML tools) -->
+    <!-- Prototypes Section -->
     <section class="mb-12">
       <h2 class="text-2xl font-semibold text-gray-800 mb-6">Prototypes</h2>
-      <p class="text-gray-500 italic">Single-file HTML experiments will appear here.</p>
-      <!--
-        Future prototypes go here. Each .html file in projects/
-        will be listed automatically by the update-docs workflow.
-      -->
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <!-- The Intelligence Economy -->
+        <article class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+          <div class="placeholder-gradient h-48 flex items-center justify-center" style="background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);">
+            <span class="text-white text-6xl">📊</span>
+          </div>
+          <div class="p-5">
+            <h3 class="text-xl font-semibold text-gray-900">The Intelligence Economy</h3>
+            <p class="text-gray-600 mt-2 text-sm">Interactive visualization exploring how LLMs are restructuring the internet economy. Features value flow diagrams, stakeholder health metrics, and feedback loop animations.</p>
+            <div class="mt-4 flex gap-4">
+              <a href="./projects/the-intelligence-economy/" class="text-blue-600 hover:text-blue-800 font-medium text-sm">View &rarr;</a>
+              <a href="./projects/the-intelligence-economy/CONCEPT.md" class="text-gray-500 hover:text-gray-700 text-sm">Concept</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Live Preview Viewer -->
+        <article class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+          <div class="placeholder-gradient h-48 flex items-center justify-center" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);">
+            <span class="text-white text-6xl">🔐</span>
+          </div>
+          <div class="p-5">
+            <h3 class="text-xl font-semibold text-gray-900">Live Preview Viewer</h3>
+            <p class="text-gray-600 mt-2 text-sm">Encrypted preview system for CC Web sandbox. Push HTML to GitHub Gist with AES-256-GCM encryption, view via self-contained data: URL viewer with PBKDF2 key derivation.</p>
+            <div class="mt-4 flex gap-4">
+              <a href="./projects/live-preview-test/" class="text-gray-500 hover:text-gray-700 text-sm">Source</a>
+            </div>
+          </div>
+        </article>
+
+      </div>
     </section>
 
     <footer class="border-t pt-8 mt-12 text-gray-500 text-sm">

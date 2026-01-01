@@ -8,6 +8,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## 2026-01
 
+### Added
+
+- **The Intelligence Economy** - Interactive visualization exploring how LLMs restructure the internet economy
+  - Value flow diagrams showing revenue split between traditional web and LLM-first paths
+  - Stakeholder health metrics (Google, OpenAI, Anthropic, Chegg, Stack Overflow, Reddit)
+  - Timeline scrubber from 2019-2025 with key events (ChatGPT launch, AI Overviews rollout)
+  - Animated feedback loop diagrams (traffic drain, model collapse, knowledge commons erosion)
+  - Educational accordion panels with sourced data from SparkToro, Similarweb, Sacra
+
+- **Live Preview Viewer** - Encrypted preview system for CC Web sandbox
+  - AES-256-GCM encryption with PBKDF2 key derivation (100k iterations)
+  - Self-contained HTML viewer distributed as `data:` URL (works in any browser)
+  - GitHub Gist as transport layer, polled via unauthenticated API (60 req/hr limit)
+  - Shell scripts: `update-preview-encrypted.sh` (encrypt + push), `make-data-url.sh` (generate viewer URL)
+
+### Changed
+
+- Moved `index.html` landing page from `projects/` to repository root for cleaner GitHub Pages URL
+- Split documentation workflows: `update-docs.yml` for documentation, `update-index.yml` for project index
+- `update-docs.yml` now triggers on all pull requests (previously only specific paths)
+- Removed deprecated `deploy-github-pages.yml` workflow
+
 ### Fixed
 
 - GitHub CLI (`gh`) workflow commands failing in CC Web with "no known GitHub host" error
