@@ -19,15 +19,16 @@ pnpm b @research/openai-utils build
 
 ```
 research/
+├── index.html          # Landing page (GitHub Pages root)
 ├── packages/           # Shared utilities
 │   ├── browserless/    # BrowserQL client for HTTP-only browser automation
 │   └── openai-utils/   # OpenAI API wrapper
 ├── projects/           # Research projects and prototypes
-│   ├── index.html      # Landing page (GitHub Pages)
 │   ├── example-chat/   # CLI demo
 │   ├── example-chat-web/ # Web demo (Next.js → Vercel)
 │   ├── tanstack-chat/  # TanStack Start demo (Vercel)
-│   └── *.html          # Single-file prototypes (GitHub Pages)
+│   ├── the-intelligence-economy/ # LLM economy visualization
+│   └── live-preview-test/ # Encrypted preview viewer for CC Web
 ├── docs/               # Documentation
 ├── AGENTS.md           # AI agent instructions
 └── CONTRIBUTING.md     # Code style and git workflow
@@ -116,6 +117,14 @@ A Next.js web application that wires @research/openai-utils into a streaming cha
 
 A TanStack Start (React Router + Nitro SSR) demo for multi-provider AI chat with model switching across OpenAI, Anthropic, Gemini, and Ollama plus approval flows for tool calls. Built with React 19, Vite, Tailwind CSS v4, lucide-react icons, and @tanstack/ai for streaming, featuring a guitar recommendation flow with interactive tool responses and slide-in navigation.
 
+### the-intelligence-economy
+
+An interactive visualization exploring how large language models are restructuring the internet economy. Features a value flow slider showing revenue distribution between traditional web and LLM-first paths, stakeholder health metrics (Google, OpenAI, Chegg, Stack Overflow), timeline of key events from 2019-2025, and animated feedback loop diagrams illustrating the traffic drain, model collapse, and knowledge commons erosion phenomena.
+
+### live-preview-test
+
+Encrypted HTML preview system for Claude Code Web sandbox. Push content to a GitHub Gist with AES-256-GCM encryption (PBKDF2 key derivation, 100k iterations), then view via a self-contained HTML viewer distributed as a `data:` URL. Bypasses CC Web network restrictions by using the GitHub API for polling. Includes shell scripts for encryption (`update-preview-encrypted.sh`) and data URL generation (`make-data-url.sh`).
+
 ## Deployment
 
 Projects can be deployed via two hosting options depending on complexity:
@@ -127,10 +136,9 @@ Projects can be deployed via two hosting options depending on complexity:
 
 ### GitHub Pages (Static HTML)
 
-Single `.html` files in `projects/` are automatically deployed to GitHub Pages:
+The root `index.html` serves as the landing page, linking to projects in `projects/`:
 
-- **Workflow:** `.github/workflows/deploy-github-pages.yml`
-- **Landing page:** `projects/index.html` (auto-maintained by `update-docs.yml`)
+- **Landing page:** `index.html` (auto-maintained by `update-index.yml`)
 - **Guide:** [docs/static-html-guide.md](docs/static-html-guide.md)
 
 ### Vercel (Full Web Apps)
@@ -146,9 +154,9 @@ See [docs/vercel-deployment.md](docs/vercel-deployment.md) for:
 
 ## Configuration
 
-- GitHub Actions now auto-deploys `projects/tanstack-chat` via `.github/workflows/deploy-tanstack-chat.yml` using the Vercel project `tanstack-chat`.
-- Single-file HTML prototypes under `projects/*.html` deploy to GitHub Pages via `.github/workflows/deploy-github-pages.yml`; the landing page `projects/index.html` is refreshed by `.github/workflows/update-docs.yml`.
-- GitHub Actions keeps documentation (including `projects/index.html`) current on pull requests via `.github/workflows/update-docs.yml`.
+- GitHub Actions auto-deploys `projects/tanstack-chat` via `.github/workflows/deploy-tanstack-chat.yml` using the Vercel project `tanstack-chat`.
+- The root `index.html` landing page is updated by `.github/workflows/update-index.yml` when projects change.
+- Documentation is kept current on all pull requests via `.github/workflows/update-docs.yml`.
 - The `projects/tanstack-chat/.env.example` file documents required `OPENAI_API_KEY` and optional `ANTHROPIC_API_KEY`/`GEMINI_API_KEY` values for the multi-provider chat demos.
 - Browser automation utilities in `@research/browserless` need `BROWSERLESS_TOKEN` (and optional `BROWSERLESS_URL`) for BrowserQL HTTP calls; works without WebSockets for sandboxed environments and now routes through the CC Web proxy when `HTTPS_PROXY` is present.
 - Screenshot capture is centralized in the `@research/browserless` CLI: run `pnpm --filter @research/browserless screenshot <url>` (add `--responsive` for multi-viewport). Helpers `captureResponsiveScreenshots()` and `captureAtViewport()` back the CLI and can be reused in any project.
