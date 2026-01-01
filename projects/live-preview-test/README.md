@@ -53,12 +53,28 @@ See [TECHNICAL.md](./TECHNICAL.md) for detailed architecture and explanations.
 
 ---
 
+## Encrypted Mode (Private Content)
+
+For private content, use encrypted mode - content is AES-256 encrypted before upload:
+
+```bash
+./update-preview-encrypted.sh index.html "your-password"
+```
+
+Open the v5 viewer and enter the same password. The Gist only contains ciphertext - unreadable without the password.
+
+See [TECHNICAL.md](./TECHNICAL.md#encrypted-mode) for cryptographic details.
+
+---
+
 ## Files
 
 | File | Purpose |
 |------|---------|
-| `update-preview-v2.sh` | Push HTML to Gist |
-| `viewer-v4.html` | Production viewer |
+| `update-preview-v2.sh` | Push HTML to Gist (plaintext) |
+| `update-preview-encrypted.sh` | Push encrypted HTML to Gist |
+| `viewer-v4.html` | Production viewer (plaintext) |
+| `viewer-v5.html` | Encrypted viewer (password required) |
 | `viewer-v3.html` | Debug viewer with logs |
 | `generate-itty-url.sh` | Generate itty.bitty URLs |
 | `TECHNICAL.md` | Full technical documentation |

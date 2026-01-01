@@ -9,8 +9,9 @@ A zero-auth, mobile-first solution for live previewing HTML projects from Claude
 3. [How It Works](#how-it-works)
 4. [Setup Guide](#setup-guide)
 5. [Technical Deep Dive](#technical-deep-dive)
-6. [Limitations](#limitations)
-7. [Alternative Approaches Tested](#alternative-approaches-tested)
+6. [Encrypted Mode](#encrypted-mode)
+7. [Limitations](#limitations)
+8. [Alternative Approaches Tested](#alternative-approaches-tested)
 
 ---
 
@@ -292,6 +293,140 @@ base64decode(fragment) → LZMA.decompress() → HTML string
 2. **Content injection**: The iframe uses `sandbox="allow-scripts"` to limit capabilities
 3. **API rate limits**: 60 req/hour unauthenticated; add token for 5000 req/hour
 4. **No secrets**: Never put API keys or credentials in previewed content
+
+---
+
+## Encrypted Mode
+
+For private content, use encrypted mode. Content is encrypted before upload and decrypted in the browser - the Gist only ever contains ciphertext.
+
+### Why Encryption?
+
+| Problem | Solution |
+|---------|----------|
+| Public Gists expose content | Encrypt before upload |
+| Can't use private Gists (need auth) | Public Gist + encryption = private content |
+| Can't embed user's token in viewer | No token needed - just password |
+
+### Encryption Architecture
+
+```
+┌─────────────┐                    ┌─────────────┐                    ┌─────────────┐
+│   CC Web    │                    │ GitHub Gist │                    │   Viewer    │
+│             │                    │             │                    │             │
+│ plaintext   │──► encrypt(pwd) ──►│ ciphertext  │◄── fetch ◄────────│ prompt pwd  │
+│ HTML        │                    │ (public but │                    │ decrypt     │
+│             │                    │  unreadable)│                    │ render      │
+└─────────────┘                    └─────────────┘                    └─────────────┘
+```
+
+### Cryptographic Details
+
+**Algorithm**: AES-256-GCM (Authenticated Encryption)
+- **Key derivation**: PBKDF2 with SHA-256, 100,000 iterations
+- **Salt**: 16 random bytes (per encryption)
+- **IV**: 12 random bytes (per encryption)
+- **Auth tag**: 16 bytes (integrity verification)
+
+**Data format** (base64 encoded):
+```
+┌──────────┬────────┬──────────┬────────────┐
+│  salt    │   IV   │ auth tag │ ciphertext │
+│ 16 bytes │ 12 b   │  16 b    │  variable  │
+└──────────┴────────┴──────────┴────────────┘
+```
+
+### CC Web Encryption (Node.js)
+
+```javascript
+const crypto = require('crypto');
+
+function encrypt(plaintext, password) {
+  const salt = crypto.randomBytes(16);
+  const iv = crypto.randomBytes(12);
+
+  // Derive key: PBKDF2, 100k iterations, SHA-256
+  const key = crypto.pbkdf2Sync(password, salt, 100000, 32, 'sha256');
+
+  // Encrypt with AES-256-GCM
+  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+  const encrypted = Buffer.concat([cipher.update(plaintext), cipher.final()]);
+  const authTag = cipher.getAuthTag();
+
+  // Combine: salt + iv + authTag + ciphertext
+  return Buffer.concat([salt, iv, authTag, encrypted]).toString('base64');
+}
+```
+
+### Browser Decryption (Web Crypto API)
+
+```javascript
+async function decrypt(encryptedBase64, password) {
+  const data = Uint8Array.from(atob(encryptedBase64), c => c.charCodeAt(0));
+
+  // Parse components
+  const salt = data.slice(0, 16);
+  const iv = data.slice(16, 28);
+  const authTag = data.slice(28, 44);
+  const ciphertext = data.slice(44);
+
+  // Derive key using PBKDF2
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey']
+  );
+  const key = await crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['decrypt']
+  );
+
+  // Web Crypto expects authTag appended to ciphertext
+  const combined = new Uint8Array(ciphertext.length + authTag.length);
+  combined.set(ciphertext);
+  combined.set(authTag, ciphertext.length);
+
+  const decrypted = await crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv }, key, combined
+  );
+  return new TextDecoder().decode(decrypted);
+}
+```
+
+### Security Properties
+
+| Property | Guarantee |
+|----------|-----------|
+| Confidentiality | AES-256 encryption - content unreadable without password |
+| Integrity | GCM auth tag - tampering is detected |
+| Freshness | Random salt/IV per encryption - no pattern analysis |
+| No token exposure | Password never leaves browser, never stored |
+
+### Usage
+
+**CC Web side:**
+```bash
+./update-preview-encrypted.sh index.html "your-password"
+```
+
+**Viewer side:**
+1. Open the v5 viewer URL
+2. Enter Gist ID
+3. Enter password
+4. Content decrypts and renders
+
+### Password Strength
+
+Since PBKDF2 uses 100,000 iterations, even moderate passwords provide good security:
+
+| Password | Entropy | Brute-force time (100k/sec) |
+|----------|---------|----------------------------|
+| 8 char alphanumeric | ~48 bits | ~89 years |
+| 12 char alphanumeric | ~72 bits | ~150M years |
+| Passphrase (4 words) | ~44 bits | ~5 years |
+
+**Recommendation**: Use a 12+ character password or 4+ word passphrase.
 
 ---
 
