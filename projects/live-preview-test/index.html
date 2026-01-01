@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Live Preview Test</title>
+  <title>Encrypted Preview Test</title>
   <style>
     body {
       font-family: system-ui, sans-serif;
@@ -10,7 +10,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
     }
     .card {
@@ -20,7 +20,7 @@
       text-align: center;
       backdrop-filter: blur(10px);
     }
-    h1 { font-size: 2.5rem; margin: 0 0 1rem; }
+    h1 { font-size: 2rem; margin: 0 0 1rem; }
     .icon { font-size: 4rem; margin-bottom: 1rem; }
     .badge {
       background: rgba(255,255,255,0.2);
@@ -30,15 +30,21 @@
       margin-top: 1rem;
       display: inline-block;
     }
+    ul { text-align: left; margin: 1rem 0; }
   </style>
 </head>
 <body>
   <div class="card">
-    <div class="icon">🟢</div>
-    <h1>Update #4</h1>
-    <p>Green gradient - testing v4 API viewer</p>
-    <p>No more caching issues!</p>
-    <div class="badge">16:36 UTC</div>
+    <div class="icon">🔐</div>
+    <h1>Encrypted Preview Works!</h1>
+    <p>This content was:</p>
+    <ul>
+      <li>Encrypted with AES-256-GCM</li>
+      <li>Stored as ciphertext in public Gist</li>
+      <li>Decrypted in your browser</li>
+    </ul>
+    <p>Nobody without the password can read this!</p>
+    <div class="badge">Password: testpass123</div>
   </div>
 </body>
 </html>
