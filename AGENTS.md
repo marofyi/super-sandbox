@@ -163,6 +163,29 @@ For medium to high complexity features, follow Test-Driven Development:
 - Make breaking API changes without discussion
 - Delete failing tests without permission
 
+## HTML vs Webapp
+
+**Default to single-file HTML.** Start with the simplest thing that could work.
+
+```
+User requests a tool/demo/prototype?
+  → Single HTML file with CDN dependencies
+  → No build step, no package.json, no node_modules
+
+Only escalate to a webapp when the user EXPLICITLY needs:
+  → Server-side logic or API routes
+  → Database connections
+  → Authentication with server-side sessions
+  → SSR/SSG build-time rendering
+  → Dependencies without CDN builds
+```
+
+**The threshold is impossibility, not inconvenience.** If it CAN be done in a single HTML file, do it that way. Complex client-side state, multiple components, even React—all work fine via CDN.
+
+**Less is more. Form follows function.** Don't add interactivity or visual polish unless explicitly requested. Interfaces should be usable, minimal, and focused solely on user goals.
+
+See [docs/static-html-guide.md](./docs/static-html-guide.md) for templates and CDN library references.
+
 ## Proof of Completion
 
 A task is only complete when:
