@@ -21,44 +21,6 @@ else
   echo "GitHub CLI already installed: $(gh --version | head -1)"
 fi
 
-# Setup gh config to use GH_TOKEN without migration issues
-# Fresh sandbox has no config, and old/corrupted configs trigger
-# a migration that requires dbus-launch (not available here)
-#
-# SECURITY: We write the token to gh's config file, then unset GH_TOKEN
-# from the environment using CLAUDE_ENV_FILE. This way:
-# 1. gh CLI authenticates via config file (not env var)
-# 2. Subsequent Bash commands don't have access to the raw token
-# 3. The security-hook.py provides defense-in-depth
-# See docs/cc-web-security.md for the full threat model.
-if [ -n "$GH_TOKEN" ]; then
-  rm -rf ~/.config/gh
-  mkdir -p ~/.config/gh
-  # Write token to hosts.yml so gh authenticates via config file
-  cat > ~/.config/gh/hosts.yml << EOFYML
-github.com:
-    oauth_token: ${GH_TOKEN}
-    git_protocol: https
-EOFYML
-  # Restrict permissions on the config file
-  chmod 600 ~/.config/gh/hosts.yml
-
-  # Unset sensitive tokens for subsequent Bash commands using CLAUDE_ENV_FILE
-  # This is the key security measure - removes secrets from environment
-  # Note: Only GH_TOKEN and BROWSERLESS_TOKEN are in CC Web env (minimal token surface)
-  if [ -n "$CLAUDE_ENV_FILE" ]; then
-    echo 'unset GH_TOKEN' >> "$CLAUDE_ENV_FILE"
-    echo 'unset GITHUB_TOKEN' >> "$CLAUDE_ENV_FILE"
-    echo 'unset BROWSERLESS_TOKEN' >> "$CLAUDE_ENV_FILE"
-    echo 'unset CODESIGN_MCP_TOKEN' >> "$CLAUDE_ENV_FILE"
-    echo "Sensitive tokens removed from environment"
-  else
-    echo "Warning: CLAUDE_ENV_FILE not available, tokens remain in env"
-  fi
-
-  echo "GitHub CLI configured for token auth"
-fi
-
 # Add a real GitHub remote so gh CLI can detect the repo
 # The proxy remote (origin) isn't recognized as a GitHub host
 REPO=$(git remote get-url origin 2>/dev/null | sed -E 's|.*/git/([^/]+/[^/]+).*|\1|')
