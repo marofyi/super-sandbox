@@ -33,14 +33,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 - GitHub CLI (`gh`) workflow commands failing in CC Web with "no known GitHub host" error
-  - Root cause: Git remotes point to local proxy (`127.0.0.1:50619`), not github.com
-  - `gh auth status` works (uses `GH_TOKEN`), but `gh workflow` needs a "known host" in config
+  - Root cause: Git remotes point to local proxy (`http://local_proxy@127.0.0.1:...`), not github.com
+  - `gh auth status` works (uses `GH_TOKEN`), but repo-scoped commands need a recognizable GitHub remote
   - Old/corrupted configs trigger migration requiring `dbus-launch` (unavailable in sandbox)
-  - Solution: Create fresh empty config before using gh:
-    ```bash
-    rm -rf ~/.config/gh && mkdir -p ~/.config/gh && touch ~/.config/gh/hosts.yml
-    ```
-  - Added to `.claude/scripts/setup-web-session.sh` for automatic setup
+  - **Solution** (two parts):
+    1. Create fresh empty config to avoid dbus-launch migration:
+       ```bash
+       rm -rf ~/.config/gh && mkdir -p ~/.config/gh && touch ~/.config/gh/hosts.yml
+       ```
+    2. Add a secondary `github` remote so `gh` can detect the repo:
+       ```bash
+       REPO=$(git remote get-url origin | sed -E 's|.*/git/([^/]+/[^/]+).*|\1|')
+       git remote add github "https://github.com/${REPO}.git"
+       ```
+  - The `origin` remote still uses the proxy for all git operations (push/pull/fetch)
+  - The `github` remote is passive - only used for `gh` CLI host detection
+  - Both fixes added to `.claude/scripts/setup-web-session.sh` for automatic setup
 
 ### Documentation
 

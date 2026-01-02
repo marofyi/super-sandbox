@@ -31,4 +31,12 @@ if [ -n "$GH_TOKEN" ]; then
   echo "GitHub CLI configured for token auth"
 fi
 
+# Add a real GitHub remote so gh CLI can detect the repo
+# The proxy remote (origin) isn't recognized as a GitHub host
+REPO=$(git remote get-url origin 2>/dev/null | sed -E 's|.*/git/([^/]+/[^/]+).*|\1|')
+if [ -n "$REPO" ] && ! git remote get-url github &>/dev/null; then
+  git remote add github "https://github.com/${REPO}.git"
+  echo "Added 'github' remote for gh CLI: $REPO"
+fi
+
 echo "Web session setup complete"
