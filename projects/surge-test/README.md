@@ -2,46 +2,44 @@
 
 Benchmark surge.sh deployment speed for AI agent development workflows.
 
-## Setup
+## Quick Start (No Terminal Required)
 
-### 1. Get Surge Token
-
-```bash
-surge token
-```
-
-This will prompt you to login/register and display your token.
-
-### 2. Set Environment Variables
+Surge.sh accounts can be created via API - no interactive CLI login needed.
 
 ```bash
-export SURGE_LOGIN="your-email@example.com"
-export SURGE_TOKEN="your-token-here"
-```
+# Create account and get token
+./onboard.sh your-email@example.com YourPassword123
 
-## Usage
+# Activate credentials
+source ~/.surge-credentials
 
-### First Deploy
-
-```bash
+# Deploy test page
 ./deploy.sh
 ```
 
-This creates a new surge.sh subdomain and deploys the test page.
+## API Discovery
 
-### Quick Redeploy
-
-```bash
-./redeploy.sh
-```
-
-Uses the saved domain for faster iteration testing.
-
-### Custom Domain
+The surge.sh API auto-creates accounts on first authentication:
 
 ```bash
-SURGE_DOMAIN="my-test.surge.sh" ./deploy.sh
+# This creates an account if email doesn't exist, or logs in if it does
+curl -s -X POST https://surge.surge.sh/token \
+  -H "Content-Type: application/json" \
+  -u "email@example.com:password123"
+
+# Response: {"email":"...","token":"..."}
 ```
+
+This enables fully automated onboarding in sandboxed environments like CC Web.
+
+## Files
+
+| File | Purpose |
+|------|---------|
+| `onboard.sh` | Create account via API, save credentials |
+| `deploy.sh` | Deploy with timing measurement |
+| `redeploy.sh` | Quick redeploy to saved domain |
+| `index.html` | Test page with timestamp marker |
 
 ## What It Measures
 
@@ -50,25 +48,18 @@ SURGE_DOMAIN="my-test.surge.sh" ./deploy.sh
 
 ## Expected Results
 
-Based on research:
-- Small files: ~2-5 seconds
-- Surge claims "publish in seconds" with 8 global CDN regions
-
-## Comparison with Gist Approach
-
 | Metric | Surge.sh | Gist+Polling |
 |--------|----------|--------------|
 | Deploy time | ~2-5s | ~1-2s (push) |
 | Visibility delay | ~instant | +3s (poll interval) |
 | Total round-trip | ~2-5s | ~4-5s |
-| Auth required | Token in env | Password per-session |
+| Auth required | Token (one-time setup) | Password per-session |
 
-## Files
+## Environment Variables
 
-| File | Purpose |
-|------|---------|
-| `index.html` | Test page with timestamp marker |
-| `deploy.sh` | Deploy with timing measurement |
-| `redeploy.sh` | Quick redeploy to saved domain |
-| `.surge-domain` | Saved domain (auto-generated) |
-| `.build/` | Temp build directory (auto-generated) |
+After running `onboard.sh`, these are set:
+
+- `SURGE_LOGIN` - Your email address
+- `SURGE_TOKEN` - API token for deployments
+
+Credentials are saved to `~/.surge-credentials` for persistence.
