@@ -197,8 +197,8 @@ For medium to high complexity features, follow Test-Driven Development:
 - Use only `GH_TOKEN` with `actions:write` scope for `gh workflow run`; never request broader scopes.
 - Keep `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID_*` in GitHub Secrets. Do not surface them in shells or logs.
 - `BROWSERLESS_TOKEN` is the only API token expected in CC Web; avoid printing or echoing it.
-- Session hooks hide tokens and block env dumps (`env`, `printenv`, `gh auth token`, reading `~/.config/gh/hosts.yml`). Avoid commands that expose environment state.
-- Review [docs/cc-web-security.md](./docs/cc-web-security.md) before running anything that touches tokens or workflows.
+- No PreToolUse security hook is active; avoid env dumps or token prints yourself.
+- Review [docs/cc-web.md](./docs/cc-web.md) for the token architecture and network constraints.
 
 ## HTML vs Webapp
 
@@ -236,6 +236,8 @@ A task is only complete when:
 
 The `.github/workflows/update-docs.yml` and `.github/workflows/update-index.yml` workflows keep docs and the landing page current. They accept `workflow_dispatch` inputs `pr_number` (target a closed PR) and `commits_back` (default 5) when no PR context is available, set `BASE_REF` and `HAS_PR_CONTEXT` to pick the correct diff target, and checkout the PR head SHA when provided. Manual dispatches always create a fresh `docs/` branch (with PR number suffix when given) before pushing.
 
+`update-docs.yml` now asks for CHANGELOG updates (Keep a Changelog) instead of `docs/learnings-log.md`.
+
 **When modifying AGENTS.md**, ensure the workflow agent instructions stay in sync:
 - If the Documentation Structure table changes, update the workflow's embedded copy
 - If document purposes change, update the workflow's routing rules
@@ -250,9 +252,7 @@ The `.github/workflows/update-docs.yml` and `.github/workflows/update-index.yml`
 | [README.md](./README.md) | Project structure, commands, env vars | Running commands, understanding project structure, setting up environment |
 | [CONTRIBUTING.md](./CONTRIBUTING.md) | Code style, git workflow, PR process | Writing or modifying any code in this repository |
 | [CHANGELOG.md](./CHANGELOG.md) | Notable changes and discoveries | Investigating regressions or understanding recent updates |
-| [docs/learnings-log.md](./docs/learnings-log.md) | Running discoveries and workflow updates | Revisiting gotchas, non-obvious fixes, and process changes |
 | [docs/browserless.md](./docs/browserless.md) | BrowserQL API, CLI, patterns | Any browser automation, screenshots, scraping, or form interaction |
-| [docs/cc-web.md](./docs/cc-web.md) | Network constraints, proxy setup | Working in Claude Code Web or any sandboxed environment |
-| [docs/cc-web-security.md](./docs/cc-web-security.md) | Token security, prompt injection defense | Handling GH_TOKEN in web sessions, security hooks |
+| [docs/cc-web.md](./docs/cc-web.md) | Network constraints, proxy setup, token architecture | Working in Claude Code Web or any sandboxed environment |
 | [docs/static-html-guide.md](./docs/static-html-guide.md) | Single-file prototypes, GitHub Pages | Creating standalone HTML tools or demos in projects/ |
 | [docs/vercel-deployment.md](./docs/vercel-deployment.md) | CLI commands, env vars, GitHub Actions | Deploying to Vercel, adding env vars, or setting up GitHub Actions for deploy |

@@ -27,6 +27,41 @@ if ! command -v mytool &> /dev/null; then
 fi
 ```
 
+## Token Architecture
+
+This monorepo uses a **minimal token surface** design:
+
+| Token | Location | Scope | Purpose |
+|-------|----------|-------|---------|
+| `GH_TOKEN` | CC Web env | `actions:write` only | Dispatch workflows via `gh workflow run` |
+| `BROWSERLESS_TOKEN` | CC Web env | Full (free account) | E2E testing screenshots |
+| `VERCEL_TOKEN` | GitHub Secrets | Team-scoped | Deployments (via workflows) |
+
+**No deployment tokens in CC Web.** Vercel deployments are handled by GitHub Actions workflows.
+
+### GH_TOKEN: Actions-Only Scope
+
+CC Web handles git operations **natively** (push, PRs, issues). The only thing requiring `gh` CLI is workflow dispatch:
+
+```bash
+gh workflow run vercel-setup -f project_name=my-app
+gh workflow run vercel-deploy -f project_name=my-app
+```
+
+### Creating the Token
+
+1. Go to [github.com/settings/personal-access-tokens/new](https://github.com/settings/personal-access-tokens/new)
+2. **Token name**: `Claude Code Web - actions only`
+3. **Expiration**: 30 days
+4. **Repository access**: "Only select repositories" → your repo
+5. **Permissions**: Only `Actions: Read and write`
+
+## Security Notes
+
+- Session setup only installs `gh` and adds the `github` remote; it does not hide tokens or run a PreToolUse security hook.
+- Tokens stay in the environment—depend on minimal scopes and avoid env dumps or `gh auth token` style commands.
+- Keep deployments workflow-only; never inject Vercel secrets into CC Web shells.
+
 ## Network & HTTP
 
 Node.js `fetch` fails in CC Web with DNS errors. The sandbox routes traffic through a proxy that handles DNS, but native `fetch` ignores proxy settings.
@@ -109,7 +144,7 @@ const img = await screenshot();
 ## See Also
 
 - [README.md](../README.md) - Project overview and entry point for humans
-- [docs/cc-web-security.md](./cc-web-security.md) - Token security and prompt injection defense
 - [docs/browserless.md](./browserless.md) - HTTP-only BrowserQL client for automation
+- [docs/vercel-deployment.md](./vercel-deployment.md) - Workflow-based deployments
 - [CHANGELOG.md](../CHANGELOG.md) - Current network and automation findings
 - [Browserless BrowserQL Docs](https://docs.browserless.io/browserql-interactions)
