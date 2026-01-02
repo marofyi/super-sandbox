@@ -243,6 +243,14 @@ The `.github/workflows/update-docs.yml` and `.github/workflows/update-index.yml`
 - If document purposes change, update the workflow's routing rules
 - Preserve the branching and commit expectations: use `docs:`-prefixed commit subjects so the push step runs, and keep the workflow aligned with the content boundaries defined here
 
+## Skills
+
+Reusable capabilities for common tasks. Skills are located in `skills/` and follow the [Agent Skills](https://agentskills.io) specification.
+
+| Skill | Description |
+|-------|-------------|
+| [html-live-preview](./skills/html-live-preview/) | Push live HTML previews from CC Web sandbox to a browser. Auto-polls GitHub Gist for updates. Use when user is creating or editing a single-file HTML page and wants to see it live. |
+
 ## References
 
 **Read before acting.** These docs contain critical context. Skipping them causes errors.

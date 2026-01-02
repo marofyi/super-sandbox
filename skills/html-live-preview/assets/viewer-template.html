@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Live Preview</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/forge/0.10.0/forge.min.js"></script>
+  <style>
+    *{margin:0;box-sizing:border-box}
+    body{font:14px system-ui;background:#0d1117;color:#c9d1d9;min-height:100vh}
+    .header{background:#161b22;padding:8px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #30363d}
+    .dot{width:8px;height:8px;border-radius:50%;background:#3fb950}
+    .dot.err{background:#f85149}
+    .dot.load{background:#d29922}
+    .status{flex:1;font-size:12px;color:#8b949e}
+    .btn{background:#21262d;color:#c9d1d9;border:1px solid #30363d;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer}
+    .btn:hover{background:#30363d}
+    iframe{width:100%;height:calc(100vh - 44px);border:0;background:#fff}
+    .error-panel{padding:20px;text-align:center}
+    .error-panel h2{color:#f85149;margin-bottom:8px}
+    .error-panel p{color:#8b949e;font-size:13px}
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="dot" id="dot"></div>
+    <span class="status" id="status">Connecting...</span>
+    <button class="btn" onclick="refresh()">Refresh</button>
+    <button class="btn" onclick="togglePause()">Pause</button>
+  </div>
+  <iframe id="frame"></iframe>
+  <div id="errorPanel" class="error-panel" style="display:none">
+    <h2>Preview Error</h2>
+    <p id="errorMsg"></p>
+  </div>
+
+  <script>
+    // Embedded config (replaced by setup.sh)
+    const GIST_ID = '{{GIST_ID}}';
+    const KEY = '{{KEY}}';
+
+    let lastContent = '';
+    let interval;
+    let paused = false;
+    let rateLimitHit = false;
+
+    function decrypt(encryptedBase64, key) {
+      const data = forge.util.decode64(encryptedBase64);
+      const salt = data.substring(0, 16);
+      const iv = data.substring(16, 28);
+      const authTag = data.substring(28, 44);
+      const ciphertext = data.substring(44);
+      const derivedKey = forge.pkcs5.pbkdf2(key, salt, 100000, 32, 'sha256');
+      const decipher = forge.cipher.createDecipher('AES-GCM', derivedKey);
+      decipher.start({ iv: iv, tag: forge.util.createBuffer(authTag) });
+      decipher.update(forge.util.createBuffer(ciphertext));
+      if (!decipher.finish()) throw new Error('Decryption failed');
+      return decipher.output.toString('utf8');
+    }
+
+    async function fetchAndRender() {
+      if (paused) return;
+      const dot = document.getElementById('dot');
+      const status = document.getElementById('status');
+      dot.className = 'dot load';
+
+      try {
+        const res = await fetch('https://api.github.com/gists/' + GIST_ID, {
+          headers: { 'Accept': 'application/vnd.github.v3+json' },
+          cache: 'no-store'
+        });
+
+        if (res.status === 403) {
+          rateLimitHit = true;
+          dot.className = 'dot err';
+          status.textContent = 'Rate limited - waiting 60s...';
+          clearInterval(interval);
+          setTimeout(() => { rateLimitHit = false; startPolling(); }, 60000);
+          return;
+        }
+
+        if (!res.ok) throw new Error('Fetch failed: ' + res.status);
+
+        const data = await res.json();
+        const files = data.files;
+        const encrypted = files[Object.keys(files)[0]].content.trim();
+        const rev = data.history[0].version.substring(0, 7);
+
+        if (encrypted !== lastContent) {
+          lastContent = encrypted;
+          status.textContent = 'Decrypting...';
+          const html = decrypt(encrypted, KEY);
+          document.getElementById('frame').srcdoc = html;
+          document.getElementById('errorPanel').style.display = 'none';
+          document.getElementById('frame').style.display = 'block';
+          status.textContent = 'Updated ' + new Date().toLocaleTimeString();
+        } else {
+          status.textContent = 'Watching ' + new Date().toLocaleTimeString();
+        }
+        dot.className = 'dot';
+      } catch (e) {
+        console.error('Render error:', e);
+        dot.className = 'dot err';
+        status.textContent = 'Error: ' + (e.message || String(e));
+        document.getElementById('errorMsg').textContent = e.message || String(e);
+        document.getElementById('errorPanel').style.display = 'block';
+        document.getElementById('frame').style.display = 'none';
+      }
+    }
+
+    function startPolling() {
+      if (interval) clearInterval(interval);
+      interval = setInterval(fetchAndRender, 5000);
+    }
+
+    function refresh() {
+      lastContent = '';
+      fetchAndRender();
+    }
+
+    function togglePause() {
+      paused = !paused;
+      document.querySelector('.btn:nth-child(3)').textContent = paused ? 'Resume' : 'Pause';
+      document.getElementById('status').textContent = paused ? 'Paused' : 'Resuming...';
+      if (!paused) fetchAndRender();
+    }
+
+    // Start immediately
+    fetchAndRender();
+    startPolling();
+  </script>
+</body>
+</html>
