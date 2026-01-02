@@ -78,21 +78,88 @@ The hook returns a `deny` decision with an explanation when blocked patterns are
 
 ### Layer 3: Token Scoping (User Responsibility)
 
-**Use fine-grained Personal Access Tokens (PATs) with minimal permissions:**
+Even with defense layers 1 and 2, token scoping limits blast radius if a token is leaked.
 
-| Permission | When Needed |
-|------------|-------------|
-| `contents:read` | Reading repository files |
-| `contents:write` | Pushing commits |
-| `pull_requests:write` | Creating/updating PRs |
-| `issues:read` | Reading issue content |
+#### GitHub Token (`GH_TOKEN`)
+
+**Use [Fine-grained Personal Access Tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#fine-grained-personal-access-tokens) instead of classic tokens.**
+
+| Task | Permission | Access Level |
+|------|------------|--------------|
+| Clone/pull repos | Contents | Read |
+| Push commits | Contents | Write |
+| Create/update PRs | Pull requests | Write |
+| Read issues | Issues | Read |
+| Comment on issues | Issues | Write |
+| Read PR reviews | Pull requests | Read |
+
+**Recommended minimal scope for Claude Code:**
+- **Contents: Write** - Push commits to branches
+- **Pull requests: Write** - Create and update PRs
+- **Issues: Read** - Analyze issue content
+- **Metadata: Read** - Required for all operations
 
 **Avoid granting:**
-- `admin:*` permissions
-- `delete_repo`
-- Permissions to unrelated repositories
+- `admin:*` - Repository administration
+- `delete_repo` - Repository deletion
+- `workflows` - GitHub Actions (unless needed)
+- Access to unrelated repositories
 
-**Set short expiration times** - Even if leaked, limited exposure window.
+**Best practices:**
+- Scope to specific repositories only (not "All repositories")
+- Set expiration to 7-30 days
+- Use `X-Accepted-GitHub-Permissions` header to discover minimum required permissions
+- Monitor usage at github.com/settings/tokens
+
+#### Vercel Token (`VERCEL_TOKEN`)
+
+Vercel tokens currently support **team-level scoping** only ([project-level is a feature request](https://community.vercel.com/t/project-level-scope-for-api-tokens/6568)).
+
+**Current scoping options:**
+- **Personal Account** - Access to your personal projects only
+- **Team Scope** - Limit token to specific team(s)
+
+**Best practices:**
+- [Scope to a single team](https://vercel.com/changelog/access-tokens-can-now-be-scoped-to-teams) rather than all teams
+- Set short expiration (1 day to 1 year options available)
+- For CI/CD, consider a dedicated "service account" user
+- [Rotate secrets regularly](https://vercel.com/docs/environment-variables/rotating-secrets) - update Vercel before invalidating old credential
+- Store tokens in [sensitive environment variables](https://vercel.com/docs/environment-variables/sensitive-environment-variables)
+
+**Limitations:**
+- No project-level scoping (team is the minimum)
+- No action-level scoping (can't limit to "deployments only")
+- Tokens tied to user accounts, not teams directly
+
+#### Browserless Token (`BROWSERLESS_TOKEN`)
+
+Browserless uses **single account-level tokens** with no granular scoping.
+
+**Current limitations:**
+- One token per account with full access
+- No read-only or limited-action tokens
+- No built-in expiration mechanism
+
+**Best practices:**
+- Use a dedicated Browserless account for Claude Code sessions
+- Keep token out of client-side code and logs
+- Monitor usage through Browserless dashboard
+- Contact Browserless support for enterprise access control options
+
+**Risk mitigation:**
+Since Browserless lacks fine-grained scoping, rely more heavily on:
+1. Layer 1 (token hiding via `CLAUDE_ENV_FILE`)
+2. Layer 2 (PreToolUse hook blocking)
+3. Separate account isolation
+
+#### Token Expiration Strategy
+
+| Token | Recommended Expiration | Rationale |
+|-------|------------------------|-----------|
+| `GH_TOKEN` | 7-30 days | Frequent rotation, easy to regenerate |
+| `VERCEL_TOKEN` | 30-90 days | Longer for CI/CD stability |
+| `BROWSERLESS_TOKEN` | N/A (no expiration) | Rotate manually, monitor usage |
+| `OPENAI_API_KEY` | No built-in expiration | Use usage limits, rotate if exposed |
 
 ## What's NOT Protected
 
@@ -177,4 +244,11 @@ cat README.md                      # Reading normal files
 
 - [cc-web.md](./cc-web.md) - General Claude Code Web guide
 - [AGENTS.md](../AGENTS.md) - Agent behavior rules
-- [GitHub Fine-grained PATs](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#fine-grained-personal-access-tokens)
+
+### Token Documentation
+
+- [GitHub Fine-grained PATs](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#fine-grained-personal-access-tokens) - Creating scoped GitHub tokens
+- [GitHub PAT Permissions](https://docs.github.com/en/rest/authentication/permissions-required-for-fine-grained-personal-access-tokens) - Permission reference
+- [Vercel Access Tokens](https://vercel.com/kb/guide/how-do-i-use-a-vercel-api-access-token) - Creating and scoping Vercel tokens
+- [Vercel Team Scoping](https://vercel.com/changelog/access-tokens-can-now-be-scoped-to-teams) - Team-level token scoping
+- [Browserless Connection URLs](https://docs.browserless.io/overview/connection-urls) - API authentication
