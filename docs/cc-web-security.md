@@ -27,7 +27,19 @@ An attacker could craft prompts that trick the AI into running commands like:
 
 ## Defense Layers
 
-### Layer 1: PreToolUse Hook (Primary Defense)
+### Layer 1: Token Hiding via CLAUDE_ENV_FILE (Primary Defense)
+
+The SessionStart hook (`.claude/scripts/setup-web-session.sh`) uses `CLAUDE_ENV_FILE` to remove the token from the environment:
+
+1. **Writes token to gh config file** (`~/.config/gh/hosts.yml`)
+2. **Unsets GH_TOKEN** via `CLAUDE_ENV_FILE` mechanism
+3. **gh CLI continues to work** using config file authentication
+
+After setup completes, subsequent Bash tool calls **do not have access to GH_TOKEN** in their environment. The token only exists in the protected config file.
+
+**Known limitation:** Resumed sessions (`--continue`, `--resume`) have a bug where `CLAUDE_ENV_FILE` is not sourced. In these cases, the PreToolUse hook provides fallback protection.
+
+### Layer 2: PreToolUse Hook (Defense in Depth)
 
 A Python hook (`.claude/scripts/security-hook.py`) intercepts all Bash commands and blocks dangerous patterns:
 
@@ -41,9 +53,12 @@ A Python hook (`.claude/scripts/security-hook.py`) intercepts all Bash commands 
 | `/proc/*/environ` | Procfs environment access |
 | `curl`/`wget` with token vars | Exfiltration attempts |
 
-The hook returns a `deny` decision with an explanation when blocked patterns are detected.
+The hook returns a `deny` decision with an explanation when blocked patterns are detected. This provides defense-in-depth for:
+- Resumed sessions (where CLAUDE_ENV_FILE bug applies)
+- Any edge cases where token remains in environment
+- Protection against `gh auth token` which reads from config file
 
-### Layer 2: Token Scoping (User Responsibility)
+### Layer 3: Token Scoping (User Responsibility)
 
 **Use fine-grained Personal Access Tokens (PATs) with minimal permissions:**
 
@@ -60,10 +75,6 @@ The hook returns a `deny` decision with an explanation when blocked patterns are
 - Permissions to unrelated repositories
 
 **Set short expiration times** - Even if leaked, limited exposure window.
-
-### Layer 3: Environment Isolation Limitation
-
-The `GH_TOKEN` environment variable is set by the parent process (Claude Code infrastructure). Child scripts cannot unset it. The hook is the primary defense since we cannot remove the token from the environment.
 
 ## What's NOT Protected
 
