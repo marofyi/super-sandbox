@@ -6,7 +6,6 @@
   <title>Research Projects</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Placeholder gradient for missing screenshots */
     .placeholder-gradient {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
@@ -16,73 +15,12 @@
   <div class="max-w-6xl mx-auto px-4 py-12">
     <header class="mb-12">
       <h1 class="text-4xl font-bold text-gray-900 mb-2">Research Projects</h1>
-      <p class="text-gray-600 text-lg">A space for coding experiments and explorations.</p>
+      <p class="text-gray-600 text-lg">Rapid prototyping of static HTML and web applications.</p>
     </header>
 
-    <!-- Web Apps Section -->
+    <!-- Projects Section -->
     <section class="mb-12">
-      <h2 class="text-2xl font-semibold text-gray-800 mb-6">Web Applications</h2>
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-        <!-- TanStack Chat -->
-        <article class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-          <div class="placeholder-gradient h-48 flex items-center justify-center">
-            <span class="text-white text-6xl">💬</span>
-          </div>
-          <div class="p-5">
-            <h3 class="text-xl font-semibold text-gray-900">TanStack Chat</h3>
-            <p class="text-gray-600 mt-2 text-sm">Multi-provider AI chat with model switching across OpenAI, Anthropic, Gemini, and Ollama. Features tool approval flows and guitar recommendations demo.</p>
-            <div class="mt-4 flex gap-4">
-              <a href="https://tanstack-chat.vercel.app" target="_blank" rel="noopener" class="text-blue-600 hover:text-blue-800 font-medium text-sm">Live Demo &rarr;</a>
-              <a href="./tanstack-chat/" class="text-gray-500 hover:text-gray-700 text-sm">Source</a>
-            </div>
-          </div>
-        </article>
-
-        <!-- Example Chat Web -->
-        <article class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-          <div class="placeholder-gradient h-48 flex items-center justify-center" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-            <span class="text-white text-6xl">🌐</span>
-          </div>
-          <div class="p-5">
-            <h3 class="text-xl font-semibold text-gray-900">Example Chat Web</h3>
-            <p class="text-gray-600 mt-2 text-sm">Next.js web application with streaming chat UI. Demonstrates @research/openai-utils in a browser-friendly interface with React and Tailwind CSS.</p>
-            <div class="mt-4 flex gap-4">
-              <a href="https://example-chat-web-marofyi.vercel.app" target="_blank" rel="noopener" class="text-blue-600 hover:text-blue-800 font-medium text-sm">Live Demo &rarr;</a>
-              <a href="./example-chat-web/" class="text-gray-500 hover:text-gray-700 text-sm">Source</a>
-            </div>
-          </div>
-        </article>
-
-      </div>
-    </section>
-
-    <!-- CLI Tools Section -->
-    <section class="mb-12">
-      <h2 class="text-2xl font-semibold text-gray-800 mb-6">CLI Tools</h2>
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-        <!-- Example Chat CLI -->
-        <article class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-          <div class="placeholder-gradient h-48 flex items-center justify-center" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-            <span class="text-white text-6xl">⌨️</span>
-          </div>
-          <div class="p-5">
-            <h3 class="text-xl font-semibold text-gray-900">Example Chat</h3>
-            <p class="text-gray-600 mt-2 text-sm">CLI demonstration of @research/openai-utils showing ask(), chat(), chatStream(), and usage reporting. Quick experiments with persona prompts.</p>
-            <div class="mt-4 flex gap-4">
-              <span class="text-gray-400 text-sm">CLI only</span>
-              <a href="./example-chat/" class="text-gray-500 hover:text-gray-700 text-sm">Source</a>
-            </div>
-          </div>
-        </article>
-
-      </div>
-    </section>
-
-    <!-- Prototypes Section -->
-    <section class="mb-12">
-      <h2 class="text-2xl font-semibold text-gray-800 mb-6">Prototypes</h2>
+      <h2 class="text-2xl font-semibold text-gray-800 mb-6">Projects</h2>
       <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
 
         <!-- The Intelligence Economy -->
@@ -107,9 +45,31 @@
           </div>
           <div class="p-5">
             <h3 class="text-xl font-semibold text-gray-900">Live Preview Viewer</h3>
-            <p class="text-gray-600 mt-2 text-sm">Encrypted preview system for CC Web sandbox. Push HTML to GitHub Gist with AES-256-GCM encryption, view via self-contained data: URL viewer with PBKDF2 key derivation.</p>
+            <p class="text-gray-600 mt-2 text-sm">Encrypted preview system for CC Web sandbox. Push HTML to GitHub Gist with AES-256-GCM encryption, view via self-contained data: URL viewer.</p>
             <div class="mt-4 flex gap-4">
               <a href="./projects/live-preview-test/" class="text-gray-500 hover:text-gray-700 text-sm">Source</a>
+            </div>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- Packages Section -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-semibold text-gray-800 mb-6">Packages</h2>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <!-- Browserless -->
+        <article class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+          <div class="placeholder-gradient h-48 flex items-center justify-center" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+            <span class="text-white text-6xl">📸</span>
+          </div>
+          <div class="p-5">
+            <h3 class="text-xl font-semibold text-gray-900">@research/browserless</h3>
+            <p class="text-gray-600 mt-2 text-sm">BrowserQL-powered screenshot utility for e2e testing. Capture responsive screenshots across viewports for visual QA.</p>
+            <div class="mt-4 flex gap-4">
+              <a href="./packages/browserless/" class="text-gray-500 hover:text-gray-700 text-sm">Source</a>
             </div>
           </div>
         </article>

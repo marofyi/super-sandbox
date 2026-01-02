@@ -1,0 +1,79 @@
+name: Setup Vercel Project
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_name:
+        description: 'Project name (e.g., my-new-app)'
+        required: true
+        type: string
+      project_path:
+        description: 'Path in monorepo (e.g., projects/my-new-app)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - run: pnpm install
+
+      - name: Create Vercel project
+        run: |
+          pnpm exec vercel project add ${{ inputs.project_name }} \
+            --token ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Link project
+        run: |
+          rm -rf .vercel
+          VERCEL_ORG_ID= VERCEL_PROJECT_ID= pnpm exec vercel link \
+            --project ${{ inputs.project_name }} --yes \
+            --token ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Extract project ID and summarize
+        id: project
+        run: |
+          PROJECT_ID=$(cat .vercel/project.json | jq -r '.projectId')
+          echo "id=$PROJECT_ID" >> $GITHUB_OUTPUT
+
+          # Generate secret name
+          SECRET_NAME="VERCEL_PROJECT_ID_$(echo '${{ inputs.project_name }}' | tr '-' '_' | tr '[:lower:]' '[:upper:]')"
+
+          # Summary for user
+          echo "## Vercel Project Created" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Project:** \`${{ inputs.project_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Path:** \`${{ inputs.project_path }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Project ID:** \`$PROJECT_ID\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "1. **Add GitHub Secret:**" >> $GITHUB_STEP_SUMMARY
+          echo "   - Go to Settings → Secrets → Actions" >> $GITHUB_STEP_SUMMARY
+          echo "   - Add: \`$SECRET_NAME\` = \`$PROJECT_ID\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "2. **Create deploy workflow** in CC Web:" >> $GITHUB_STEP_SUMMARY
+          echo "   \`.github/workflows/deploy-${{ inputs.project_name }}.yml\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Initial deploy
+        run: |
+          VERCEL_ORG_ID= VERCEL_PROJECT_ID= pnpm exec vercel deploy --prod --yes \
+            --token ${{ secrets.VERCEL_TOKEN }}
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "**Initial deploy:** ✅ Complete" >> $GITHUB_STEP_SUMMARY

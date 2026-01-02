@@ -192,6 +192,14 @@ For medium to high complexity features, follow Test-Driven Development:
 - Make breaking API changes without discussion
 - Delete failing tests without permission
 
+## Token Handling (CC Web)
+
+- Use only `GH_TOKEN` with `actions:write` scope for `gh workflow run`; never request broader scopes.
+- Keep `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID_*` in GitHub Secrets. Do not surface them in shells or logs.
+- `BROWSERLESS_TOKEN` is the only API token expected in CC Web; avoid printing or echoing it.
+- Session hooks hide tokens and block env dumps (`env`, `printenv`, `gh auth token`, reading `~/.config/gh/hosts.yml`). Avoid commands that expose environment state.
+- Review [docs/cc-web-security.md](./docs/cc-web-security.md) before running anything that touches tokens or workflows.
+
 ## HTML vs Webapp
 
 **Default to single-file HTML.** Start with the simplest thing that could work.
@@ -245,5 +253,6 @@ The `.github/workflows/update-docs.yml` and `.github/workflows/update-index.yml`
 | [docs/learnings-log.md](./docs/learnings-log.md) | Running discoveries and workflow updates | Revisiting gotchas, non-obvious fixes, and process changes |
 | [docs/browserless.md](./docs/browserless.md) | BrowserQL API, CLI, patterns | Any browser automation, screenshots, scraping, or form interaction |
 | [docs/cc-web.md](./docs/cc-web.md) | Network constraints, proxy setup | Working in Claude Code Web or any sandboxed environment |
+| [docs/cc-web-security.md](./docs/cc-web-security.md) | Token security, prompt injection defense | Handling GH_TOKEN in web sessions, security hooks |
 | [docs/static-html-guide.md](./docs/static-html-guide.md) | Single-file prototypes, GitHub Pages | Creating standalone HTML tools or demos in projects/ |
 | [docs/vercel-deployment.md](./docs/vercel-deployment.md) | CLI commands, env vars, GitHub Actions | Deploying to Vercel, adding env vars, or setting up GitHub Actions for deploy |

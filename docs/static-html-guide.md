@@ -23,8 +23,8 @@ Place single-file prototypes directly in `projects/`:
 ```
 projects/
 ├── index.html           # Landing page (auto-maintained)
-├── tanstack-chat/       # Full project
-├── example-chat-web/    # Full project
+├── live-preview-test/   # CC Web preview utility
+├── the-intelligence-economy/ # Static visualization
 ├── color-picker.html    # Prototype
 └── json-formatter.html  # Prototype
 ```
@@ -117,17 +117,16 @@ python -m http.server 8000 --directory projects
 The CC Web sandbox is remote—localhost isn't accessible from your browser.
 
 **Options:**
-1. **Deploy to GitHub Pages** — Push to main, preview at `https://<user>.github.io/research/`
+1. **Deploy via Vercel** — Use `vercel-setup.yml` then auto/manual deploy workflows
 2. **Read the HTML** — Inspect markup directly with the Read tool
 
 ## Deployment
 
-Static HTML files in `projects/` are automatically deployed to GitHub Pages when pushed to `main`:
+Use the Vercel workflows when you need a public URL:
 
-- **Workflow:** `.github/workflows/deploy-github-pages.yml`
-- **URL:** `https://<user>.github.io/research/<filename>.html`
-
-The landing page at `projects/index.html` is automatically updated by the `update-docs.yml` workflow when projects change.
+- Run `gh workflow run vercel-setup -f project_name=<name> -f project_path=projects/<name>` to create a project and capture its ID.
+- Store the ID as `VERCEL_PROJECT_ID_<NAME>` in GitHub Secrets, then either dispatch `vercel-deploy.yml` manually or add a per-project deploy workflow watching `projects/<name>/**`.
+- The root landing page `index.html` is kept in sync by `update-index.yml` so new prototypes remain discoverable.
 
 ## Best Practices
 

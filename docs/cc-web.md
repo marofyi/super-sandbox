@@ -109,6 +109,7 @@ const img = await screenshot();
 ## See Also
 
 - [README.md](../README.md) - Project overview and entry point for humans
+- [docs/cc-web-security.md](./cc-web-security.md) - Token security and prompt injection defense
 - [docs/browserless.md](./browserless.md) - HTTP-only BrowserQL client for automation
 - [CHANGELOG.md](../CHANGELOG.md) - Current network and automation findings
 - [Browserless BrowserQL Docs](https://docs.browserless.io/browserql-interactions)

@@ -1,0 +1,44 @@
+name: Deploy to Vercel
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_name:
+        description: 'Project name (e.g., my-new-app)'
+        required: true
+        type: string
+      project_id_secret:
+        description: 'GitHub secret name for project ID (e.g., VERCEL_PROJECT_ID_MY_APP)'
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - run: pnpm install
+
+      - name: Create Vercel project link
+        run: |
+          mkdir -p .vercel
+          echo '{"projectId":"${{ secrets[inputs.project_id_secret] }}","orgId":"${{ secrets.VERCEL_ORG_ID }}"}' > .vercel/project.json
+
+      - name: Deploy to Vercel
+        run: |
+          pnpm exec vercel deploy --prod --yes --token ${{ secrets.VERCEL_TOKEN }}
+
+          echo "## Deployment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Project:** \`${{ inputs.project_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ✅ Deployed to production" >> $GITHUB_STEP_SUMMARY
