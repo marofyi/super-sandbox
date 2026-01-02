@@ -36,9 +36,19 @@ BLOCKED_PATTERNS = [
     (r'\bgh\s+auth\s+status\s+.*--show-token', "gh auth status --show-token is blocked"),
 
     # Environment dumps - these leak ALL secrets
-    (r'^\s*env\s*$', "Bare 'env' command blocked - leaks all secrets"),
-    (r'^\s*printenv\s*$', "Bare 'printenv' command blocked - leaks all secrets"),
-    (r'\bprintenv\s+\S*(_TOKEN|_KEY|_SECRET|_PASSWORD)', "printenv for secrets is blocked"),
+    # Bare commands or with any arguments/pipes
+    (r'\benv\b(?!\s+\S+=)', "'env' command blocked - leaks all secrets"),
+    (r'\bprintenv\b', "'printenv' command blocked - leaks all secrets"),
+
+    # Shell built-ins that dump environment variables
+    (r'(?:^|\s|;|&&|\|\||`)set(?:\s*$|\s*[;&|]|\s*\))', "'set' command blocked - dumps all variables"),
+    (r'(?:^|\s|;|&&|\|\||`)export(?:\s*$|\s*[;&|]|\s*\))', "Bare 'export' blocked - lists exported vars"),
+    (r'\bdeclare\s+-p\b', "'declare -p' blocked - dumps all variables"),
+    (r'\bcompgen\s+-v\b', "'compgen -v' blocked - lists all variable names"),
+    (r'(?:^|\s|;|&&|\|\||`)typeset(?:\s*$|\s*[;&|]|\s*\))', "'typeset' blocked - dumps all variables"),
+
+    # Subshell environment dumps
+    (r'\b(bash|sh|zsh|ksh)\s+(-c\s+)?["\']?(set|export|declare|typeset|compgen)', "Subshell env dump blocked"),
 
     # Procfs environment access - leaks ALL secrets
     (r'/proc/[^/]*/environ', "Access to /proc/*/environ is blocked - leaks all secrets"),
@@ -51,9 +61,28 @@ BLOCKED_PATTERNS = [
     (rf'base64.*\$\{{?({SENSITIVE_VAR_PATTERN})', "Secret encoding attempt blocked"),
     (rf'\$\{{?({SENSITIVE_VAR_PATTERN}).*\|\s*base64', "Secret encoding attempt blocked"),
 
-    # Reading gh config file (contains token)
-    (r'cat.*\.config/gh/hosts\.yml', "Reading gh config is blocked - contains token"),
-    (r'cat.*\.config/gh/config\.yml', "Reading gh config is blocked - may contain secrets"),
+    # Reading gh config file (contains token) - block ALL file readers
+    (r'(cat|less|more|head|tail|view|vim|vi|nano|emacs)[\s\'\"]+.*\.config/gh/', "Reading gh config is blocked - contains token"),
+    (r'(awk|sed|grep|xargs|xxd|od|strings|hexdump).*\.config/gh/', "Reading gh config is blocked - contains token"),
+    (r'\bdd\b.*\.config/gh/', "'dd' on gh config blocked - contains token"),
+    (r'(cp|mv|ln).*\.config/gh/.*\s+\S', "Copying gh config is blocked - contains token"),
+    (r'base64\s+.*\.config/gh/', "Encoding gh config is blocked - contains token"),
+    (r'[<>].*\.config/gh/', "File redirection with gh config blocked - contains token"),
+
+    # Language-level environment access
+    (r'\bpython[23]?\b.*\bos\.environ\b', "Python os.environ access blocked - leaks secrets"),
+    (r'\bpython[23]?\b.*\bos\.getenv\b', "Python os.getenv blocked - can leak secrets"),
+    (r'\bnode\b.*\bprocess\.env\b', "Node process.env access blocked - leaks secrets"),
+    (r'\bruby\b.*\bENV\b', "Ruby ENV access blocked - leaks secrets"),
+    (r'\bperl\b.*%ENV\b', "Perl %ENV access blocked - leaks secrets"),
+    (r'\bphp\b.*\bgetenv\b', "PHP getenv() access blocked - leaks secrets"),
+    (r'\bphp\b.*\$_ENV\b', "PHP $_ENV access blocked - leaks secrets"),
+
+    # Advanced bypass attempts
+    (r'\$\{![^}]+\}', "Indirect variable expansion blocked - could access secrets"),
+    (r'\bexec\s+\d+[<>]', "File descriptor manipulation blocked - could read secrets"),
+    (r'source\s+.*\.config/gh/', "Sourcing gh config blocked - contains token"),
+    (r'\.\s+.*\.config/gh/', "Dot-sourcing gh config blocked - contains token"),
 ]
 
 # Additional suspicious patterns that warrant extra scrutiny

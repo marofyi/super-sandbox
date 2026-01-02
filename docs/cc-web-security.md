@@ -54,22 +54,27 @@ After setup completes, subsequent Bash tool calls **do not have access to ANY se
 
 A Python hook (`.claude/scripts/security-hook.py`) intercepts all Bash commands and blocks dangerous patterns:
 
-| Blocked Pattern | Reason |
-|-----------------|--------|
-| `$GH_TOKEN`, `$OPENAI_API_KEY`, etc. | Direct access to known secrets |
-| `$*_TOKEN`, `$*_KEY`, `$*_SECRET` | Generic secret variable patterns |
-| `gh auth token` | Reveals configured token |
-| `gh auth status --show-token` | Also reveals token |
-| Bare `env`, `printenv` | Dumps ALL environment secrets |
-| `/proc/*/environ` | Procfs access dumps ALL secrets |
-| `curl`/`wget` with secret vars | Exfiltration attempts |
-| `cat ~/.config/gh/hosts.yml` | Reading stored credentials |
+| Category | Blocked Patterns | Reason |
+|----------|------------------|--------|
+| Direct variable access | `$GH_TOKEN`, `$OPENAI_API_KEY`, etc. | Known secrets |
+| Generic secret patterns | `$*_TOKEN`, `$*_KEY`, `$*_SECRET`, `$*_PASSWORD` | Any secret-looking variable |
+| gh CLI token reveal | `gh auth token`, `gh auth status --show-token` | Reveals configured token |
+| Environment dumps | `env`, `printenv`, `set`, `export`, `declare -p` | Dumps all variables |
+| Shell built-ins | `compgen -v`, `typeset` | Lists/dumps variables |
+| Subshell dumps | `bash -c set`, `sh -c export` | Subshell env leaks |
+| Procfs access | `/proc/*/environ` | Dumps all env vars |
+| Exfiltration | `curl`/`wget` with secret vars | Network exfil attempts |
+| gh config readers | `cat`, `less`, `head`, `tail`, `more`, `vim`, etc. on `~/.config/gh/` | Token in config file |
+| Config file tools | `awk`, `sed`, `grep`, `xxd`, `od`, `dd` on gh config | Alternative readers |
+| Config operations | `cp`, `mv`, `base64` on gh config | Copy/encode attempts |
+| Language env access | `python os.environ`, `node process.env`, `ruby ENV`, `perl %ENV`, `php getenv()` | Programmatic env access |
 
 The hook returns a `deny` decision with an explanation when blocked patterns are detected. This provides defense-in-depth for:
 - Resumed sessions (where CLAUDE_ENV_FILE bug applies)
 - Any edge cases where tokens remain in environment
 - Protection against `gh auth token` which reads from config file
-- Protection against reading credential files directly
+- Protection against reading credential files via any tool
+- Protection against programmatic environment access in scripts
 
 ### Layer 3: Token Scoping (User Responsibility)
 
@@ -118,11 +123,46 @@ The security hook blocks common patterns but cannot prevent all attacks:
 Run these commands to verify the hook is working (they should be blocked):
 
 ```bash
-# These should all be blocked by the security hook
-echo $GH_TOKEN           # Should fail
-gh auth token            # Should fail
-printenv GH_TOKEN        # Should fail
-cat /proc/self/environ   # Should fail
+# Direct access patterns
+echo $GH_TOKEN                     # Direct variable access
+echo $OPENAI_API_KEY               # Other sensitive vars
+
+# Environment dumps
+env                                # Bare env command
+printenv                           # Bare printenv
+set                                # Shell set builtin
+export                             # Bare export
+declare -p                         # Declare print all
+
+# gh CLI token access
+gh auth token                      # Token reveal command
+gh auth status --show-token        # Token in status
+
+# gh config file access
+cat ~/.config/gh/hosts.yml         # Direct cat
+less ~/.config/gh/hosts.yml        # Alternative reader
+head ~/.config/gh/hosts.yml        # Another reader
+grep . ~/.config/gh/hosts.yml      # Grep as reader
+
+# Procfs environment
+cat /proc/self/environ             # Procfs access
+
+# Language environment access
+python3 -c "import os; print(os.environ)"
+node -e "console.log(process.env)"
+```
+
+Test that legitimate commands still work:
+
+```bash
+# These should all be ALLOWED
+git status                         # Normal git
+gh pr list                         # gh CLI (not token)
+export FOO=bar                     # Setting variables
+env NODE_ENV=prod npm build        # env with assignment
+grep -r "pattern" src/             # grep on source files
+python3 script.py                  # Running scripts
+cat README.md                      # Reading normal files
 ```
 
 ## Files
