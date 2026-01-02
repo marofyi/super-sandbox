@@ -192,6 +192,14 @@ For medium to high complexity features, follow Test-Driven Development:
 - Make breaking API changes without discussion
 - Delete failing tests without permission
 
+## Token Handling (CC Web)
+
+- Use only `GH_TOKEN` with `actions:write` scope for `gh workflow run`; never request broader scopes.
+- Keep `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID_*` in GitHub Secrets. Do not surface them in shells or logs.
+- `BROWSERLESS_TOKEN` is the only API token expected in CC Web; avoid printing or echoing it.
+- Session hooks hide tokens and block env dumps (`env`, `printenv`, `gh auth token`, reading `~/.config/gh/hosts.yml`). Avoid commands that expose environment state.
+- Review [docs/cc-web-security.md](./docs/cc-web-security.md) before running anything that touches tokens or workflows.
+
 ## HTML vs Webapp
 
 **Default to single-file HTML.** Start with the simplest thing that could work.

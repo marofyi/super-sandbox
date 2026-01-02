@@ -4,6 +4,14 @@ A chronological record of discoveries, gotchas, and insights from building in th
 
 ---
 
+## 2026-02: Minimal Token Surface Refactor
+
+- Removed OpenAI chat demos (`example-chat`, `example-chat-web`, `tanstack-chat`) and the `@research/openai-utils` package to keep the monorepo focused on static prototypes, Browserless automation, and Vercel deploys.
+- Locked CC Web to two env tokens: `GH_TOKEN` (actions-only PAT for workflow dispatch) and `BROWSERLESS_TOKEN`; moved `VERCEL_TOKEN`/`VERCEL_ORG_ID`/project IDs to GitHub Secrets so deployment credentials never enter the sandbox.
+- Added CC Web security hardening (`docs/cc-web-security.md`): session setup hides tokens, PreToolUse hook blocks env dumps (`env`, `printenv`, `gh auth token`, reading `~/.config/gh/hosts.yml`), and guidance to use workflows (`vercel-setup.yml`, `vercel-deploy.yml`) instead of CLI tokens.
+
+---
+
 ## 2026-01: Flexible Documentation Workflows
 
 - `update-docs.yml` and `update-index.yml` now accept `workflow_dispatch` inputs: `pr_number` (analyze a closed PR) and `commits_back` (default 5) when no PR context exists, setting `BASE_REF`/`HAS_PR_CONTEXT` to choose the diff target and checking out the PR head SHA when provided.
@@ -189,3 +197,4 @@ mutation { screenshot(type: jpeg) { base64 } }
 - [README.md](../README.md) - Entry point for project overview and navigation
 - [AGENTS.md](../AGENTS.md) - Agent workflow and documentation structure
 - [docs/cc-web.md](./cc-web.md) - Sandbox networking and automation guidance
+- [docs/cc-web-security.md](./cc-web-security.md) - Token architecture and blocked patterns
