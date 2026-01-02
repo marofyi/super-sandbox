@@ -245,5 +245,6 @@ The `.github/workflows/update-docs.yml` and `.github/workflows/update-index.yml`
 | [docs/learnings-log.md](./docs/learnings-log.md) | Running discoveries and workflow updates | Revisiting gotchas, non-obvious fixes, and process changes |
 | [docs/browserless.md](./docs/browserless.md) | BrowserQL API, CLI, patterns | Any browser automation, screenshots, scraping, or form interaction |
 | [docs/cc-web.md](./docs/cc-web.md) | Network constraints, proxy setup | Working in Claude Code Web or any sandboxed environment |
+| [docs/cc-web-security.md](./docs/cc-web-security.md) | Token security, prompt injection defense | Handling GH_TOKEN in web sessions, security hooks |
 | [docs/static-html-guide.md](./docs/static-html-guide.md) | Single-file prototypes, GitHub Pages | Creating standalone HTML tools or demos in projects/ |
 | [docs/vercel-deployment.md](./docs/vercel-deployment.md) | CLI commands, env vars, GitHub Actions | Deploying to Vercel, adding env vars, or setting up GitHub Actions for deploy |
