@@ -21,16 +21,6 @@ else
   echo "GitHub CLI already installed: $(gh --version | head -1)"
 fi
 
-# Setup gh config to use GH_TOKEN without migration issues
-# Fresh sandbox has no config, and old/corrupted configs trigger
-# a migration that requires dbus-launch (not available here)
-if [ -n "$GH_TOKEN" ]; then
-  rm -rf ~/.config/gh
-  mkdir -p ~/.config/gh
-  touch ~/.config/gh/hosts.yml
-  echo "GitHub CLI configured for token auth"
-fi
-
 # Add a real GitHub remote so gh CLI can detect the repo
 # The proxy remote (origin) isn't recognized as a GitHub host
 REPO=$(git remote get-url origin 2>/dev/null | sed -E 's|.*/git/([^/]+/[^/]+).*|\1|')
