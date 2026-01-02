@@ -43,16 +43,12 @@ EOFYML
   # Restrict permissions on the config file
   chmod 600 ~/.config/gh/hosts.yml
 
-  # Unset ALL sensitive tokens for subsequent Bash commands using CLAUDE_ENV_FILE
+  # Unset sensitive tokens for subsequent Bash commands using CLAUDE_ENV_FILE
   # This is the key security measure - removes secrets from environment
+  # Note: Only GH_TOKEN and BROWSERLESS_TOKEN are in CC Web env (minimal token surface)
   if [ -n "$CLAUDE_ENV_FILE" ]; then
-    # GitHub tokens
     echo 'unset GH_TOKEN' >> "$CLAUDE_ENV_FILE"
     echo 'unset GITHUB_TOKEN' >> "$CLAUDE_ENV_FILE"
-    # Other API tokens that may be in environment
-    echo 'unset OPENAI_API_KEY' >> "$CLAUDE_ENV_FILE"
-    echo 'unset ANTHROPIC_API_KEY' >> "$CLAUDE_ENV_FILE"
-    echo 'unset VERCEL_TOKEN' >> "$CLAUDE_ENV_FILE"
     echo 'unset BROWSERLESS_TOKEN' >> "$CLAUDE_ENV_FILE"
     echo 'unset CODESIGN_MCP_TOKEN' >> "$CLAUDE_ENV_FILE"
     echo "Sensitive tokens removed from environment"

@@ -7,15 +7,12 @@ import re
 import sys
 
 # List of sensitive environment variable names to protect
+# Note: Only these tokens are in CC Web env (minimal token surface)
 SENSITIVE_VARS = [
     "GH_TOKEN",
     "GITHUB_TOKEN",
-    "OPENAI_API_KEY",
-    "ANTHROPIC_API_KEY",
-    "VERCEL_TOKEN",
     "BROWSERLESS_TOKEN",
     "CODESIGN_MCP_TOKEN",
-    # Add pattern for any variable ending in _TOKEN, _KEY, _SECRET, _PASSWORD
 ]
 
 # Build regex pattern for all sensitive vars

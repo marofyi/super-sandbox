@@ -1,115 +1,164 @@
 # Vercel Deployment Guide
 
-Deploy web projects from this pnpm monorepo to Vercel.
+Deploy projects to Vercel using GitHub Actions workflows.
 
-## Prerequisites
+## Architecture
 
-Required environment variables (add via Claude Code secrets):
+Deployments are handled by **GitHub Actions**, not CC Web directly:
 
-- `VERCEL_TOKEN` - [Create here](https://vercel.com/account/tokens)
-- `OPENAI_API_KEY` - For projects using OpenAI
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| `VERCEL_TOKEN` | GitHub Secrets | Authentication |
+| `VERCEL_ORG_ID` | GitHub Secrets | Organization ID |
+| `vercel-setup.yml` | Workflow | Create new projects |
+| `vercel-deploy.yml` | Workflow | Manual deploys |
+| `deploy-*.yml` | Workflows | Auto-deploy on push |
+
+**Security:** `VERCEL_TOKEN` never enters CC Web environment.
+
+## First-Time Setup
+
+### 1. Add Vercel Secrets to GitHub
+
+Go to **Settings → Secrets → Actions** and add:
+
+| Secret | Value | Source |
+|--------|-------|--------|
+| `VERCEL_TOKEN` | Your API token | [vercel.com/account/tokens](https://vercel.com/account/tokens) |
+| `VERCEL_ORG_ID` | Your org/team ID | Vercel dashboard → Settings |
+
+### 2. Ensure GH_TOKEN Has Actions Permission
+
+Your `GH_TOKEN` in CC Web needs `actions:write` to dispatch workflows:
+
+```bash
+gh workflow list  # Should work
+```
 
 ## Deploy a New Project
 
-### Step 1: Create and Link
+### Step 1: Create Project Files
 
-```bash
-rm -rf .vercel
+In CC Web, create your project:
 
-# Create project
-pnpm exec vercel project add <project-name> --token "$VERCEL_TOKEN"
-
-# Link (unset env vars to avoid conflicts)
-VERCEL_ORG_ID= VERCEL_PROJECT_ID= pnpm exec vercel link \
-  --project <project-name> --yes --token "$VERCEL_TOKEN"
+```
+projects/my-new-app/
+├── index.html      # For static sites
+├── package.json    # For webapps
+└── ...
 ```
 
-Note the `projectId` from `.vercel/project.json`.
+### Step 2: Run Setup Workflow
 
-### Step 2: Add Environment Variables
-
-```bash
-VERCEL_ORG_ID= VERCEL_PROJECT_ID= pnpm exec vercel env add OPENAI_API_KEY production \
-  --token "$VERCEL_TOKEN" <<< "$OPENAI_API_KEY"
-```
-
-### Step 3: Initial Deploy
+From CC Web:
 
 ```bash
-VERCEL_ORG_ID= VERCEL_PROJECT_ID= pnpm exec vercel deploy --prod --yes \
-  --token "$VERCEL_TOKEN"
+gh workflow run vercel-setup \
+  -f project_name=my-new-app \
+  -f project_path=projects/my-new-app
 ```
 
-### Step 4: Set Up GitHub Actions
+Or via GitHub UI: **Actions → Setup Vercel Project → Run workflow**
 
-Add GitHub secret for the project:
+### Step 3: Check Workflow Summary
 
-```bash
-gh secret set VERCEL_PROJECT_ID_<PROJECT_NAME> --body "<project-id>" -R <owner>/<repo>
-```
+After the workflow completes, check the **Summary** tab for:
+- Project ID
+- Secret name to add
 
-Create workflow at `.github/workflows/deploy-<project-name>.yml`:
+### Step 4: Add Project ID Secret
+
+Add the secret to GitHub:
+- **Name:** `VERCEL_PROJECT_ID_MY_NEW_APP`
+- **Value:** The project ID from the summary
+
+### Step 5: Create Auto-Deploy Workflow
+
+In CC Web, create `.github/workflows/deploy-my-new-app.yml`:
 
 ```yaml
-name: Deploy <project-name>
+name: Deploy my-new-app
 
 on:
   push:
     branches: [main]
     paths:
-      - 'projects/<project-name>/**'
+      - 'projects/my-new-app/**'
       - 'pnpm-lock.yaml'
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: pnpm/action-setup@v2
         with:
           version: 10
+
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'pnpm'
+
       - run: pnpm install
 
       - name: Create Vercel project link
         run: |
           mkdir -p .vercel
-          echo '{"projectId":"${{ secrets.VERCEL_PROJECT_ID_<PROJECT_NAME> }}","orgId":"${{ secrets.VERCEL_ORG_ID }}"}' > .vercel/project.json
+          echo '{"projectId":"${{ secrets.VERCEL_PROJECT_ID_MY_NEW_APP }}","orgId":"${{ secrets.VERCEL_ORG_ID }}"}' > .vercel/project.json
 
       - name: Deploy to Vercel
         run: pnpm exec vercel deploy --prod --yes --token ${{ secrets.VERCEL_TOKEN }}
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_<PROJECT_NAME> }}
 ```
 
-## Required GitHub Secrets
+### Step 6: Push and Deploy
+
+Commit and push. The workflow will auto-deploy on merge to main.
+
+## Manual Redeploy
+
+Use the generic deploy workflow:
+
+```bash
+gh workflow run vercel-deploy \
+  -f project_name=my-new-app \
+  -f project_id_secret=VERCEL_PROJECT_ID_MY_NEW_APP
+```
+
+## Workflows Reference
+
+### vercel-setup.yml
+
+Creates a new Vercel project, links it, and does initial deploy.
+
+**Inputs:**
+- `project_name` - Name for the Vercel project
+- `project_path` - Path in monorepo (e.g., `projects/my-app`)
+
+**Outputs (in Summary):**
+- Project ID for adding to secrets
+
+### vercel-deploy.yml
+
+Manual deploy for any project.
+
+**Inputs:**
+- `project_name` - Project name
+- `project_id_secret` - GitHub secret name containing project ID
+
+## GitHub Secrets Required
 
 | Secret | Description |
 |--------|-------------|
-| `VERCEL_TOKEN` | API token |
-| `VERCEL_ORG_ID` | Team/org ID |
-| `VERCEL_PROJECT_ID_<NAME>` | Per-project ID |
-
-## Redeploying
-
-```bash
-pnpm exec vercel deploy --prod --yes --token "$VERCEL_TOKEN"
-```
-
-## Current Deployments
-
-| Project | URL | Project ID |
-|---------|-----|------------|
-| example-chat-web | https://example-chat-web-marofyi.vercel.app | `prj_3ten4pMxczOKsya7GVc3Dh6VhZTr` |
-| tanstack-chat | https://tanstack-chat.vercel.app | `prj_ugAj68LssRkhASeqoqqZ4GihVwQI` |
+| `VERCEL_TOKEN` | API token from vercel.com/account/tokens |
+| `VERCEL_ORG_ID` | Organization/team ID |
+| `VERCEL_PROJECT_ID_<NAME>` | Per-project IDs |
 
 ## Monorepo Settings
 
-These are configured automatically when using the CLI:
+These are configured automatically by the setup workflow:
 
 | Setting | Value |
 |---------|-------|
@@ -119,7 +168,6 @@ These are configured automatically when using the CLI:
 
 ## See Also
 
-- [README.md](../README.md) - Project overview and entry point for humans
-- [docs/static-html-guide.md](./static-html-guide.md) - When a single HTML file is sufficient
-- [CHANGELOG.md](../CHANGELOG.md) - Deployment and workflow changes
-- [Vercel Monorepos](https://vercel.com/docs/monorepos)
+- [cc-web-security.md](./cc-web-security.md) - Token architecture
+- [static-html-guide.md](./static-html-guide.md) - Simple static sites
+- [README.md](../README.md) - Project overview

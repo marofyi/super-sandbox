@@ -91,9 +91,23 @@ research/
 
 ---
 
+## Implementation Progress
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| 1. Delete OpenAI/Chat | ✅ DONE | Removed packages, projects, workflows |
+| 2. Create Vercel workflows | ✅ DONE | vercel-setup.yml, vercel-deploy.yml |
+| 3. Simplify security scripts | ✅ DONE | Removed OPENAI/ANTHROPIC/VERCEL from hooks |
+| 4. Simplify .env.example | ✅ DONE | Only GH_TOKEN + BROWSERLESS_TOKEN |
+| 5. Update documentation | ✅ DONE | cc-web-security.md, vercel-deployment.md |
+| 6. Update pnpm workspace | ✅ DONE | Already uses wildcards, no changes needed |
+| 7. Clean up and test | 🔄 IN PROGRESS | |
+
+---
+
 ## Implementation Phases
 
-### Phase 1: Delete OpenAI/Chat Projects
+### Phase 1: Delete OpenAI/Chat Projects ✅
 
 ```bash
 # Remove packages
