@@ -91,9 +91,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: pnpm/action-setup@v2
+      - uses: pnpm/action-setup@v4
         with:
           version: 10
 
@@ -168,6 +168,6 @@ These are configured automatically by the setup workflow:
 
 ## See Also
 
-- [cc-web-security.md](./cc-web-security.md) - Token architecture
+- [cc-web.md](./cc-web.md) - Token architecture and network constraints
 - [static-html-guide.md](./static-html-guide.md) - Simple static sites
 - [README.md](../README.md) - Project overview

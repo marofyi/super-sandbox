@@ -41,7 +41,7 @@ Browser automation client for [Browserless](https://browserless.io) BrowserQL ov
 - `BROWSERLESS_TOKEN` — Free Browserless token for automation and screenshots.
 - `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID_<NAME>` — Add as GitHub Actions secrets only; they are not needed in the CC Web environment.
 
-`.env.example` documents the minimal tokens; keep CC Web shells free of deployment secrets. See `docs/cc-web-security.md` for the security model and blocked patterns.
+`.env.example` documents the minimal tokens; keep CC Web shells free of deployment secrets. See `docs/cc-web.md` for the token architecture and network constraints.
 
 ## Projects
 
@@ -84,9 +84,7 @@ Start here for navigation. README is the homepage for humans; AGENTS is the home
 | [AGENTS.md](./AGENTS.md) | Instructions for AI coding agents |
 | [CONTRIBUTING.md](./CONTRIBUTING.md) | Code style and git workflow |
 | [CHANGELOG.md](./CHANGELOG.md) | Notable changes, releases, and discoveries |
-| [docs/learnings-log.md](./docs/learnings-log.md) | Running discoveries, gotchas, and workflow notes |
 | [docs/browserless.md](./docs/browserless.md) | Browserless browser automation guide |
-| [docs/cc-web.md](./docs/cc-web.md) | Claude Code Web guide (setup, network, browser automation) |
-| [docs/cc-web-security.md](./docs/cc-web-security.md) | Token security model and prompt injection defenses |
+| [docs/cc-web.md](./docs/cc-web.md) | Claude Code Web guide (setup, network, tokens) |
 | [docs/vercel-deployment.md](./docs/vercel-deployment.md) | Vercel deployment guide |
 | [docs/static-html-guide.md](./docs/static-html-guide.md) | Single-file prototype best practices |

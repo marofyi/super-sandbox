@@ -43,7 +43,7 @@ jobs:
       - name: Get PR branch (for comment trigger)
         id: pr-branch
         if: github.event_name == 'issue_comment'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const pr = await github.rest.pulls.get({
@@ -56,7 +56,7 @@ jobs:
       - name: Get PR info (for workflow_dispatch with pr_number)
         id: pr-info
         if: github.event_name == 'workflow_dispatch' && inputs.pr_number
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const pr = await github.rest.pulls.get({
@@ -80,7 +80,7 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Checkout branch
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: ${{ steps.pr-info.outputs.head_sha || steps.pr-branch.outputs.branch || github.head_ref || github.ref }}
           fetch-depth: 0
@@ -168,11 +168,11 @@ jobs:
             - Update git workflow instructions if process changed
             - Update PR process if requirements changed
 
-            ### docs/learnings-log.md
-            - Add new entries for significant discoveries or gotchas found during the PR
-            - Document any non-obvious solutions or workarounds
-            - Include date headers (YYYY-MM format)
-            - Keep entries concise but informative for future reference
+            ### CHANGELOG.md
+            - Add new entries for significant changes, discoveries, or gotchas
+            - Document non-obvious solutions or workarounds
+            - Use date headers (YYYY-MM format) and Keep a Changelog categories
+            - Keep entries concise but informative
 
             ### Other docs (docs/*.md)
             - Update architecture docs if system design changed
