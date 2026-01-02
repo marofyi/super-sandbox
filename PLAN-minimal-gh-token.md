@@ -1,40 +1,115 @@
-# Plan: Minimal GH_TOKEN Scope Refactor
+# Plan: Radical Monorepo Refactor
 
-Refactor the monorepo so `GH_TOKEN` only needs `actions:write` permission.
+**Goal:** Minimal token surface + lean codebase focused on core purpose.
 
-## Current State
+## Core Purpose (After Refactor)
 
-| Token | Location | Used For |
-|-------|----------|----------|
-| `GH_TOKEN` | CC Web env | gh CLI (currently broad permissions) |
-| `VERCEL_TOKEN` | CC Web env + GitHub Secrets | Vercel deployments |
-| `BROWSERLESS_TOKEN` | CC Web env | Browser automation |
-| `OPENAI_API_KEY` | CC Web env + GitHub Secrets | Claude + Vercel env vars |
+> Rapidly prototype and deploy static HTML and webapps to Vercel, with Browserless for live e2e testing.
 
-## Target State
+**That's it.** Everything else goes.
 
-| Token | Location | Permissions |
-|-------|----------|-------------|
-| `GH_TOKEN` | CC Web env | `actions:write` only (+ metadata:read) |
-| `VERCEL_TOKEN` | GitHub Secrets only | Team-scoped |
-| `BROWSERLESS_TOKEN` | CC Web env | Free account only |
-| `OPENAI_API_KEY` | CC Web env + GitHub Secrets | N/A |
+---
 
-## Why This Works
+## What Gets Removed
 
-CC Web handles natively (no GH_TOKEN needed):
-- ✅ Git push/pull/fetch (via proxy)
-- ✅ Create branches
-- ✅ Create PRs
-- ✅ Read issues
+### Packages
+| Package | Action | Reason |
+|---------|--------|--------|
+| `packages/openai-utils` | DELETE | Not needed for static/webapp deploys |
 
-GH_TOKEN only needed for:
-- `gh workflow run` → `actions:write`
-- `gh workflow list` → `actions:read` (included in write)
+### Projects
+| Project | Action | Reason |
+|---------|--------|--------|
+| `projects/example-chat` | DELETE | OpenAI demo, not core |
+| `projects/example-chat-web` | DELETE | OpenAI Next.js demo, not core |
+| `projects/tanstack-chat` | DELETE | Multi-provider chat, not core |
+| `projects/the-intelligence-economy` | KEEP | Static HTML showcase |
+| `projects/live-preview-test` | KEEP | CC Web preview utility |
 
-## Implementation Steps
+### Workflows
+| Workflow | Action | Reason |
+|----------|--------|--------|
+| `.github/workflows/deploy-example-chat-web.yml` | DELETE | Project removed |
+| `.github/workflows/deploy-tanstack-chat.yml` | DELETE | Project removed |
+| `.github/workflows/update-docs.yml` | KEEP | Docs automation |
+| `.github/workflows/update-index.yml` | KEEP | Index automation |
 
-### Phase 1: Create Vercel Setup Workflow
+### Tokens/Env Vars
+| Token | Action | Reason |
+|-------|--------|--------|
+| `OPENAI_API_KEY` | REMOVE ENTIRELY | No OpenAI usage |
+| `ANTHROPIC_API_KEY` | REMOVE ENTIRELY | No Anthropic usage |
+| `GEMINI_API_KEY` | REMOVE ENTIRELY | No Gemini usage |
+| `VERCEL_TOKEN` | MOVE TO GITHUB SECRETS | Not needed in CC Web |
+| `GH_TOKEN` | KEEP (actions:write only) | Workflow dispatch |
+| `BROWSERLESS_TOKEN` | KEEP | Core e2e testing |
+
+---
+
+## What Remains (After Refactor)
+
+```
+research/
+├── .claude/
+│   ├── scripts/
+│   │   ├── setup-web-session.sh    # Simplified
+│   │   └── security-hook.py        # Simplified
+│   └── settings.json
+├── .github/workflows/
+│   ├── vercel-setup.yml            # NEW - project setup
+│   ├── vercel-deploy.yml           # NEW - generic deploy
+│   ├── update-docs.yml
+│   └── update-index.yml
+├── packages/
+│   └── browserless/                # Core e2e utility
+├── projects/
+│   ├── the-intelligence-economy/   # Static HTML example
+│   └── live-preview-test/          # CC Web utility
+├── docs/
+│   ├── cc-web.md
+│   ├── cc-web-security.md          # Updated
+│   ├── browserless.md
+│   ├── vercel-deployment.md        # Updated
+│   └── static-html-guide.md
+├── .env.example                    # Simplified
+├── README.md                       # Rewritten
+└── index.html                      # Landing page
+```
+
+---
+
+## Token Architecture (After Refactor)
+
+| Token | Location | Permissions | Purpose |
+|-------|----------|-------------|---------|
+| `GH_TOKEN` | CC Web env | `actions:write` | Dispatch workflows |
+| `BROWSERLESS_TOKEN` | CC Web env | Full (free account) | E2E testing |
+| `VERCEL_TOKEN` | GitHub Secrets | Team-scoped | Deployments |
+| `VERCEL_ORG_ID` | GitHub Secrets | N/A | Vercel org |
+
+**No API keys in CC Web.** Only action tokens.
+
+---
+
+## Implementation Phases
+
+### Phase 1: Delete OpenAI/Chat Projects
+
+```bash
+# Remove packages
+rm -rf packages/openai-utils
+
+# Remove projects
+rm -rf projects/example-chat
+rm -rf projects/example-chat-web
+rm -rf projects/tanstack-chat
+
+# Remove workflows
+rm .github/workflows/deploy-example-chat-web.yml
+rm .github/workflows/deploy-tanstack-chat.yml
+```
+
+### Phase 2: Create Vercel Workflows
 
 **File:** `.github/workflows/vercel-setup.yml`
 
@@ -52,15 +127,9 @@ on:
         description: 'Path in monorepo (e.g., projects/my-new-app)'
         required: true
         type: string
-      needs_openai:
-        description: 'Add OPENAI_API_KEY to Vercel env?'
-        required: false
-        type: boolean
-        default: true
 
 permissions:
   contents: read
-  actions: read
 
 jobs:
   setup:
@@ -79,34 +148,31 @@ jobs:
 
       - run: pnpm install
 
-      - name: Create Vercel project
+      - name: Create and link Vercel project
         run: |
           pnpm exec vercel project add ${{ inputs.project_name }} \
             --token ${{ secrets.VERCEL_TOKEN }}
 
-      - name: Link project
-        run: |
           rm -rf .vercel
           VERCEL_ORG_ID= VERCEL_PROJECT_ID= pnpm exec vercel link \
             --project ${{ inputs.project_name }} --yes \
             --token ${{ secrets.VERCEL_TOKEN }}
 
-          # Extract and display project ID
+      - name: Extract project ID
+        id: project
+        run: |
           PROJECT_ID=$(cat .vercel/project.json | jq -r '.projectId')
+          echo "id=$PROJECT_ID" >> $GITHUB_OUTPUT
+
+          # Summary for user
           echo "## Vercel Project Created" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Project:** ${{ inputs.project_name }}" >> $GITHUB_STEP_SUMMARY
           echo "**Project ID:** \`$PROJECT_ID\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Add this secret to GitHub:" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          echo "VERCEL_PROJECT_ID_$(echo '${{ inputs.project_name }}' | tr '-' '_' | tr '[:lower:]' '[:upper:]')" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-
-      - name: Add OPENAI_API_KEY to Vercel
-        if: inputs.needs_openai
-        run: |
-          VERCEL_ORG_ID= VERCEL_PROJECT_ID= pnpm exec vercel env add OPENAI_API_KEY production \
-            --token ${{ secrets.VERCEL_TOKEN }} <<< "${{ secrets.OPENAI_API_KEY }}"
+          echo "### Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "1. Add secret \`VERCEL_PROJECT_ID_$(echo '${{ inputs.project_name }}' | tr '-' '_' | tr '[:lower:]' '[:upper:]')\` = \`$PROJECT_ID\`" >> $GITHUB_STEP_SUMMARY
+          echo "2. Create deploy workflow in CC Web" >> $GITHUB_STEP_SUMMARY
 
       - name: Initial deploy
         run: |
@@ -114,184 +180,239 @@ jobs:
             --token ${{ secrets.VERCEL_TOKEN }}
 
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Status:** Initial deployment complete ✅" >> $GITHUB_STEP_SUMMARY
+          echo "**Initial deploy:** ✅ Complete" >> $GITHUB_STEP_SUMMARY
 ```
 
-### Phase 2: Add Manual Deploy Trigger to Existing Workflows
-
-Update `deploy-example-chat-web.yml` and `deploy-tanstack-chat.yml`:
+**File:** `.github/workflows/vercel-deploy.yml`
 
 ```yaml
+name: Deploy to Vercel
+
 on:
-  push:
-    branches: [main]
-    paths: [...]
-  workflow_dispatch:  # <-- Add this for manual triggers
+  workflow_dispatch:
+    inputs:
+      project_name:
+        description: 'Project name'
+        required: true
+        type: string
+      project_id_secret:
+        description: 'GitHub secret name for project ID (e.g., VERCEL_PROJECT_ID_MY_APP)'
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - run: pnpm install
+
+      - name: Create Vercel project link
+        run: |
+          mkdir -p .vercel
+          echo '{"projectId":"${{ secrets[inputs.project_id_secret] }}","orgId":"${{ secrets.VERCEL_ORG_ID }}"}' > .vercel/project.json
+
+      - name: Deploy
+        run: pnpm exec vercel deploy --prod --yes --token ${{ secrets.VERCEL_TOKEN }}
 ```
 
-### Phase 3: Update setup-web-session.sh
+### Phase 3: Simplify Security Scripts
 
-Remove `VERCEL_TOKEN` from the unset list (it won't be in env anymore):
+**File:** `.claude/scripts/setup-web-session.sh`
 
+Remove these unset lines:
 ```bash
-# Remove this line:
+# REMOVE:
+echo 'unset OPENAI_API_KEY' >> "$CLAUDE_ENV_FILE"
+echo 'unset ANTHROPIC_API_KEY' >> "$CLAUDE_ENV_FILE"
 echo 'unset VERCEL_TOKEN' >> "$CLAUDE_ENV_FILE"
 ```
 
-### Phase 4: Update security-hook.py
+Keep only:
+```bash
+echo 'unset GH_TOKEN' >> "$CLAUDE_ENV_FILE"
+echo 'unset GITHUB_TOKEN' >> "$CLAUDE_ENV_FILE"
+echo 'unset BROWSERLESS_TOKEN' >> "$CLAUDE_ENV_FILE"
+echo 'unset CODESIGN_MCP_TOKEN' >> "$CLAUDE_ENV_FILE"
+```
 
-Remove `VERCEL_TOKEN` from `SENSITIVE_VARS` (not needed if not in env):
+**File:** `.claude/scripts/security-hook.py`
 
+Update `SENSITIVE_VARS`:
 ```python
 SENSITIVE_VARS = [
     "GH_TOKEN",
     "GITHUB_TOKEN",
-    "OPENAI_API_KEY",
-    "ANTHROPIC_API_KEY",
-    # "VERCEL_TOKEN",  # Removed - not in CC Web env
     "BROWSERLESS_TOKEN",
     "CODESIGN_MCP_TOKEN",
+    # Removed: OPENAI_API_KEY, ANTHROPIC_API_KEY, VERCEL_TOKEN
 ]
+```
+
+### Phase 4: Simplify .env.example
+
+```bash
+# =============================================================================
+# Claude Code Web Environment
+# =============================================================================
+
+# GitHub token - ACTIONS ONLY (for workflow dispatch)
+# Create at: github.com/settings/personal-access-tokens/new
+# Permissions: Actions: Read and write (nothing else)
+# GH_TOKEN=ghp_...
+
+# Browserless token - Use a FREE account only
+# Create at: browserless.io (free tier)
+# GH_TOKEN=ghp_...
+# BROWSERLESS_TOKEN=...
+
+# =============================================================================
+# GitHub Secrets (NOT here - add via repo Settings → Secrets → Actions)
+# =============================================================================
+# VERCEL_TOKEN     - vercel.com/account/tokens
+# VERCEL_ORG_ID    - Found in Vercel project settings
 ```
 
 ### Phase 5: Update Documentation
 
-#### docs/cc-web-security.md
+**docs/cc-web-security.md** - Major rewrite:
+- Remove all OPENAI_API_KEY, ANTHROPIC_API_KEY, VERCEL_TOKEN references
+- Simplify to just GH_TOKEN (actions:write) and BROWSERLESS_TOKEN
+- Update threat model for minimal token surface
 
-Rewrite GH_TOKEN section:
+**docs/vercel-deployment.md** - Rewrite for workflow-based deploys:
+- Remove manual CLI commands with VERCEL_TOKEN
+- Document `gh workflow run vercel-setup`
+- Document `gh workflow run vercel-deploy`
 
-```markdown
-#### GitHub Token (`GH_TOKEN`)
+**README.md** - Complete rewrite:
+- New focus: "Rapid static HTML and webapp prototyping"
+- Simplified setup (only 2 tokens in CC Web)
+- Clear workflow: create → setup workflow → deploy workflow → browserless test
 
-##### Minimal Scope: Actions Only
+### Phase 6: Update pnpm-workspace.yaml
 
-CC Web handles git operations natively. GH_TOKEN is only needed for workflow dispatch.
-
-**Required permissions:**
-
-| Permission | Access | Why Needed |
-|------------|--------|------------|
-| Actions | Write | `gh workflow run` to trigger deploys |
-| Metadata | Read | Auto-granted |
-
-**That's it.** No contents, no PRs, no issues permissions needed.
-
-##### Creating the Token
-
-1. Go to [github.com/settings/personal-access-tokens/new](https://github.com/settings/personal-access-tokens/new)
-2. **Token name**: `Claude Code Web - actions only`
-3. **Expiration**: 30 days
-4. **Repository access**: Select **"Only select repositories"** → choose your repo
-5. **Permissions**: Only enable `Actions: Read and write`
-
-##### Blast Radius if Leaked
-
-With actions-only scope, an attacker can:
-- ✅ Trigger workflow runs (cost risk)
-- ❌ Cannot push code
-- ❌ Cannot create PRs
-- ❌ Cannot read issues
-- ❌ Cannot access secrets
-- ❌ Cannot modify repository
+```yaml
+packages:
+  - 'packages/browserless'
+  - 'projects/*'
 ```
 
-#### docs/vercel-deployment.md
+### Phase 7: Clean Up
 
-Update to reflect workflow-based setup:
-
-```markdown
-## Deploy a New Project
-
-### Step 1: Trigger Setup Workflow
-
-From CC Web:
 ```bash
+# Regenerate lockfile
+pnpm install
+
+# Update index.html (remove chat project links)
+# Update any cross-references in docs
+```
+
+---
+
+## New User Workflow
+
+### First-Time Setup
+
+1. **Create GH_TOKEN** (actions:write only, repo-scoped)
+   - Add to CC Web environment
+
+2. **Create BROWSERLESS_TOKEN** (free account)
+   - Add to CC Web environment
+
+3. **Add Vercel secrets to GitHub**
+   - `VERCEL_TOKEN` - from vercel.com/account/tokens
+   - `VERCEL_ORG_ID` - from Vercel dashboard
+
+### Creating a New Project
+
+```bash
+# 1. CC Web creates project files
+# (static HTML or webapp in projects/my-new-app/)
+
+# 2. Trigger setup workflow
 gh workflow run vercel-setup \
   -f project_name=my-new-app \
-  -f project_path=projects/my-new-app \
-  -f needs_openai=true
+  -f project_path=projects/my-new-app
+
+# 3. Check workflow summary for project ID
+
+# 4. Add project ID to GitHub secrets (via UI or gh CLI)
+# VERCEL_PROJECT_ID_MY_NEW_APP = prj_xxx
+
+# 5. CC Web creates auto-deploy workflow
+# .github/workflows/deploy-my-new-app.yml
+
+# 6. Run Browserless e2e test
+pnpm --filter @research/browserless screenshot https://my-new-app.vercel.app
+
+# 7. CC Web opens PR
+# User merges, auto-deploy triggers
 ```
 
-Or via GitHub UI: Actions → "Setup Vercel Project" → Run workflow
+---
 
-### Step 2: Add Project ID Secret
+## Files Changed Summary
 
-Check the workflow run summary for the project ID, then add it:
-- Go to Settings → Secrets → Actions
-- Add `VERCEL_PROJECT_ID_MY_NEW_APP` with the project ID
+| Action | Files |
+|--------|-------|
+| DELETE | `packages/openai-utils/` |
+| DELETE | `projects/example-chat/` |
+| DELETE | `projects/example-chat-web/` |
+| DELETE | `projects/tanstack-chat/` |
+| DELETE | `.github/workflows/deploy-example-chat-web.yml` |
+| DELETE | `.github/workflows/deploy-tanstack-chat.yml` |
+| CREATE | `.github/workflows/vercel-setup.yml` |
+| CREATE | `.github/workflows/vercel-deploy.yml` |
+| UPDATE | `.claude/scripts/setup-web-session.sh` |
+| UPDATE | `.claude/scripts/security-hook.py` |
+| UPDATE | `.env.example` |
+| UPDATE | `docs/cc-web-security.md` |
+| UPDATE | `docs/vercel-deployment.md` |
+| UPDATE | `README.md` |
+| UPDATE | `index.html` |
+| UPDATE | `pnpm-lock.yaml` |
 
-### Step 3: Create Deploy Workflow
+---
 
-Create `.github/workflows/deploy-my-new-app.yml` (CC Web can do this).
-```
+## Security Comparison
 
-#### .env.example
+| Metric | Before | After |
+|--------|--------|-------|
+| Tokens in CC Web | 5+ | 2 |
+| API keys exposed | OPENAI, ANTHROPIC, etc. | None |
+| GH_TOKEN permissions | Broad | actions:write only |
+| VERCEL_TOKEN location | CC Web + GitHub | GitHub only |
+| Attack surface | High | Minimal |
 
-Update comments:
-
-```bash
-# GitHub personal access token (actions:write only - for workflow dispatch)
-# GH_TOKEN=ghp_...
-
-# VERCEL_TOKEN - Add to GitHub Secrets, NOT here
-# See: Settings → Secrets → Actions
-```
-
-### Phase 6: Update README.md
-
-Add setup instructions for new users:
-
-```markdown
-## First-Time Setup
-
-### 1. Create GitHub Token (Actions Only)
-
-1. Go to [github.com/settings/personal-access-tokens/new](https://github.com/settings/personal-access-tokens/new)
-2. Name: `Claude Code Web`
-3. Repository: Select this repo only
-4. Permissions: `Actions: Read and write` only
-5. Add to Claude Code Web environment as `GH_TOKEN`
-
-### 2. Add Vercel Token to GitHub Secrets
-
-1. Create token at [vercel.com/account/tokens](https://vercel.com/account/tokens)
-2. Go to repo Settings → Secrets → Actions
-3. Add `VERCEL_TOKEN` and `VERCEL_ORG_ID`
-
-### 3. (Optional) Browserless Token
-
-For browser automation, create a free account at browserless.io.
-Add `BROWSERLESS_TOKEN` to Claude Code Web environment.
-
-⚠️ Use a dedicated free account - token cannot be scoped.
-```
-
-## File Changes Summary
-
-| File | Action |
-|------|--------|
-| `.github/workflows/vercel-setup.yml` | Create |
-| `.github/workflows/deploy-*.yml` | Add `workflow_dispatch` trigger |
-| `.claude/scripts/setup-web-session.sh` | Remove VERCEL_TOKEN unset |
-| `.claude/scripts/security-hook.py` | Remove VERCEL_TOKEN from list |
-| `docs/cc-web-security.md` | Rewrite GH_TOKEN section |
-| `docs/vercel-deployment.md` | Update for workflow-based setup |
-| `.env.example` | Update comments |
-| `README.md` | Add setup instructions |
-
-## Testing Checklist
-
-- [ ] Create fine-grained PAT with only `actions:write`
-- [ ] Verify `gh workflow run` works
-- [ ] Verify `gh workflow list` works
-- [ ] Verify CC Web can still push commits (native)
-- [ ] Verify CC Web can still create PRs (native)
-- [ ] Test vercel-setup workflow end-to-end
-- [ ] Test deploy workflow with `workflow_dispatch`
+---
 
 ## Rollback Plan
 
 If issues arise:
-1. User can create broader-scoped token temporarily
-2. VERCEL_TOKEN can be re-added to CC Web env
-3. Documentation includes both approaches
+1. Git revert to pre-refactor commit
+2. Restore deleted directories from git history
+3. Re-add tokens to CC Web environment
+
+---
+
+## Testing Checklist
+
+- [ ] Create PAT with only `actions:write`
+- [ ] Verify `gh workflow run` works
+- [ ] Test vercel-setup workflow end-to-end
+- [ ] Test vercel-deploy workflow
+- [ ] Verify CC Web can still push/PR (native)
+- [ ] Browserless screenshot works
+- [ ] Docs build correctly
+- [ ] index.html renders correctly
