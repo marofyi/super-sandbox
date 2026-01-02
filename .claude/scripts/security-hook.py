@@ -6,32 +6,54 @@ import json
 import re
 import sys
 
+# List of sensitive environment variable names to protect
+SENSITIVE_VARS = [
+    "GH_TOKEN",
+    "GITHUB_TOKEN",
+    "OPENAI_API_KEY",
+    "ANTHROPIC_API_KEY",
+    "VERCEL_TOKEN",
+    "BROWSERLESS_TOKEN",
+    "CODESIGN_MCP_TOKEN",
+    # Add pattern for any variable ending in _TOKEN, _KEY, _SECRET, _PASSWORD
+]
+
+# Build regex pattern for all sensitive vars
+SENSITIVE_VAR_PATTERN = "|".join(SENSITIVE_VARS)
+
 # Patterns that could leak sensitive environment variables
 BLOCKED_PATTERNS = [
-    # Direct token references
-    (r'\$GH_TOKEN\b', "Direct access to GH_TOKEN is blocked"),
-    (r'\$\{GH_TOKEN\}', "Direct access to GH_TOKEN is blocked"),
-    (r'\$GITHUB_TOKEN\b', "Direct access to GITHUB_TOKEN is blocked"),
-    (r'\$\{GITHUB_TOKEN\}', "Direct access to GITHUB_TOKEN is blocked"),
+    # Direct token/key/secret references (covers all sensitive vars)
+    (rf'\$({SENSITIVE_VAR_PATTERN})\b', "Direct access to sensitive variable is blocked"),
+    (rf'\$\{{({SENSITIVE_VAR_PATTERN})\}}', "Direct access to sensitive variable is blocked"),
+
+    # Generic patterns for any secret-looking variable
+    (r'\$[A-Z_]*(_TOKEN|_KEY|_SECRET|_PASSWORD)\b', "Access to secret variable is blocked"),
+    (r'\$\{[A-Z_]*(_TOKEN|_KEY|_SECRET|_PASSWORD)\}', "Access to secret variable is blocked"),
 
     # gh CLI commands that reveal tokens
     (r'\bgh\s+auth\s+token\b', "gh auth token is blocked - it reveals the auth token"),
     (r'\bgh\s+auth\s+status\s+.*--show-token', "gh auth status --show-token is blocked"),
 
-    # Environment dumps (but allow filtered/safe versions)
-    (r'^\s*env\s*$', "Bare 'env' command blocked - could leak secrets"),
-    (r'^\s*printenv\s*$', "Bare 'printenv' command blocked - could leak secrets"),
-    (r'\bprintenv\s+(GH_TOKEN|GITHUB_TOKEN)', "printenv for tokens is blocked"),
+    # Environment dumps - these leak ALL secrets
+    (r'^\s*env\s*$', "Bare 'env' command blocked - leaks all secrets"),
+    (r'^\s*printenv\s*$', "Bare 'printenv' command blocked - leaks all secrets"),
+    (r'\bprintenv\s+\S*(_TOKEN|_KEY|_SECRET|_PASSWORD)', "printenv for secrets is blocked"),
 
-    # Procfs environment access
-    (r'/proc/[^/]*/environ', "Access to /proc/*/environ is blocked - could leak secrets"),
+    # Procfs environment access - leaks ALL secrets
+    (r'/proc/[^/]*/environ', "Access to /proc/*/environ is blocked - leaks all secrets"),
 
-    # Common exfiltration patterns with tokens
-    (r'(curl|wget|nc|netcat).*\$\{?(GH_TOKEN|GITHUB_TOKEN)', "Exfiltration attempt blocked"),
+    # Common exfiltration patterns
+    (rf'(curl|wget|nc|netcat).*\$\{{?({SENSITIVE_VAR_PATTERN})', "Exfiltration attempt blocked"),
+    (r'(curl|wget|nc|netcat).*\$[A-Z_]*(_TOKEN|_KEY|_SECRET)', "Exfiltration attempt blocked"),
 
-    # base64 encoding of tokens (common obfuscation)
-    (r'base64.*\$\{?(GH_TOKEN|GITHUB_TOKEN)', "Token encoding attempt blocked"),
-    (r'\$\{?(GH_TOKEN|GITHUB_TOKEN).*\|\s*base64', "Token encoding attempt blocked"),
+    # base64 encoding of secrets (common obfuscation)
+    (rf'base64.*\$\{{?({SENSITIVE_VAR_PATTERN})', "Secret encoding attempt blocked"),
+    (rf'\$\{{?({SENSITIVE_VAR_PATTERN}).*\|\s*base64', "Secret encoding attempt blocked"),
+
+    # Reading gh config file (contains token)
+    (r'cat.*\.config/gh/hosts\.yml', "Reading gh config is blocked - contains token"),
+    (r'cat.*\.config/gh/config\.yml', "Reading gh config is blocked - may contain secrets"),
 ]
 
 # Additional suspicious patterns that warrant extra scrutiny
