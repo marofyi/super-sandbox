@@ -226,12 +226,12 @@ A task is only complete when:
 
 ## Automated Documentation
 
-The `.github/workflows/update-docs.yml` workflow automatically updates documentation on PRs. It uses the Documentation Structure defined above to route content correctly.
+The `.github/workflows/update-docs.yml` and `.github/workflows/update-index.yml` workflows keep docs and the landing page current. They accept `workflow_dispatch` inputs `pr_number` (target a closed PR) and `commits_back` (default 5) when no PR context is available, set `BASE_REF` and `HAS_PR_CONTEXT` to pick the correct diff target, and checkout the PR head SHA when provided. Manual dispatches always create a fresh `docs/` branch (with PR number suffix when given) before pushing.
 
 **When modifying AGENTS.md**, ensure the workflow agent instructions stay in sync:
 - If the Documentation Structure table changes, update the workflow's embedded copy
 - If document purposes change, update the workflow's routing rules
-- The workflow must reflect the same content boundaries defined here
+- Preserve the branching and commit expectations: use `docs:`-prefixed commit subjects so the push step runs, and keep the workflow aligned with the content boundaries defined here
 
 ## References
 
@@ -242,6 +242,7 @@ The `.github/workflows/update-docs.yml` workflow automatically updates documenta
 | [README.md](./README.md) | Project structure, commands, env vars | Running commands, understanding project structure, setting up environment |
 | [CONTRIBUTING.md](./CONTRIBUTING.md) | Code style, git workflow, PR process | Writing or modifying any code in this repository |
 | [CHANGELOG.md](./CHANGELOG.md) | Notable changes and discoveries | Investigating regressions or understanding recent updates |
+| [docs/learnings-log.md](./docs/learnings-log.md) | Running discoveries and workflow updates | Revisiting gotchas, non-obvious fixes, and process changes |
 | [docs/browserless.md](./docs/browserless.md) | BrowserQL API, CLI, patterns | Any browser automation, screenshots, scraping, or form interaction |
 | [docs/cc-web.md](./docs/cc-web.md) | Network constraints, proxy setup | Working in Claude Code Web or any sandboxed environment |
 | [docs/static-html-guide.md](./docs/static-html-guide.md) | Single-file prototypes, GitHub Pages | Creating standalone HTML tools or demos in projects/ |
