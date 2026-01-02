@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surge Live Test</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a2e;
+            color: #eee;
+        }
+        .timestamp {
+            font-size: 2rem;
+            color: #00d9ff;
+            font-family: monospace;
+            background: #16213e;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #16213e;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+        h1 { color: #00d9ff; }
+    </style>
+</head>
+<body>
+    <h1>Surge Speed Test</h1>
+    <div class="timestamp">
+        <!-- TIMESTAMP_MARKER -->
+        Updated: <span id="time">NEVER</span>
+    </div>
+    <div class="info">
+        <p>This page tests surge.sh deployment speed.</p>
+        <p>Run <code>./deploy.sh</code> to update with current timestamp.</p>
+    </div>
+</body>
+</html>
