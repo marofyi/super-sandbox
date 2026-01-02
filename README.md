@@ -155,8 +155,8 @@ See [docs/vercel-deployment.md](docs/vercel-deployment.md) for:
 ## Configuration
 
 - GitHub Actions auto-deploys `projects/tanstack-chat` via `.github/workflows/deploy-tanstack-chat.yml` using the Vercel project `tanstack-chat`.
-- The root `index.html` landing page is updated by `.github/workflows/update-index.yml` when projects change.
-- Documentation is kept current on all pull requests via `.github/workflows/update-docs.yml`.
+- The root `index.html` landing page is updated by `.github/workflows/update-index.yml`, which now supports manual runs with `pr_number` (target a closed PR) or `commits_back` (default 5 commits) when no PR context exists.
+- Documentation is kept current via `.github/workflows/update-docs.yml`, which selects its diff target from PR metadata (`BASE_REF`) when available or falls back to the last `commits_back` commits on manual runs, and always branches new docs updates when dispatched manually.
 - The `projects/tanstack-chat/.env.example` file documents required `OPENAI_API_KEY` and optional `ANTHROPIC_API_KEY`/`GEMINI_API_KEY` values for the multi-provider chat demos.
 - Browser automation utilities in `@research/browserless` need `BROWSERLESS_TOKEN` (and optional `BROWSERLESS_URL`) for BrowserQL HTTP calls; works without WebSockets for sandboxed environments and now routes through the CC Web proxy when `HTTPS_PROXY` is present.
 - Screenshot capture is centralized in the `@research/browserless` CLI: run `pnpm --filter @research/browserless screenshot <url>` (add `--responsive` for multi-viewport). Helpers `captureResponsiveScreenshots()` and `captureAtViewport()` back the CLI and can be reused in any project.
@@ -171,6 +171,7 @@ Start here for navigation. README is the homepage for humans; AGENTS is the home
 | [AGENTS.md](./AGENTS.md) | Instructions for AI coding agents |
 | [CONTRIBUTING.md](./CONTRIBUTING.md) | Code style and git workflow |
 | [CHANGELOG.md](./CHANGELOG.md) | Notable changes, releases, and discoveries |
+| [docs/learnings-log.md](./docs/learnings-log.md) | Running discoveries, gotchas, and workflow notes |
 | [docs/browserless.md](./docs/browserless.md) | Browserless browser automation guide |
 | [docs/cc-web.md](./docs/cc-web.md) | Claude Code Web guide (setup, network, browser automation) |
 | [docs/vercel-deployment.md](./docs/vercel-deployment.md) | Vercel deployment guide |

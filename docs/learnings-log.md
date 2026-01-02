@@ -4,6 +4,13 @@ A chronological record of discoveries, gotchas, and insights from building in th
 
 ---
 
+## 2026-01: Flexible Documentation Workflows
+
+- `update-docs.yml` and `update-index.yml` now accept `workflow_dispatch` inputs: `pr_number` (analyze a closed PR) and `commits_back` (default 5) when no PR context exists, setting `BASE_REF`/`HAS_PR_CONTEXT` to choose the diff target and checking out the PR head SHA when provided.
+- Manual dispatches always branch before pushing (`docs/update-...` or `docs/update-pr-...`) so documentation updates can land even if the original PR branch is gone; pushes only occur when the latest commit subject starts with `docs:`.
+
+---
+
 ## 2026-01: Documentation Navigation Principle
 
 - Docs now work like a website: `README.md` is the homepage for humans and `AGENTS.md` is the homepage for AI agents.
