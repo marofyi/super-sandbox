@@ -84,6 +84,41 @@ Even with defense layers 1 and 2, token scoping limits blast radius if a token i
 
 **Use [Fine-grained Personal Access Tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#fine-grained-personal-access-tokens) instead of classic tokens.**
 
+##### How GH_TOKEN is Used in This Project
+
+| Context | Operations |
+|---------|------------|
+| Claude Code Web | Push commits, create PRs, read issues via `gh` CLI |
+| GitHub Actions | Uses `secrets.GITHUB_TOKEN` (auto-provided, not your token) |
+
+##### Creating a Repository-Scoped Token
+
+1. Go to [github.com/settings/personal-access-tokens/new](https://github.com/settings/personal-access-tokens/new)
+2. **Token name**: `Claude Code Web - research` (or your repo name)
+3. **Expiration**: 30 days recommended
+4. **Repository access**: Select **"Only select repositories"** → choose your repo
+5. **Permissions**:
+
+| Permission | Access | Why Needed |
+|------------|--------|------------|
+| Contents | Read and write | Push commits to branches |
+| Pull requests | Read and write | Create and update PRs |
+| Issues | Read | Analyze issue content |
+| Metadata | Read | Auto-granted, required |
+
+##### What Repository Scoping Blocks
+
+If a repository-scoped token is leaked, attackers **cannot**:
+- Access other repositories (public or private)
+- Create or delete repositories
+- Modify organization/account settings
+- Access GitHub Actions secrets
+- Change branch protection rules
+- Add/remove collaborators
+- Access billing or audit logs
+
+##### Permission Reference
+
 | Task | Permission | Access Level |
 |------|------------|--------------|
 | Clone/pull repos | Contents | Read |
@@ -92,12 +127,6 @@ Even with defense layers 1 and 2, token scoping limits blast radius if a token i
 | Read issues | Issues | Read |
 | Comment on issues | Issues | Write |
 | Read PR reviews | Pull requests | Read |
-
-**Recommended minimal scope for Claude Code:**
-- **Contents: Write** - Push commits to branches
-- **Pull requests: Write** - Create and update PRs
-- **Issues: Read** - Analyze issue content
-- **Metadata: Read** - Required for all operations
 
 **Avoid granting:**
 - `admin:*` - Repository administration
