@@ -56,6 +56,12 @@ gh workflow run vercel-deploy -f project_name=my-app
 4. **Repository access**: "Only select repositories" → your repo
 5. **Permissions**: Only `Actions: Read and write`
 
+## Security Notes
+
+- Session setup only installs `gh` and adds the `github` remote; it does not hide tokens or run a PreToolUse security hook.
+- Tokens stay in the environment—depend on minimal scopes and avoid env dumps or `gh auth token` style commands.
+- Keep deployments workflow-only; never inject Vercel secrets into CC Web shells.
+
 ## Network & HTTP
 
 Node.js `fetch` fails in CC Web with DNS errors. The sandbox routes traffic through a proxy that handles DNS, but native `fetch` ignores proxy settings.

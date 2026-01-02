@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## 2026-03
+
+### Changed
+
+- Consolidated CC Web token guidance into `docs/cc-web.md`, adding PAT creation steps and current security notes now that tokens stay in the environment.
+- Bumped GitHub Actions deps to `actions/checkout@v6`, `pnpm/action-setup@v4`, and `actions/github-script@v8` across docs automation and Vercel workflows.
+
+### Removed
+
+- PreToolUse security hook (`.claude/scripts/security-hook.py`) and its wiring in `.claude/settings.json`; session setup now only installs `gh` and adds the `github` remote.
+- Retired `docs/cc-web-security.md`, `docs/learnings-log.md`, and `docs/notes/security-audit.md` in favor of CC Web + CHANGELOG coverage.
+
 ## 2026-01
 
 ### Added
@@ -145,3 +157,4 @@ The proxy handles DNS resolution, not the container. Node.js native `fetch` fail
 - [README.md](./README.md) - Project overview and navigation
 - [AGENTS.md](./AGENTS.md) - Agent workflow and documentation structure
 - [docs/browserless.md](./docs/browserless.md) - Browser automation client and CLI usage
+- [docs/cc-web.md](./docs/cc-web.md) - Sandbox networking and token guidance

@@ -197,6 +197,7 @@ For medium to high complexity features, follow Test-Driven Development:
 - Use only `GH_TOKEN` with `actions:write` scope for `gh workflow run`; never request broader scopes.
 - Keep `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID_*` in GitHub Secrets. Do not surface them in shells or logs.
 - `BROWSERLESS_TOKEN` is the only API token expected in CC Web; avoid printing or echoing it.
+- No PreToolUse security hook is active; avoid env dumps or token prints yourself.
 - Review [docs/cc-web.md](./docs/cc-web.md) for the token architecture and network constraints.
 
 ## HTML vs Webapp
@@ -234,6 +235,8 @@ A task is only complete when:
 ## Automated Documentation
 
 The `.github/workflows/update-docs.yml` and `.github/workflows/update-index.yml` workflows keep docs and the landing page current. They accept `workflow_dispatch` inputs `pr_number` (target a closed PR) and `commits_back` (default 5) when no PR context is available, set `BASE_REF` and `HAS_PR_CONTEXT` to pick the correct diff target, and checkout the PR head SHA when provided. Manual dispatches always create a fresh `docs/` branch (with PR number suffix when given) before pushing.
+
+`update-docs.yml` now asks for CHANGELOG updates (Keep a Changelog) instead of `docs/learnings-log.md`.
 
 **When modifying AGENTS.md**, ensure the workflow agent instructions stay in sync:
 - If the Documentation Structure table changes, update the workflow's embedded copy

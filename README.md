@@ -41,7 +41,7 @@ Browser automation client for [Browserless](https://browserless.io) BrowserQL ov
 - `BROWSERLESS_TOKEN` — Free Browserless token for automation and screenshots.
 - `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID_<NAME>` — Add as GitHub Actions secrets only; they are not needed in the CC Web environment.
 
-`.env.example` documents the minimal tokens; keep CC Web shells free of deployment secrets. See `docs/cc-web.md` for the token architecture and network constraints.
+`.env.example` documents the minimal tokens; keep CC Web shells free of deployment secrets. No PreToolUse security hook is active—avoid env dumps or token prints. See `docs/cc-web.md` for the token architecture and network constraints.
 
 ## Projects
 
