@@ -249,7 +249,7 @@ Reusable capabilities for common tasks. Skills are located in `skills/` and foll
 
 | Skill | Description |
 |-------|-------------|
-| [html-live-preview](./skills/html-live-preview/) | Push live HTML previews from CC Web sandbox to a browser. Auto-polls GitHub Gist for updates. Use when user is creating or editing a single-file HTML page and wants to see it live. |
+| [vercel](./skills/vercel/) | Deploy and manage projects on Vercel. Setup, push, list, inspect, logs, env vars, rollback, teardown. |
 
 ## References
 

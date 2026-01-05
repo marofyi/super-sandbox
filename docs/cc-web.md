@@ -33,35 +33,39 @@ This monorepo uses a **minimal token surface** design:
 
 | Token | Location | Scope | Purpose |
 |-------|----------|-------|---------|
-| `GH_TOKEN` | CC Web env | `repo`, `gist` (classic PAT) | Workflow dispatch, gist operations |
+| `GH_TOKEN` | CC Web env | `repo` (classic PAT) | Workflow dispatch |
 | `BROWSERLESS_TOKEN` | CC Web env | Full (free account) | E2E testing screenshots |
-| `VERCEL_TOKEN` | GitHub Secrets | Team-scoped | Deployments (via workflows) |
+| `VERCEL_TOKEN` | CC Web env (optional) | Team-scoped | Live preview deploys ([vercel skill](../skills/vercel/)) |
 
-**No deployment tokens in CC Web.** Vercel deployments are handled by GitHub Actions workflows.
+**Note:** `VERCEL_TOKEN` is optional. Without it, use GitHub Actions for deployments. With it, the vercel skill can deploy directly (~10s).
 
-### GH_TOKEN: Classic PAT
+### GH_TOKEN
 
-CC Web handles git operations **natively** (push, PRs, issues). The `gh` CLI is used for:
+CC Web handles git operations **natively** (push, PRs, issues). The `gh` CLI is used for workflow dispatch (`gh workflow run`).
 
-- Workflow dispatch (`gh workflow run`)
-- Gist operations (used by [html-live-preview](../skills/html-live-preview/) skill)
+### Creating GH_TOKEN
 
-**Why classic PAT?** Fine-grained PATs don't support gist operations. Use a classic PAT with minimal scopes.
-
-### Creating the Token
-
-1. Go to [github.com/settings/tokens/new](https://github.com/settings/tokens/new) (classic token)
+1. Go to [github.com/settings/tokens/new](https://github.com/settings/tokens/new)
 2. **Note**: `Claude Code Web`
 3. **Expiration**: 30 days (or longer)
-4. **Scopes**: Check only:
-   - `repo` (for workflow dispatch)
-   - `gist` (for live preview)
+4. **Scopes**: Check only `repo`
+
+### VERCEL_TOKEN (optional) {#vercel-token}
+
+Required for the [vercel skill](../skills/vercel/) to deploy directly from CC Web.
+
+1. Go to [vercel.com/account/tokens](https://vercel.com/account/tokens)
+2. Click "Create Token"
+3. **Name**: `Claude Code Web`
+4. **Scope**: Select your team/account
+5. **Expiration**: 30 days (or longer)
+6. Add to CC Web environment as `VERCEL_TOKEN`
 
 ## Security Notes
 
 - Session setup only installs `gh` and adds the `github` remote; it does not hide tokens or run a PreToolUse security hook.
-- Tokens stay in the environment—depend on minimal scopes and avoid env dumps or `gh auth token` style commands.
-- Keep deployments workflow-only; never inject Vercel secrets into CC Web shells.
+- Tokens stay in the environment—depend on minimal scopes and avoid env dumps or printing tokens.
+- `VERCEL_TOKEN` grants deploy access. Only add it if you want the vercel skill to work directly in CC Web.
 
 ## Network & HTTP
 
