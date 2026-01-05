@@ -33,28 +33,29 @@ This monorepo uses a **minimal token surface** design:
 
 | Token | Location | Scope | Purpose |
 |-------|----------|-------|---------|
-| `GH_TOKEN` | CC Web env | `actions:write` only | Dispatch workflows via `gh workflow run` |
+| `GH_TOKEN` | CC Web env | `repo`, `gist` (classic PAT) | Workflow dispatch, gist operations |
 | `BROWSERLESS_TOKEN` | CC Web env | Full (free account) | E2E testing screenshots |
 | `VERCEL_TOKEN` | GitHub Secrets | Team-scoped | Deployments (via workflows) |
 
 **No deployment tokens in CC Web.** Vercel deployments are handled by GitHub Actions workflows.
 
-### GH_TOKEN: Actions-Only Scope
+### GH_TOKEN: Classic PAT
 
-CC Web handles git operations **natively** (push, PRs, issues). The only thing requiring `gh` CLI is workflow dispatch:
+CC Web handles git operations **natively** (push, PRs, issues). The `gh` CLI is used for:
 
-```bash
-gh workflow run vercel-setup -f project_name=my-app
-gh workflow run vercel-deploy -f project_name=my-app
-```
+- Workflow dispatch (`gh workflow run`)
+- Gist operations (used by [html-live-preview](../skills/html-live-preview/) skill)
+
+**Why classic PAT?** Fine-grained PATs don't support gist operations. Use a classic PAT with minimal scopes.
 
 ### Creating the Token
 
-1. Go to [github.com/settings/personal-access-tokens/new](https://github.com/settings/personal-access-tokens/new)
-2. **Token name**: `Claude Code Web - actions only`
-3. **Expiration**: 30 days
-4. **Repository access**: "Only select repositories" → your repo
-5. **Permissions**: Only `Actions: Read and write`
+1. Go to [github.com/settings/tokens/new](https://github.com/settings/tokens/new) (classic token)
+2. **Note**: `Claude Code Web`
+3. **Expiration**: 30 days (or longer)
+4. **Scopes**: Check only:
+   - `repo` (for workflow dispatch)
+   - `gist` (for live preview)
 
 ## Security Notes
 

@@ -1,7 +1,7 @@
 ---
 name: html-live-preview
 description: Push live HTML previews from CC Web sandbox to a browser. Auto-polls GitHub Gist for updates. Use when user is creating or editing a single-file HTML page and wants to see it live.
-compatibility: Requires gh CLI, node, curl
+compatibility: Requires gh CLI with gist scope, node, curl
 metadata:
   author: research
   version: "1.0"
@@ -10,6 +10,12 @@ metadata:
 # HTML Live Preview
 
 Enable live preview of single-file HTML projects from CC Web sandbox.
+
+## Requirements
+
+- **gh CLI** authenticated with `gist` scope (see [docs/cc-web.md](../../docs/cc-web.md#creating-the-token))
+- **node** (for encryption)
+- **curl** (for uploading viewer)
 
 ## How It Works
 
