@@ -243,6 +243,14 @@ The `.github/workflows/update-docs.yml` and `.github/workflows/update-index.yml`
 - If document purposes change, update the workflow's routing rules
 - Preserve the branching and commit expectations: use `docs:`-prefixed commit subjects so the push step runs, and keep the workflow aligned with the content boundaries defined here
 
+## Skills
+
+Reusable capabilities for common tasks. Skills are located in `skills/` and follow the [Agent Skills](https://agentskills.io) specification.
+
+| Skill | Description |
+|-------|-------------|
+| [vercel](./skills/vercel/) | Deploy and manage projects on Vercel. Setup, push, list, inspect, logs, env vars, rollback, teardown. |
+
 ## References
 
 **Read before acting.** These docs contain critical context. Skipping them causes errors.
