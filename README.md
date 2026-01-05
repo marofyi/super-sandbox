@@ -20,11 +20,12 @@ research/
 ├── packages/
 │   └── browserless/           # BrowserQL HTTP client + screenshot CLI
 ├── projects/
-│   ├── live-preview-test/     # Encrypted preview utility for CC Web
 │   └── the-intelligence-economy/ # Static visualization
+├── skills/
+│   └── vercel/                # Vercel deployment skill
 ├── docs/                      # Deep-dive guides
-├── .github/workflows/         # update-index, update-docs, vercel-setup, vercel-deploy
-├── .claude/                   # CC Web session hooks + security guardrails
+├── .github/workflows/         # update-index, update-docs
+├── .claude/                   # CC Web session hooks
 ├── AGENTS.md                  # AI agent instructions
 └── CONTRIBUTING.md            # Code style and git workflow
 ```
@@ -37,17 +38,13 @@ Browser automation client for [Browserless](https://browserless.io) BrowserQL ov
 
 ## Environment Setup
 
-- `GH_TOKEN` — Actions-only PAT scoped to this repo; used to dispatch workflows from CC Web. Do **not** add broader scopes.
+- `GH_TOKEN` — PAT with `repo` scope for workflow dispatch from CC Web.
 - `BROWSERLESS_TOKEN` — Free Browserless token for automation and screenshots.
-- `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID_<NAME>` — Add as GitHub Actions secrets only; they are not needed in the CC Web environment.
+- `VERCEL_TOKEN` — Optional. Enables direct deploys via the [vercel skill](./skills/vercel/).
 
-`.env.example` documents the minimal tokens; keep CC Web shells free of deployment secrets. No PreToolUse security hook is active—avoid env dumps or token prints. See `docs/cc-web.md` for the token architecture and network constraints.
+See `docs/cc-web.md` for the token architecture and network constraints.
 
 ## Projects
-
-### live-preview-test
-
-Encrypted preview system for Claude Code Web. Push encrypted content to a GitHub Gist with AES-256-GCM (PBKDF2 key derivation) and view via a self-contained HTML viewer (`viewer-v6.html` or data URL). Scripts `update-preview-encrypted.sh` and `make-data-url.sh` handle encryption and data URL generation for sandboxed previews.
 
 ### the-intelligence-economy
 
@@ -55,13 +52,20 @@ Static visualization exploring LLM-driven shifts in the web economy, covering va
 
 ## Deployment
 
-Vercel deployments are workflow-driven—tokens stay in GitHub Secrets and never enter CC Web.
+Use the [vercel skill](./skills/vercel/) for fast (~10s) deployments:
 
-- **Setup new project:** `gh workflow run vercel-setup -f project_name=my-app -f project_path=projects/my-app` (or dispatch via Actions UI). The workflow returns the project ID to store as `VERCEL_PROJECT_ID_MY_APP`.
-- **Manual deploy:** `gh workflow run vercel-deploy -f project_name=my-app -f project_id_secret=VERCEL_PROJECT_ID_MY_APP`.
-- **Auto-deploy:** Add a per-project workflow (see `docs/vercel-deployment.md` template) that watches `projects/<name>/**` and `pnpm-lock.yaml`.
+```bash
+# First-time setup
+./skills/vercel/scripts/setup.sh projects/my-app
 
-See [docs/vercel-deployment.md](docs/vercel-deployment.md) for the architecture, required secrets, and workflow inputs.
+# Deploy updates
+./skills/vercel/scripts/push.sh projects/my-app
+
+# List all projects
+./skills/vercel/scripts/list.sh
+```
+
+See [skills/vercel/SKILL.md](./skills/vercel/SKILL.md) for full documentation.
 
 ## Browserless Screenshots
 
@@ -86,5 +90,5 @@ Start here for navigation. README is the homepage for humans; AGENTS is the home
 | [CHANGELOG.md](./CHANGELOG.md) | Notable changes, releases, and discoveries |
 | [docs/browserless.md](./docs/browserless.md) | Browserless browser automation guide |
 | [docs/cc-web.md](./docs/cc-web.md) | Claude Code Web guide (setup, network, tokens) |
-| [docs/vercel-deployment.md](./docs/vercel-deployment.md) | Vercel deployment guide |
 | [docs/static-html-guide.md](./docs/static-html-guide.md) | Single-file prototype best practices |
+| [skills/vercel/SKILL.md](./skills/vercel/SKILL.md) | Vercel deployment skill |

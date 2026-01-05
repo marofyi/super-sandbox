@@ -6,7 +6,7 @@ Instructions for AI coding agents working in this repository.
 
 ## Research First
 
-**Your training data has a cutoff. You do not know what has changed since then.**
+**Its 2026. Your training data has a cutoff. You do not know what has changed since about 1 year. This is a HUGE knowledge gap in the tech industry.**
 
 Before writing code that uses external libraries, frameworks, APIs, or tools:
 
@@ -26,7 +26,7 @@ Before writing code that uses external libraries, frameworks, APIs, or tools:
 
 ## Relationship
 
-- **No sycophancy.** Never write "You're absolutely right!" or similar
+- **No sycophancy.** Never write "You're right!" or similar, be honest and direct
 - **Push back on bad ideas** - Cite technical reasons or say it's a gut feeling
 - **STOP and ask** when: uncertain, making assumptions, struggling, or disagreeing
 
@@ -194,10 +194,10 @@ For medium to high complexity features, follow Test-Driven Development:
 
 ## Token Handling (CC Web)
 
-- Use only `GH_TOKEN` with `actions:write` scope for `gh workflow run`; never request broader scopes.
-- Keep `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID_*` in GitHub Secrets. Do not surface them in shells or logs.
-- `BROWSERLESS_TOKEN` is the only API token expected in CC Web; avoid printing or echoing it.
-- No PreToolUse security hook is active; avoid env dumps or token prints yourself.
+- `GH_TOKEN` with `repo` scope for workflow dispatch via `gh workflow run`.
+- `VERCEL_TOKEN` enables direct deploys via the [vercel skill](./skills/vercel/).
+- `BROWSERLESS_TOKEN` for browser automation and screenshots.
+- Avoid printing or echoing tokens in shells or logs.
 - Review [docs/cc-web.md](./docs/cc-web.md) for the token architecture and network constraints.
 
 ## HTML vs Webapp
@@ -263,4 +263,4 @@ Reusable capabilities for common tasks. Skills are located in `skills/` and foll
 | [docs/browserless.md](./docs/browserless.md) | BrowserQL API, CLI, patterns | Any browser automation, screenshots, scraping, or form interaction |
 | [docs/cc-web.md](./docs/cc-web.md) | Network constraints, proxy setup, token architecture | Working in Claude Code Web or any sandboxed environment |
 | [docs/static-html-guide.md](./docs/static-html-guide.md) | Single-file prototypes, GitHub Pages | Creating standalone HTML tools or demos in projects/ |
-| [docs/vercel-deployment.md](./docs/vercel-deployment.md) | CLI commands, env vars, GitHub Actions | Deploying to Vercel, adding env vars, or setting up GitHub Actions for deploy |
+| [skills/vercel/SKILL.md](./skills/vercel/SKILL.md) | Deploy and manage Vercel projects | Deploying to Vercel, managing env vars, viewing logs |

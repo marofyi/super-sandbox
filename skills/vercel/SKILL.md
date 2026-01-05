@@ -212,5 +212,4 @@ Remove a Vercel project and its deployments.
 | Approach | Deploy Time | Rate Limits | Complexity |
 |----------|-------------|-------------|------------|
 | **Vercel** | ~10s | None | Simple |
-| GitHub Gist | Instant | 60 req/hr | Complex (encryption, polling) |
 | GitHub Pages | ~30-60s | None | Medium (needs git push) |

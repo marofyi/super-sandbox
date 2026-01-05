@@ -22,11 +22,9 @@ Place single-file prototypes directly in `projects/`:
 
 ```
 projects/
-├── index.html           # Landing page (auto-maintained)
-├── live-preview-test/   # CC Web preview utility
 ├── the-intelligence-economy/ # Static visualization
-├── color-picker.html    # Prototype
-└── json-formatter.html  # Prototype
+├── color-picker.html         # Prototype
+└── json-formatter.html       # Prototype
 ```
 
 ## Template
@@ -96,37 +94,6 @@ Use `esm.sh` or `esm.run` to import npm packages as ES modules:
   confetti();
 </script>
 ```
-
-## Local Preview
-
-### Local Development (Mac/Linux)
-
-```bash
-# Quick static server (from repo root)
-npx serve projects
-
-# With live reload
-npx live-server projects
-
-# Python alternative
-python -m http.server 8000 --directory projects
-```
-
-### Claude Code Web
-
-The CC Web sandbox is remote—localhost isn't accessible from your browser.
-
-**Options:**
-1. **Deploy via Vercel** — Use `vercel-setup.yml` then auto/manual deploy workflows
-2. **Read the HTML** — Inspect markup directly with the Read tool
-
-## Deployment
-
-Use the Vercel workflows when you need a public URL:
-
-- Run `gh workflow run vercel-setup -f project_name=<name> -f project_path=projects/<name>` to create a project and capture its ID.
-- Store the ID as `VERCEL_PROJECT_ID_<NAME>` in GitHub Secrets, then either dispatch `vercel-deploy.yml` manually or add a per-project deploy workflow watching `projects/<name>/**`.
-- The root landing page `index.html` is kept in sync by `update-index.yml` so new prototypes remain discoverable.
 
 ## Best Practices
 
@@ -216,5 +183,4 @@ Move from static HTML to a full project in `projects/<name>/` when you need:
 ## See Also
 
 - [README.md](../README.md) - Project overview and directory structure
-- [docs/vercel-deployment.md](./vercel-deployment.md) - When a full Vercel app is required
 - [CHANGELOG.md](../CHANGELOG.md) - Recent deployment and documentation changes

@@ -48,12 +48,11 @@ This enables fully automated onboarding in sandboxed environments like CC Web.
 
 ## Expected Results
 
-| Metric | Surge.sh | Gist+Polling |
-|--------|----------|--------------|
-| Deploy time | ~2-5s | ~1-2s (push) |
-| Visibility delay | ~instant | +3s (poll interval) |
-| Total round-trip | ~2-5s | ~4-5s |
-| Auth required | Token (one-time setup) | Password per-session |
+| Metric | Surge.sh | Vercel |
+|--------|----------|--------|
+| Deploy time | ~2-5s | ~10s |
+| Auth | Token (one-time setup) | Token (one-time setup) |
+| Rate limits | None | None |
 
 ## Environment Variables
 

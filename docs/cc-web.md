@@ -35,7 +35,7 @@ This monorepo uses a **minimal token surface** design:
 |-------|----------|-------|---------|
 | `GH_TOKEN` | CC Web env | `repo` (classic PAT) | Workflow dispatch |
 | `BROWSERLESS_TOKEN` | CC Web env | Full (free account) | E2E testing screenshots |
-| `VERCEL_TOKEN` | CC Web env (optional) | Team-scoped | Live preview deploys ([vercel skill](../skills/vercel/)) |
+| `VERCEL_TOKEN` | CC Web env | Team-scoped | Live preview deploys ([vercel skill](../skills/vercel/)) |
 
 **Note:** `VERCEL_TOKEN` is optional. Without it, use GitHub Actions for deployments. With it, the vercel skill can deploy directly (~10s).
 
@@ -150,6 +150,6 @@ const img = await screenshot();
 
 - [README.md](../README.md) - Project overview and entry point for humans
 - [docs/browserless.md](./browserless.md) - HTTP-only BrowserQL client for automation
-- [docs/vercel-deployment.md](./vercel-deployment.md) - Workflow-based deployments
+- [skills/vercel/SKILL.md](../skills/vercel/SKILL.md) - Vercel deployment skill
 - [CHANGELOG.md](../CHANGELOG.md) - Current network and automation findings
 - [Browserless BrowserQL Docs](https://docs.browserless.io/browserql-interactions)
