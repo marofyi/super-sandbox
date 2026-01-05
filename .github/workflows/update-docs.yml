@@ -29,6 +29,11 @@ permissions:
   pull-requests: write
   id-token: write
 
+# Prevent race condition with update-index workflow pushing to same branch
+concurrency:
+  group: docs-update-${{ github.head_ref || github.ref }}
+  cancel-in-progress: false
+
 jobs:
   update-docs:
     runs-on: ubuntu-latest
