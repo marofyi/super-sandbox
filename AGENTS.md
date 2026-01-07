@@ -136,10 +136,9 @@ After receiving approval:
 
 Before any commit:
 
-1. Run type checking: `pnpm check`
-2. Build affected projects: `pnpm --filter <project-name> build`
-3. Verify the build succeeds with no errors
-4. Conduct pragmatic e2e testing with real data
+1. Build browserless if modified: `cd browserless && pnpm build`
+2. Verify the build succeeds with no errors
+3. Conduct pragmatic e2e testing with real data
 
 ## TDD Workflow
 

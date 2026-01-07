@@ -24,11 +24,9 @@ jobs:
           node-version: '20'
           cache: 'pnpm'
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Install root dependencies
+        run: pnpm install
 
-      - name: Type check
-        run: pnpm check
-
-      - name: Build packages
-        run: pnpm -r build
+      - name: Build browserless
+        working-directory: browserless
+        run: pnpm install && pnpm build

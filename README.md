@@ -9,11 +9,11 @@ Give cloud AI agents superpowers. Work around sandbox limitations to enable rapi
 npx tiged your-username/super-sandbox my-project
 cd my-project
 
-# Install dependencies
+# Install root tools
 pnpm install
 
-# Type-check
-pnpm check
+# Build browserless (if needed)
+cd browserless && pnpm install && pnpm build
 ```
 
 ## Cloud Environment Support

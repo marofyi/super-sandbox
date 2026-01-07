@@ -7,16 +7,16 @@
  * @example
  * ```bash
  * # Single screenshot at desktop resolution
- * pnpm --filter @super-sandbox/browserless screenshot https://example.com
+ * ./browserless/scripts/screenshot.sh https://example.com
  *
  * # Responsive screenshots across all default viewports
- * pnpm --filter @super-sandbox/browserless screenshot https://example.com --responsive
+ * ./browserless/scripts/screenshot.sh https://example.com --responsive
  *
  * # Custom output directory
- * pnpm --filter @super-sandbox/browserless screenshot https://example.com --output ./screenshots
+ * ./browserless/scripts/screenshot.sh https://example.com --output ./screenshots
  *
  * # Specific viewport
- * pnpm --filter @super-sandbox/browserless screenshot https://example.com --width 375 --height 667
+ * ./browserless/scripts/screenshot.sh https://example.com --width 375 --height 667
  * ```
  */
 
