@@ -284,7 +284,12 @@ Reusable capabilities for common tasks. Skills are located in `skills/` and foll
 | Skill | Description |
 |-------|-------------|
 | [codex-setup](./skills/codex-setup/) | On-demand tool installation for OpenAI Codex environments. |
+| [create-project](./skills/create-project/) | Scaffold new projects from templates (static, react-cdn, next-app). |
+| [frontend-design](./skills/frontend-design/) | Create distinctive, production-grade UI that avoids generic AI aesthetics. |
+| [update](./skills/update/) | Sync with upstream Super Sandbox template while preserving your content. |
 | [vercel](./skills/vercel/) | Deploy and manage projects on Vercel. Setup, push, list, inspect, logs, env vars, rollback, teardown. |
+
+**IMPORTANT:** When building any frontend UI, **always use the [frontend-design](./skills/frontend-design/) skill** unless the user provides extensive style guides or explicit design direction. This ensures polished, distinctive interfaces rather than generic AI output.
 
 **Note:** [browserless](./browserless/) is a top-level package, not a skill. See [docs/browserless.md](./docs/browserless.md) for usage.
 
@@ -301,4 +306,7 @@ Reusable capabilities for common tasks. Skills are located in `skills/` and foll
 | [docs/cloud-environments.md](./docs/cloud-environments.md) | CC Web, Codex, Gemini CLI setup | Working in cloud agent environments |
 | [docs/static-html-guide.md](./docs/static-html-guide.md) | Single-file prototypes | Creating standalone HTML tools |
 | [skills/codex-setup/SKILL.md](./skills/codex-setup/SKILL.md) | On-demand Codex tool installation | Working in OpenAI Codex environments |
+| [skills/create-project/SKILL.md](./skills/create-project/SKILL.md) | Scaffold new projects | Creating new projects in projects/ |
+| [skills/frontend-design/SKILL.md](./skills/frontend-design/SKILL.md) | Distinctive UI design principles | Building any frontend interface |
+| [skills/update/SKILL.md](./skills/update/SKILL.md) | Sync with upstream template | Checking for Super Sandbox updates |
 | [skills/vercel/SKILL.md](./skills/vercel/SKILL.md) | Deploy to Vercel | Deploying projects |
