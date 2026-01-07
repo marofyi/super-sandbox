@@ -268,3 +268,8 @@ Design principles (from Anthropic skill):
 | Draft v3 | 2026-01-06 | Template updates, progressive disclosure |
 | Draft v4 | 2026-01-06 | Tech stack, Anthropic skill reference |
 | Draft v5 | 2026-01-06 | **Major rewrite:** Focused scope, single persona (cloud agent users), resolved all open questions, simplified governance (MIT only), added Gemini CLI, enforced architecture conventions, testing requirement, index.html showcase options |
+
+## See Also
+
+- [README.md](../README.md) - Project overview and navigation
+- [docs/cloud-agent-kit-research.md](./cloud-agent-kit-research.md) - Competitive research and UX patterns informing this plan

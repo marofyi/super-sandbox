@@ -262,5 +262,7 @@ Reusable capabilities for common tasks. Skills are located in `skills/` and foll
 | [CHANGELOG.md](./CHANGELOG.md) | Notable changes and discoveries | Investigating regressions or understanding recent updates |
 | [docs/browserless.md](./docs/browserless.md) | BrowserQL API, CLI, patterns | Any browser automation, screenshots, scraping, or form interaction |
 | [docs/cc-web.md](./docs/cc-web.md) | Network constraints, proxy setup, token architecture | Working in Claude Code Web or any sandboxed environment |
+| [docs/cloud-agent-kit-plan.md](./docs/cloud-agent-kit-plan.md) | Cloud Agent Kit scope, phases, stack decisions | Planning or updating Cloud Agent Kit deliverables |
+| [docs/cloud-agent-kit-research.md](./docs/cloud-agent-kit-research.md) | Competitive research and UX patterns for Cloud Agent Kit | Positioning or onboarding UX for Cloud Agent Kit |
 | [docs/static-html-guide.md](./docs/static-html-guide.md) | Single-file prototypes, GitHub Pages | Creating standalone HTML tools or demos in projects/ |
 | [skills/vercel/SKILL.md](./skills/vercel/SKILL.md) | Deploy and manage Vercel projects | Deploying to Vercel, managing env vars, viewing logs |

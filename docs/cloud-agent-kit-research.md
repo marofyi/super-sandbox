@@ -391,3 +391,8 @@ docs/architecture.md       # System design
 - [AGENTS.md Gist](https://gist.github.com/0xfauzi/7c8f65572930a21efa62623557d83f6e)
 - [Model Context Protocol](https://modelcontextprotocol.io)
 - [Cursor Rules Documentation](https://cursor.com/docs/context/rules)
+
+## See Also
+
+- [README.md](../README.md) - Project overview and navigation
+- [docs/cloud-agent-kit-plan.md](./cloud-agent-kit-plan.md) - Phase plan and decisions derived from this research

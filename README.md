@@ -90,5 +90,7 @@ Start here for navigation. README is the homepage for humans; AGENTS is the home
 | [CHANGELOG.md](./CHANGELOG.md) | Notable changes, releases, and discoveries |
 | [docs/browserless.md](./docs/browserless.md) | Browserless browser automation guide |
 | [docs/cc-web.md](./docs/cc-web.md) | Claude Code Web guide (setup, network, tokens) |
+| [docs/cloud-agent-kit-plan.md](./docs/cloud-agent-kit-plan.md) | Cloud Agent Kit scope, roadmap, stack decisions, and release phases |
+| [docs/cloud-agent-kit-research.md](./docs/cloud-agent-kit-research.md) | Competitive research and UX patterns informing Cloud Agent Kit UX and onboarding |
 | [docs/static-html-guide.md](./docs/static-html-guide.md) | Single-file prototype best practices |
 | [skills/vercel/SKILL.md](./skills/vercel/SKILL.md) | Vercel deployment skill |
