@@ -3,7 +3,7 @@ name: vercel
 description: Deploy and manage projects on Vercel via CLI. Fast ~10s deploys, environment variables, logs, rollback, and more.
 compatibility: Requires vercel CLI, authentication via login or VERCEL_TOKEN
 metadata:
-  author: research
+  author: super-sandbox
   version: "4.0"
 ---
 
@@ -18,7 +18,7 @@ Deploy and manage projects on Vercel for instant preview and hosting.
   - `vercel login` (interactive, opens browser)
   - `VERCEL_TOKEN` environment variable (for CI/CC Web)
 
-For CC Web, see [docs/cc-web.md](../../docs/cc-web.md#vercel-token) for token setup.
+For CC Web, see [docs/cloud-environments.md](../../docs/cloud-environments.md) for token setup.
 
 ## Scripts
 

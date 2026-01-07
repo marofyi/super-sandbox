@@ -8,7 +8,7 @@ Best practices for creating single-file HTML tools and experiments in this repos
 |----------|----------|
 | Quick experiment, single-file tool | Single `.html` file in `projects/` |
 | Multi-page app, API routes, SSR | Full project with `package.json` |
-| Shared library code | Package in `packages/` |
+| Shared library code | Skill in `skills/` |
 
 **Static HTML is ideal for:**
 - Interactive demos and visualizations

@@ -23,7 +23,7 @@ import {
   captureAtViewport,            // Single viewport capture
   VIEWPORT_PRESETS,             // Common device presets
   DEFAULT_VIEWPORTS,            // Default viewport list
-} from '@research/browserless';
+} from '@super-sandbox/browserless';
 ```
 
 ## Environment Variables
@@ -39,7 +39,7 @@ import {
 ### Navigate and Screenshot
 
 ```typescript
-import { goto, screenshotToFile } from '@research/browserless';
+import { goto, screenshotToFile } from '@super-sandbox/browserless';
 
 await goto('https://example.com');
 const path = await screenshotToFile(); // /tmp/screenshot.jpg
@@ -48,7 +48,7 @@ const path = await screenshotToFile(); // /tmp/screenshot.jpg
 ### Form Interaction
 
 ```typescript
-import { goto, type, click, getText } from '@research/browserless';
+import { goto, type, click, getText } from '@super-sandbox/browserless';
 
 await goto('https://example.com/login');
 await type('input[name="email"]', 'user@example.com');
@@ -60,7 +60,7 @@ const result = await getText();
 ### Scrape Page Content
 
 ```typescript
-import { goto, getHtml, getText } from '@research/browserless';
+import { goto, getHtml, getText } from '@super-sandbox/browserless';
 
 await goto('https://example.com');
 const html = await getHtml();  // Full HTML
@@ -70,7 +70,7 @@ const text = await getText();  // Text only
 ### Multi-Step Flow (Single Session)
 
 ```typescript
-import { executeFlow } from '@research/browserless';
+import { executeFlow } from '@super-sandbox/browserless';
 
 const result = await executeFlow(`
   mutation {
@@ -84,7 +84,7 @@ const result = await executeFlow(`
 ### Responsive Screenshots
 
 ```typescript
-import { captureResponsiveScreenshots, VIEWPORT_PRESETS } from '@research/browserless';
+import { captureResponsiveScreenshots, VIEWPORT_PRESETS } from '@super-sandbox/browserless';
 
 // Capture all default viewports (8 device sizes)
 const results = await captureResponsiveScreenshots('https://your-app.com', {
@@ -104,7 +104,7 @@ console.log(`Captured ${results.screenshots.length} screenshots`);
 ### Single Viewport Capture
 
 ```typescript
-import { captureAtViewport, VIEWPORT_PRESETS } from '@research/browserless';
+import { captureAtViewport, VIEWPORT_PRESETS } from '@super-sandbox/browserless';
 
 const result = await captureAtViewport('https://your-app.com', {
   viewport: VIEWPORT_PRESETS.iphone14,
@@ -115,23 +115,23 @@ const result = await captureAtViewport('https://your-app.com', {
 
 ## CLI
 
-The `@research/browserless` package provides a standalone CLI for capturing screenshots:
+The browserless skill provides a CLI for capturing screenshots:
 
 ```bash
 # Single desktop screenshot
-pnpm --filter @research/browserless screenshot https://example.com
+./skills/browserless/scripts/screenshot.sh https://example.com
 
 # Responsive screenshots (all default viewports)
-pnpm --filter @research/browserless screenshot https://example.com --responsive
+./skills/browserless/scripts/screenshot.sh https://example.com --responsive
 
 # Specific viewport preset
-pnpm --filter @research/browserless screenshot https://example.com --viewport iphone14
+./skills/browserless/scripts/screenshot.sh https://example.com --viewport iphone14
 
 # Custom output
-pnpm --filter @research/browserless screenshot https://example.com --output ./my-screenshot.jpg
+./skills/browserless/scripts/screenshot.sh https://example.com --output ./my-screenshot.jpg
 ```
 
-Run `pnpm --filter @research/browserless screenshot --help` for all options.
+Run `./skills/browserless/scripts/screenshot.sh --help` for all options.
 
 ## Screenshot Options
 
@@ -157,11 +157,11 @@ await screenshotToFile({
 ## Resources
 
 - [BrowserQL Docs](https://docs.browserless.io/browserql-interactions)
-- [Package Source](../packages/browserless/src/browserless-client.ts)
-- [CC Web Guide](./cc-web.md)
+- [Skill Source](../skills/browserless/src/browserless-client.ts)
+- [Cloud Environments Guide](./cloud-environments.md)
 
 ## See Also
 
 - [README.md](../README.md) - Project overview and entry point for humans
-- [docs/cc-web.md](./cc-web.md) - Proxy-aware networking for sandboxed environments
+- [docs/cloud-environments.md](./cloud-environments.md) - Cloud environment setup guide
 - [CHANGELOG.md](../CHANGELOG.md) - Latest automation changes and discoveries

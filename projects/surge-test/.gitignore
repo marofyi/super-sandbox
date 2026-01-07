@@ -1,5 +1,0 @@
-# Build artifacts
-.build/
-
-# Saved surge domain (contains deployment URL)
-.surge-domain

@@ -37,7 +37,7 @@ export { ask, chat, chatStream };
 ## Pull Request Process
 
 1. Run `pnpm check` to verify type checking passes
-2. Build affected packages: `pnpm b @research/<pkg> build`
+2. Build affected projects: `pnpm --filter <project-name> build`
 3. Commit with a clear, descriptive message
 4. Open a PR for review
 
@@ -45,7 +45,7 @@ export { ask, chat, chatStream };
 
 Before adding new dependencies:
 
-1. Check if existing utilities in `packages/` can solve the problem
+1. Check if existing utilities in `skills/` can solve the problem
 2. Prefer well-maintained packages with minimal sub-dependencies
 3. Ask before adding if unsure
 

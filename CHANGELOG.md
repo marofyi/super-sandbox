@@ -72,14 +72,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
-- Standalone CLI for `@research/browserless` package for capturing screenshots
-  - Single screenshot: `pnpm --filter @research/browserless screenshot <url>`
-  - Responsive (all viewports): `pnpm --filter @research/browserless screenshot <url> --responsive`
-  - Specific viewport: `pnpm --filter @research/browserless screenshot <url> --viewport iphone14`
+- Standalone CLI for `@super-sandbox/browserless` package for capturing screenshots
+  - Single screenshot: `pnpm --filter @super-sandbox/browserless screenshot <url>`
+  - Responsive (all viewports): `pnpm --filter @super-sandbox/browserless screenshot <url> --responsive`
+  - Specific viewport: `pnpm --filter @super-sandbox/browserless screenshot <url> --viewport iphone14`
 
 ### Changed
 
-- Shared `@research/browserless` helpers `captureResponsiveScreenshots()` and `captureAtViewport()` consolidate viewport lists and full-page options
+- Shared `@super-sandbox/browserless` helpers `captureResponsiveScreenshots()` and `captureAtViewport()` consolidate viewport lists and full-page options
 - Errors now surface per-viewport with counts for faster CI failure detection
 - Static HTML prototypes in `projects/*.html` auto-deploy to GitHub Pages via `.github/workflows/deploy-github-pages.yml`
 
@@ -98,7 +98,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
-- `@research/browserless` package for BrowserQL-driven screenshot utilities
+- `@super-sandbox/browserless` package for BrowserQL-driven screenshot utilities
 - Responsive visual QA via CLI or programmatic API (`captureResponsiveScreenshots()`)
 
 ### Fixed
@@ -155,4 +155,4 @@ The proxy handles DNS resolution, not the container. Node.js native `fetch` fail
 - [README.md](./README.md) - Project overview and navigation
 - [AGENTS.md](./AGENTS.md) - Agent workflow and documentation structure
 - [docs/browserless.md](./docs/browserless.md) - Browser automation client and CLI usage
-- [docs/cc-web.md](./docs/cc-web.md) - Sandbox networking and token guidance
+- [docs/cloud-environments.md](./docs/cloud-environments.md) - Cloud environment setup

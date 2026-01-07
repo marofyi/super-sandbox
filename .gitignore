@@ -4,6 +4,7 @@ node_modules/
 # Build outputs
 dist/
 *.tsbuildinfo
+.next/
 
 # Environment
 .env
@@ -29,3 +30,6 @@ coverage/
 .vercel
 .env*.local
 projects/tanstack-chat/tests/visual/screenshots/
+
+# Claude Code Workbench worktrees
+.worktrees/

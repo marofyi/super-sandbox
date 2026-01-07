@@ -117,9 +117,9 @@ Example plan format:
 ```
 ## Proposed Plan
 
-1. Create new file `packages/foo/src/bar.ts` with X functionality
-2. Update `packages/foo/src/index.ts` to export the new module
-3. Add tests in `packages/foo/src/bar.test.ts`
+1. Create new file `projects/my-app/src/bar.ts` with X functionality
+2. Update `projects/my-app/src/index.ts` to export the new module
+3. Add tests in `projects/my-app/src/bar.test.ts`
 
 Shall I proceed?
 ```
@@ -137,7 +137,7 @@ After receiving approval:
 Before any commit:
 
 1. Run type checking: `pnpm check`
-2. Build affected packages: `pnpm b @research/<package-name> build`
+2. Build affected projects: `pnpm --filter <project-name> build`
 3. Verify the build succeeds with no errors
 4. Conduct pragmatic e2e testing with real data
 
@@ -198,7 +198,7 @@ For medium to high complexity features, follow Test-Driven Development:
 - `VERCEL_TOKEN` enables direct deploys via the [vercel skill](./skills/vercel/).
 - `BROWSERLESS_TOKEN` for browser automation and screenshots.
 - Avoid printing or echoing tokens in shells or logs.
-- Review [docs/cc-web.md](./docs/cc-web.md) for the token architecture and network constraints.
+- Review [docs/cloud-environments.md](./docs/cloud-environments.md) for the token architecture and network constraints.
 
 ## HTML vs Webapp
 
@@ -221,7 +221,7 @@ Only escalate to a webapp when the user EXPLICITLY needs:
 
 **Less is more. Form follows function.** Don't add interactivity or visual polish unless explicitly requested. Interfaces should be usable, minimal, and focused solely on user goals.
 
-See [docs/static-html-guide.md](./docs/static-html-guide.md) for templates and CDN library references.
+See [docs/static-html-guide.md](./docs/static-html-guide.md) for templates and CDN library references. Projects live in `projects/`.
 
 ## Proof of Completion
 
@@ -249,6 +249,7 @@ Reusable capabilities for common tasks. Skills are located in `skills/` and foll
 
 | Skill | Description |
 |-------|-------------|
+| [browserless](./skills/browserless/) | HTTP-only browser automation. Screenshots, scraping, form filling in sandboxed environments. |
 | [vercel](./skills/vercel/) | Deploy and manage projects on Vercel. Setup, push, list, inspect, logs, env vars, rollback, teardown. |
 
 ## References
@@ -261,8 +262,6 @@ Reusable capabilities for common tasks. Skills are located in `skills/` and foll
 | [CONTRIBUTING.md](./CONTRIBUTING.md) | Code style, git workflow, PR process | Writing or modifying any code in this repository |
 | [CHANGELOG.md](./CHANGELOG.md) | Notable changes and discoveries | Investigating regressions or understanding recent updates |
 | [docs/browserless.md](./docs/browserless.md) | BrowserQL API, CLI, patterns | Any browser automation, screenshots, scraping, or form interaction |
-| [docs/cc-web.md](./docs/cc-web.md) | Network constraints, proxy setup, token architecture | Working in Claude Code Web or any sandboxed environment |
-| [docs/cloud-agent-kit-plan.md](./docs/cloud-agent-kit-plan.md) | Cloud Agent Kit scope, phases, stack decisions | Planning or updating Cloud Agent Kit deliverables |
-| [docs/cloud-agent-kit-research.md](./docs/cloud-agent-kit-research.md) | Competitive research and UX patterns for Cloud Agent Kit | Positioning or onboarding UX for Cloud Agent Kit |
+| [docs/cloud-environments.md](./docs/cloud-environments.md) | CC Web, Codex, Gemini CLI setup | Working in any cloud agent environment |
 | [docs/static-html-guide.md](./docs/static-html-guide.md) | Single-file prototypes, GitHub Pages | Creating standalone HTML tools or demos in projects/ |
 | [skills/vercel/SKILL.md](./skills/vercel/SKILL.md) | Deploy and manage Vercel projects | Deploying to Vercel, managing env vars, viewing logs |

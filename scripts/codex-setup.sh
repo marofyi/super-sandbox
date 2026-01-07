@@ -1,16 +1,21 @@
 #!/bin/bash
-# Super Sandbox - Claude Code Web Session Setup
-# Automatically runs on session start via .claude/settings.json
+# Super Sandbox - OpenAI Codex Environment Setup
+#
+# INSTRUCTIONS:
+# 1. Copy this entire script content
+# 2. Paste into your Codex environment settings
+# 3. Save and restart your environment
+#
+# This script installs the tools needed for Super Sandbox:
+# - GitHub CLI (gh) for repository operations
+# - Vercel CLI for deployments
+# - pnpm for package management
+#
 set -e
 
-# Only run in web (remote) environment
-if [ "$CLAUDE_CODE_REMOTE" != "true" ]; then
-  exit 0
-fi
+echo "Setting up Super Sandbox for Codex..."
 
-echo "Setting up Super Sandbox web session..."
-
-# Install gh CLI if not present
+# Install GitHub CLI
 if ! command -v gh &> /dev/null; then
   echo "Installing GitHub CLI..."
   GH_VERSION="2.63.2"
@@ -23,7 +28,7 @@ else
   echo "GitHub CLI already installed: $(gh --version | head -1)"
 fi
 
-# Install Vercel CLI if not present
+# Install Vercel CLI
 if ! command -v vercel &> /dev/null; then
   echo "Installing Vercel CLI..."
   npm install -g vercel@latest
@@ -32,7 +37,7 @@ else
   echo "Vercel CLI already installed: $(vercel --version)"
 fi
 
-# Install pnpm if not present
+# Install pnpm
 if ! command -v pnpm &> /dev/null; then
   echo "Installing pnpm..."
   npm install -g pnpm@latest
@@ -41,12 +46,16 @@ else
   echo "pnpm already installed: $(pnpm --version)"
 fi
 
-# Add a real GitHub remote so gh CLI can detect the repo
-# The proxy remote (origin) isn't recognized as a GitHub host
-REPO=$(git remote get-url origin 2>/dev/null | sed -E 's|.*/git/([^/]+/[^/]+).*|\1|')
-if [ -n "$REPO" ] && ! git remote get-url github &>/dev/null; then
-  git remote add github "https://github.com/${REPO}.git"
-  echo "Added 'github' remote for gh CLI: $REPO"
-fi
-
-echo "Super Sandbox web session setup complete"
+echo ""
+echo "Super Sandbox setup complete!"
+echo ""
+echo "Next steps:"
+echo "1. Set environment variables:"
+echo "   export GH_TOKEN='your-github-token'"
+echo "   export BROWSERLESS_TOKEN='your-browserless-token'"
+echo "   export VERCEL_TOKEN='your-vercel-token'  # optional"
+echo ""
+echo "2. Clone your project and install dependencies:"
+echo "   git clone https://github.com/your-username/super-sandbox"
+echo "   cd super-sandbox"
+echo "   pnpm install"

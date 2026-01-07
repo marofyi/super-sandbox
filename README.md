@@ -1,54 +1,122 @@
-# Research
+# Super Sandbox
 
-Lean monorepo for rapid prototypes and deployments, designed for Claude Code Web with a minimal token surface and Browserless-powered visual QA.
+Give cloud AI agents superpowers. Work around sandbox limitations to enable rapid development and deployment—from static HTML to full-stack web apps—using cloud agents like Claude Code Web, OpenAI Codex, and Gemini CLI Agent Mode.
 
-## Getting Started
+## Quick Start
 
 ```bash
+# Clone the template
+npx tiged your-username/super-sandbox my-project
+cd my-project
+
 # Install dependencies
 pnpm install
 
-# Type-check all packages
+# Type-check
 pnpm check
 ```
+
+## Cloud Environment Support
+
+| Environment | Setup Method | Config Location |
+|-------------|--------------|-----------------|
+| **Claude Code Web** | Auto (SessionStart hook) | `.claude/settings.json` |
+| **OpenAI Codex** | Manual (copy script) | `scripts/codex-setup.sh` |
+| **Gemini CLI** | Native AGENTS.md | No setup needed |
+
+See [docs/cloud-environments.md](./docs/cloud-environments.md) for detailed setup instructions.
 
 ## Structure
 
 ```
-research/
-├── index.html                 # Landing page (updated by update-index.yml)
-├── packages/
-│   └── browserless/           # BrowserQL HTTP client + screenshot CLI
-├── projects/
-│   └── the-intelligence-economy/ # Static visualization
-├── skills/
-│   └── vercel/                # Vercel deployment skill
-├── docs/                      # Deep-dive guides
-├── .github/workflows/         # update-index, update-docs
+super-sandbox/
 ├── .claude/                   # CC Web session hooks
+│   ├── settings.json          # SessionStart hook config
+│   └── scripts/
+│       └── setup-web-session.sh
+├── .github/workflows/         # CI and doc automation
+├── docs/                      # Deep-dive guides
+├── projects/                  # Your projects live here
+│   ├── static-html/           # Single HTML file example
+│   ├── react-cdn/             # React via CDN (no build)
+│   └── next-app/              # Full Next.js application
+├── scripts/
+│   └── codex-setup.sh         # Codex environment setup
+├── skills/                    # Agent skills
+│   ├── browserless/           # HTTP-only browser automation
+│   ├── vercel/                # Deploy to Vercel
+│   ├── create-project/        # Scaffold new project
+│   ├── update/                # Sync from upstream template
+│   └── frontend-design/       # Distinctive UI design
 ├── AGENTS.md                  # AI agent instructions
-└── CONTRIBUTING.md            # Code style and git workflow
+├── CLAUDE.md                  # Points to AGENTS.md
+├── README.md                  # You are here
+├── LICENSE                    # MIT
+└── package.json
 ```
 
-## Shared Package
+## Skills
 
-### @research/browserless
+| Skill | Purpose |
+|-------|---------|
+| [browserless](./skills/browserless/) | HTTP-only browser automation (screenshots, scraping) |
+| [vercel](./skills/vercel/) | Deploy static HTML or full apps to Vercel |
+| [create-project](./skills/create-project/) | Scaffold project (static/react/nextjs) |
+| [update](./skills/update/) | Sync from upstream Super Sandbox template |
+| [frontend-design](./skills/frontend-design/) | Create distinctive, polished UI |
 
-Browser automation client for [Browserless](https://browserless.io) BrowserQL over pure HTTP (works in CC Web). Includes helpers for navigation, form interaction, scraping, single-session GraphQL flows, and responsive screenshot capture via `captureResponsiveScreenshots`/`captureAtViewport` plus a CLI (`pnpm --filter @research/browserless screenshot <url>`). Uses an `undici` ProxyAgent when `HTTPS_PROXY` is set and defaults to Chrome BQL with a 60-second timeout. Requires `BROWSERLESS_TOKEN` and optional `BROWSERLESS_URL`.
+### Browserless
 
-## Environment Setup
+HTTP-only browser automation using [Browserless](https://browserless.io) BrowserQL. Works in CC Web and other sandboxed environments where WebSocket-based tools (Playwright, Puppeteer) are blocked.
 
-- `GH_TOKEN` — PAT with `repo` scope for workflow dispatch from CC Web.
-- `BROWSERLESS_TOKEN` — Free Browserless token for automation and screenshots.
-- `VERCEL_TOKEN` — Optional. Enables direct deploys via the [vercel skill](./skills/vercel/).
+```typescript
+import { goto, screenshot } from '@super-sandbox/browserless';
 
-See `docs/cc-web.md` for the token architecture and network constraints.
+await goto('https://example.com');
+const img = await screenshot();
+```
+
+**CLI:**
+```bash
+# Single screenshot
+./skills/browserless/scripts/screenshot.sh https://example.com
+
+# Responsive screenshots (all viewports)
+./skills/browserless/scripts/screenshot.sh https://example.com --responsive
+```
+
+## Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `GH_TOKEN` | Yes | GitHub PAT with `repo` scope |
+| `BROWSERLESS_TOKEN` | Yes | Free token from browserless.io |
+| `VERCEL_TOKEN` | No | Enables direct Vercel deploys |
 
 ## Projects
 
-### the-intelligence-economy
+### static-html
 
-Static visualization exploring LLM-driven shifts in the web economy, covering value flow, stakeholder health, and timelines of key events. Built as a standalone HTML experience for fast sharing and lightweight hosting.
+Single HTML file demonstrating CDN-based development. No build step required.
+
+### react-cdn
+
+React 19 application via CDN with Tailwind CSS. Opens directly in browser—no build tools needed.
+
+### next-app
+
+Full Next.js 16 application with App Router, TypeScript, and Tailwind CSS v4.
+
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [AGENTS.md](./AGENTS.md) | Instructions for AI coding agents |
+| [CONTRIBUTING.md](./CONTRIBUTING.md) | Code style and git workflow |
+| [CHANGELOG.md](./CHANGELOG.md) | Notable changes and releases |
+| [docs/browserless.md](./docs/browserless.md) | Browser automation guide |
+| [docs/cloud-environments.md](./docs/cloud-environments.md) | CC Web, Codex, Gemini setup |
+| [docs/static-html-guide.md](./docs/static-html-guide.md) | Single-file prototype patterns |
 
 ## Deployment
 
@@ -65,32 +133,16 @@ Use the [vercel skill](./skills/vercel/) for fast (~10s) deployments:
 ./skills/vercel/scripts/list.sh
 ```
 
-See [skills/vercel/SKILL.md](./skills/vercel/SKILL.md) for full documentation.
+## Template Updates
 
-## Browserless Screenshots
+To get updates from the upstream Super Sandbox template:
 
-Capture screenshots with the Browserless CLI (requires `BROWSERLESS_TOKEN`):
-
-```bash
-# Single desktop screenshot
-pnpm --filter @research/browserless screenshot https://your-app.com
-
-# Responsive screenshots (all default viewports)
-pnpm --filter @research/browserless screenshot https://your-app.com --responsive
+```
+Ask your agent: "Check for Super Sandbox updates"
 ```
 
-## Documentation
+The `update` skill fetches upstream changes while preserving your projects, local configs, and custom AGENTS.md sections.
 
-Start here for navigation. README is the homepage for humans; AGENTS is the homepage for AI agents. Each deep-dive doc links back and sideways to related guides.
+## License
 
-| Document | Description |
-|----------|-------------|
-| [AGENTS.md](./AGENTS.md) | Instructions for AI coding agents |
-| [CONTRIBUTING.md](./CONTRIBUTING.md) | Code style and git workflow |
-| [CHANGELOG.md](./CHANGELOG.md) | Notable changes, releases, and discoveries |
-| [docs/browserless.md](./docs/browserless.md) | Browserless browser automation guide |
-| [docs/cc-web.md](./docs/cc-web.md) | Claude Code Web guide (setup, network, tokens) |
-| [docs/cloud-agent-kit-plan.md](./docs/cloud-agent-kit-plan.md) | Cloud Agent Kit scope, roadmap, stack decisions, and release phases |
-| [docs/cloud-agent-kit-research.md](./docs/cloud-agent-kit-research.md) | Competitive research and UX patterns informing Cloud Agent Kit UX and onboarding |
-| [docs/static-html-guide.md](./docs/static-html-guide.md) | Single-file prototype best practices |
-| [skills/vercel/SKILL.md](./skills/vercel/SKILL.md) | Vercel deployment skill |
+MIT
