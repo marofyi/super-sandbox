@@ -4,9 +4,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SKILL_DIR="$(dirname "$SCRIPT_DIR")"
-REPO_ROOT="$(cd "$SKILL_DIR/../.." && pwd)"
-TEMPLATES_DIR="$SKILL_DIR/templates"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 
 if [ -z "$1" ] || [ -z "$2" ]; then
   echo "Usage: $0 <project-name> <template>"
