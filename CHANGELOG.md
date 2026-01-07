@@ -18,6 +18,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - PreToolUse security hook (`.claude/scripts/security-hook.py`) and its wiring in `.claude/settings.json`; session setup now only installs `gh` and adds the `github` remote.
 - Retired `docs/cc-web-security.md`, `docs/learnings-log.md`, and `docs/notes/security-audit.md` in favor of CC Web + CHANGELOG coverage.
 
+### Documentation
+
+- Linked the Cloud Agent Kit plan and research docs with See Also navigation and surfaced them in README and AGENTS references for easier discovery.
+
 ## 2026-01
 
 ### Added
