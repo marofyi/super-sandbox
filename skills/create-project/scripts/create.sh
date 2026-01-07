@@ -57,9 +57,16 @@ EOF
 
 Static HTML project.
 
-## Development
+## Preview
 
-Open \`index.html\` in your browser.
+Deploy to Vercel and view via the deployment URL:
+
+\`\`\`bash
+./skills/vercel/scripts/setup.sh projects/$PROJECT_NAME
+./skills/vercel/scripts/push.sh projects/$PROJECT_NAME
+\`\`\`
+
+The deployment URL is returned after push. Use browserless for visual verification and testing.
 EOF
     ;;
 
@@ -122,16 +129,23 @@ EOF
 
 React 19 via CDN with Tailwind CSS. No build step required.
 
-## Development
+## Preview
 
-Open \`index.html\` in your browser.
+Deploy to Vercel and view via the deployment URL:
+
+\`\`\`bash
+./skills/vercel/scripts/setup.sh projects/$PROJECT_NAME
+./skills/vercel/scripts/push.sh projects/$PROJECT_NAME
+\`\`\`
+
+The deployment URL is returned after push. Use browserless for visual verification and testing.
 
 ## Features
 
 - React 19 from esm.sh
 - Tailwind CSS from CDN
 - No build tools needed
-- Edit and refresh
+- Edit → deploy → verify cycle
 EOF
     ;;
 
@@ -249,21 +263,30 @@ EOF
 
 Next.js 16 application with App Router, TypeScript, and Tailwind CSS v4.
 
-## Development
+## Preview
+
+Deploy to Vercel and view via the deployment URL:
 
 \`\`\`bash
-pnpm install
-pnpm dev
+# First time setup
+./skills/vercel/scripts/setup.sh projects/$PROJECT_NAME
+
+# Deploy (builds automatically)
+./skills/vercel/scripts/push.sh projects/$PROJECT_NAME
 \`\`\`
 
-Open [http://localhost:3000](http://localhost:3000).
+The deployment URL is returned after push. Use browserless for visual verification and testing.
 
 ## Build
 
+For local development (if available):
+
 \`\`\`bash
+pnpm install
 pnpm build
-pnpm start
 \`\`\`
+
+In cloud sandbox environments, skip local dev and deploy directly to Vercel for instant previews.
 EOF
     ;;
 
@@ -277,12 +300,11 @@ esac
 echo ""
 echo "Project created: projects/$PROJECT_NAME"
 echo ""
-if [ "$TEMPLATE" = "next-app" ]; then
-  echo "Next steps:"
-  echo "  1. cd projects/$PROJECT_NAME"
-  echo "  2. pnpm install"
-  echo "  3. pnpm dev"
-else
-  echo "Next steps:"
-  echo "  Open projects/$PROJECT_NAME/index.html in your browser"
-fi
+echo "Next steps:"
+echo "  1. Deploy to Vercel:"
+echo "     ./skills/vercel/scripts/setup.sh projects/$PROJECT_NAME"
+echo "     ./skills/vercel/scripts/push.sh projects/$PROJECT_NAME"
+echo ""
+echo "  2. View via the deployment URL returned by push.sh"
+echo ""
+echo "  3. Use browserless for visual verification and e2e testing"

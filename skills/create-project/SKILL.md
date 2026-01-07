@@ -70,11 +70,21 @@ projects/<name>/
 
 ## Post-Creation Steps
 
-### Static / React CDN
-1. Open `index.html` in browser
-2. Edit and refresh
+After creating a project, deploy it to Vercel for instant previews:
 
-### Next.js
-1. `cd projects/<name>`
-2. `pnpm install`
-3. `pnpm dev`
+```bash
+# First time setup
+./skills/vercel/scripts/setup.sh projects/<name>
+
+# Deploy and get preview URL
+./skills/vercel/scripts/push.sh projects/<name>
+```
+
+The deployment URL is returned after push. Use [browserless](../../browserless/) for visual verification and e2e testing.
+
+### Development Workflow
+
+1. **Edit** — Make changes to your project files
+2. **Deploy** — Run `push.sh` to deploy updates (~10s)
+3. **Verify** — Use browserless to capture screenshots and test functionality
+4. **Iterate** — Repeat until complete

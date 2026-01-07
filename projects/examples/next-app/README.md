@@ -2,18 +2,27 @@
 
 Next.js 16 application with App Router, TypeScript, and Tailwind CSS v4.
 
-## Development
+## Preview
+
+Deploy to Vercel and view via the deployment URL:
 
 ```bash
-pnpm install
-pnpm dev
+# First time setup
+./skills/vercel/scripts/setup.sh projects/examples/next-app
+
+# Deploy (builds automatically)
+./skills/vercel/scripts/push.sh projects/examples/next-app
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+The deployment URL is returned after push. Use [browserless](../../../browserless/) for visual verification and testing.
 
 ## Build
 
+For local development (if available):
+
 ```bash
+pnpm install
 pnpm build
-pnpm start
 ```
+
+In cloud sandbox environments, skip local dev and deploy directly to Vercel for instant previews.

@@ -99,7 +99,7 @@ Single HTML file demonstrating CDN-based development. No build step required.
 
 ### react-cdn
 
-React 19 application via CDN with Tailwind CSS. Opens directly in browser—no build tools needed.
+React 19 application via CDN with Tailwind CSS. No build step—deploy directly to Vercel.
 
 ### next-app
 
