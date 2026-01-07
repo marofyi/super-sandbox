@@ -115,23 +115,23 @@ const result = await captureAtViewport('https://your-app.com', {
 
 ## CLI
 
-The browserless skill provides a CLI for capturing screenshots:
+The browserless package provides a CLI for capturing screenshots:
 
 ```bash
 # Single desktop screenshot
-./skills/browserless/scripts/screenshot.sh https://example.com
+./browserless/scripts/screenshot.sh https://example.com
 
 # Responsive screenshots (all default viewports)
-./skills/browserless/scripts/screenshot.sh https://example.com --responsive
+./browserless/scripts/screenshot.sh https://example.com --responsive
 
 # Specific viewport preset
-./skills/browserless/scripts/screenshot.sh https://example.com --viewport iphone14
+./browserless/scripts/screenshot.sh https://example.com --viewport iphone14
 
 # Custom output
-./skills/browserless/scripts/screenshot.sh https://example.com --output ./my-screenshot.jpg
+./browserless/scripts/screenshot.sh https://example.com --output ./my-screenshot.jpg
 ```
 
-Run `./skills/browserless/scripts/screenshot.sh --help` for all options.
+Run `./browserless/scripts/screenshot.sh --help` for all options.
 
 ## Screenshot Options
 
@@ -157,7 +157,7 @@ await screenshotToFile({
 ## Resources
 
 - [BrowserQL Docs](https://docs.browserless.io/browserql-interactions)
-- [Skill Source](../skills/browserless/src/browserless-client.ts)
+- [Package Source](../browserless/src/browserless-client.ts)
 - [Cloud Environments Guide](./cloud-environments.md)
 
 ## See Also

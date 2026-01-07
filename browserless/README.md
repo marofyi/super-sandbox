@@ -23,13 +23,13 @@ const path2 = await screenshotToFile({
 
 ```bash
 # Single screenshot
-./skills/browserless/scripts/screenshot.sh https://example.com
+./browserless/scripts/screenshot.sh https://example.com
 
 # Responsive screenshots (all viewports)
-./skills/browserless/scripts/screenshot.sh https://example.com --responsive
+./browserless/scripts/screenshot.sh https://example.com --responsive
 
 # Custom output
-./skills/browserless/scripts/screenshot.sh https://example.com -o ./my-screenshot.jpg
+./browserless/scripts/screenshot.sh https://example.com -o ./my-screenshot.jpg
 ```
 
 ## Setup
@@ -81,5 +81,5 @@ For Claude Code Web, also set `HTTPS_PROXY` for network access.
 
 ## See Also
 
-- [docs/browserless.md](../../docs/browserless.md) - BrowserQL patterns and examples
-- [docs/cloud-environments.md](../../docs/cloud-environments.md) - CC Web setup
+- [docs/browserless.md](../docs/browserless.md) - BrowserQL patterns and examples
+- [docs/cloud-environments.md](../docs/cloud-environments.md) - CC Web setup

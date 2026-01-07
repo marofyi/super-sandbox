@@ -1,3 +1,2 @@
 packages:
-  - "skills/browserless"
-  - "projects/*"
+  - "browserless"

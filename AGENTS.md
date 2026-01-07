@@ -249,8 +249,10 @@ Reusable capabilities for common tasks. Skills are located in `skills/` and foll
 
 | Skill | Description |
 |-------|-------------|
-| [browserless](./skills/browserless/) | HTTP-only browser automation. Screenshots, scraping, form filling in sandboxed environments. |
+| [codex-setup](./skills/codex-setup/) | On-demand tool installation for OpenAI Codex environments. |
 | [vercel](./skills/vercel/) | Deploy and manage projects on Vercel. Setup, push, list, inspect, logs, env vars, rollback, teardown. |
+
+**Note:** [browserless](./browserless/) is a top-level package, not a skill. See [docs/browserless.md](./docs/browserless.md) for usage.
 
 ## References
 
@@ -264,4 +266,5 @@ Reusable capabilities for common tasks. Skills are located in `skills/` and foll
 | [docs/browserless.md](./docs/browserless.md) | BrowserQL API, CLI, patterns | Any browser automation, screenshots, scraping, or form interaction |
 | [docs/cloud-environments.md](./docs/cloud-environments.md) | CC Web, Codex, Gemini CLI setup | Working in any cloud agent environment |
 | [docs/static-html-guide.md](./docs/static-html-guide.md) | Single-file prototypes, GitHub Pages | Creating standalone HTML tools or demos in projects/ |
+| [skills/codex-setup/SKILL.md](./skills/codex-setup/SKILL.md) | On-demand Codex tool installation | Working in OpenAI Codex, installing gh/vercel/pnpm |
 | [skills/vercel/SKILL.md](./skills/vercel/SKILL.md) | Deploy and manage Vercel projects | Deploying to Vercel, managing env vars, viewing logs |

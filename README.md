@@ -21,7 +21,7 @@ pnpm check
 | Environment | Setup Method | Config Location |
 |-------------|--------------|-----------------|
 | **Claude Code Web** | Auto (SessionStart hook) | `.claude/settings.json` |
-| **OpenAI Codex** | Manual (copy script) | `scripts/codex-setup.sh` |
+| **OpenAI Codex** | On-demand (skill) | [skills/codex-setup/](./skills/codex-setup/) |
 | **Gemini CLI** | Native AGENTS.md | No setup needed |
 
 See [docs/cloud-environments.md](./docs/cloud-environments.md) for detailed setup instructions.
@@ -35,15 +35,15 @@ super-sandbox/
 │   └── scripts/
 │       └── setup-web-session.sh
 ├── .github/workflows/         # CI and doc automation
+├── browserless/               # HTTP-only browser automation package
 ├── docs/                      # Deep-dive guides
 ├── projects/                  # Your projects live here
-│   ├── static-html/           # Single HTML file example
-│   ├── react-cdn/             # React via CDN (no build)
-│   └── next-app/              # Full Next.js application
-├── scripts/
-│   └── codex-setup.sh         # Codex environment setup
+│   └── examples/              # Example projects
+│       ├── static-html/       # Single HTML file example
+│       ├── react-cdn/         # React via CDN (no build)
+│       └── next-app/          # Full Next.js application
 ├── skills/                    # Agent skills
-│   ├── browserless/           # HTTP-only browser automation
+│   ├── codex-setup/           # On-demand Codex tool installation
 │   ├── vercel/                # Deploy to Vercel
 │   ├── create-project/        # Scaffold new project
 │   ├── update/                # Sync from upstream template
@@ -59,13 +59,13 @@ super-sandbox/
 
 | Skill | Purpose |
 |-------|---------|
-| [browserless](./skills/browserless/) | HTTP-only browser automation (screenshots, scraping) |
+| [codex-setup](./skills/codex-setup/) | On-demand tool installation for Codex |
 | [vercel](./skills/vercel/) | Deploy static HTML or full apps to Vercel |
 | [create-project](./skills/create-project/) | Scaffold project (static/react/nextjs) |
 | [update](./skills/update/) | Sync from upstream Super Sandbox template |
 | [frontend-design](./skills/frontend-design/) | Create distinctive, polished UI |
 
-### Browserless
+## Browserless
 
 HTTP-only browser automation using [Browserless](https://browserless.io) BrowserQL. Works in CC Web and other sandboxed environments where WebSocket-based tools (Playwright, Puppeteer) are blocked.
 
@@ -79,10 +79,10 @@ const img = await screenshot();
 **CLI:**
 ```bash
 # Single screenshot
-./skills/browserless/scripts/screenshot.sh https://example.com
+./browserless/scripts/screenshot.sh https://example.com
 
 # Responsive screenshots (all viewports)
-./skills/browserless/scripts/screenshot.sh https://example.com --responsive
+./browserless/scripts/screenshot.sh https://example.com --responsive
 ```
 
 ## Environment Variables
@@ -93,7 +93,9 @@ const img = await screenshot();
 | `BROWSERLESS_TOKEN` | Yes | Free token from browserless.io |
 | `VERCEL_TOKEN` | No | Enables direct Vercel deploys |
 
-## Projects
+## Examples
+
+Example projects in `projects/examples/`:
 
 ### static-html
 

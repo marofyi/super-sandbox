@@ -7,7 +7,7 @@ Running Super Sandbox in sandboxed cloud AI environments.
 | Environment | Setup Method | Config Location |
 |-------------|--------------|-----------------|
 | **Claude Code Web** | Auto (SessionStart hook) | `.claude/settings.json` |
-| **OpenAI Codex** | Manual (copy script to UI) | `scripts/codex-setup.sh` |
+| **OpenAI Codex** | On-demand (skill) | [skills/codex-setup/](../skills/codex-setup/) |
 | **Gemini CLI Agent Mode** | Native AGENTS.md support | No setup needed |
 
 ---
@@ -90,20 +90,16 @@ const img = await screenshot();
 
 ### Setup
 
-Copy `scripts/codex-setup.sh` content to your Codex environment settings:
+Install tools on-demand as needed during your session. See [skills/codex-setup/SKILL.md](../skills/codex-setup/SKILL.md) for installation commands.
 
-1. Open Codex environment configuration
-2. Paste the setup script contents
-3. Save and restart environment
-
-The script installs:
-- GitHub CLI (`gh`)
-- Vercel CLI
-- pnpm
+Available tools:
+- GitHub CLI (`gh`) — for repository operations
+- Vercel CLI — for direct deployments
+- pnpm — for package management
 
 ### Environment Variables
 
-Set these in your Codex environment:
+Set these in your Codex environment settings:
 
 | Variable | Required | Purpose |
 |----------|----------|---------|
