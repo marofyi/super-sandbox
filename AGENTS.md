@@ -300,4 +300,5 @@ Reusable capabilities for common tasks. Skills are located in `skills/` and foll
 | [docs/browserless.md](./docs/browserless.md) | BrowserQL patterns and examples | Advanced browser automation |
 | [docs/cloud-environments.md](./docs/cloud-environments.md) | CC Web, Codex, Gemini CLI setup | Working in cloud agent environments |
 | [docs/static-html-guide.md](./docs/static-html-guide.md) | Single-file prototypes | Creating standalone HTML tools |
+| [skills/codex-setup/SKILL.md](./skills/codex-setup/SKILL.md) | On-demand Codex tool installation | Working in OpenAI Codex environments |
 | [skills/vercel/SKILL.md](./skills/vercel/SKILL.md) | Deploy to Vercel | Deploying projects |
