@@ -8,13 +8,9 @@ Give cloud AI agents superpowers. Work around sandbox limitations to enable rapi
 # Clone the template
 npx tiged your-username/super-sandbox my-project
 cd my-project
-
-# Install root tools
-pnpm install
-
-# Build browserless (if needed)
-cd browserless && pnpm install && pnpm build
 ```
+
+That's it. Create projects in `projects/`, deploy with the [vercel skill](./skills/vercel/).
 
 ## Cloud Environment Support
 

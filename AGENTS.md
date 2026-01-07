@@ -136,9 +136,44 @@ After receiving approval:
 
 Before any commit:
 
-1. Build browserless if modified: `cd browserless && pnpm build`
-2. Verify the build succeeds with no errors
-3. Conduct pragmatic e2e testing with real data
+1. Verify builds succeed with no errors
+2. Conduct pragmatic e2e testing with real data
+3. **Use browserless for visual verification** (see below)
+
+## Browser Automation
+
+Use the [browserless](./browserless/) package for visual evaluation and functional testing of web implementations. This is especially valuable for:
+
+- **Visual QA** — Capture screenshots to verify layouts, styling, responsive design
+- **Functional testing** — Verify forms, interactions, navigation work correctly
+- **Regression checks** — Compare before/after screenshots when refactoring
+
+### Setup (one-time)
+
+```bash
+cd browserless && pnpm install && pnpm build
+```
+
+Requires `BROWSERLESS_TOKEN` environment variable ([get one free](https://browserless.io)).
+
+### Usage
+
+```bash
+# Screenshot a deployed page
+./browserless/scripts/screenshot.sh https://your-app.vercel.app
+
+# Responsive screenshots (all viewports)
+./browserless/scripts/screenshot.sh https://your-app.vercel.app --responsive
+```
+
+```typescript
+import { goto, screenshot, screenshotToFile } from '@super-sandbox/browserless';
+
+await goto('https://your-app.vercel.app');
+await screenshotToFile({ filePath: './screenshot.png' });
+```
+
+**Proactively use browserless** after implementing UI changes to verify your work visually.
 
 ## TDD Workflow
 
@@ -259,11 +294,10 @@ Reusable capabilities for common tasks. Skills are located in `skills/` and foll
 
 | Document | Description | Read Before |
 |----------|-------------|-------------|
-| [README.md](./README.md) | Project structure, commands, env vars | Running commands, understanding project structure, setting up environment |
-| [CONTRIBUTING.md](./CONTRIBUTING.md) | Code style, git workflow, PR process | Writing or modifying any code in this repository |
-| [CHANGELOG.md](./CHANGELOG.md) | Notable changes and discoveries | Investigating regressions or understanding recent updates |
-| [docs/browserless.md](./docs/browserless.md) | BrowserQL API, CLI, patterns | Any browser automation, screenshots, scraping, or form interaction |
-| [docs/cloud-environments.md](./docs/cloud-environments.md) | CC Web, Codex, Gemini CLI setup | Working in any cloud agent environment |
-| [docs/static-html-guide.md](./docs/static-html-guide.md) | Single-file prototypes, GitHub Pages | Creating standalone HTML tools or demos in projects/ |
-| [skills/codex-setup/SKILL.md](./skills/codex-setup/SKILL.md) | On-demand Codex tool installation | Working in OpenAI Codex, installing gh/vercel/pnpm |
-| [skills/vercel/SKILL.md](./skills/vercel/SKILL.md) | Deploy and manage Vercel projects | Deploying to Vercel, managing env vars, viewing logs |
+| [README.md](./README.md) | Project structure, env vars | Understanding project structure |
+| [CONTRIBUTING.md](./CONTRIBUTING.md) | Code style, git workflow | Writing or modifying code |
+| [browserless/README.md](./browserless/README.md) | Browser automation setup and API | Visual testing, screenshots, scraping |
+| [docs/browserless.md](./docs/browserless.md) | BrowserQL patterns and examples | Advanced browser automation |
+| [docs/cloud-environments.md](./docs/cloud-environments.md) | CC Web, Codex, Gemini CLI setup | Working in cloud agent environments |
+| [docs/static-html-guide.md](./docs/static-html-guide.md) | Single-file prototypes | Creating standalone HTML tools |
+| [skills/vercel/SKILL.md](./skills/vercel/SKILL.md) | Deploy to Vercel | Deploying projects |
