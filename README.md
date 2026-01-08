@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./super-sandbox-claude-3d.png" alt="Super Sandbox Logo" width="180" />
+  <img src="./logo.png" alt="Super Sandbox Logo" width="180" />
   <h1>Super Sandbox</h1>
   <p>
     <strong>Give cloud AI agents superpowers.</strong><br>

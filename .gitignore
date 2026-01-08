@@ -33,3 +33,4 @@ projects/tanstack-chat/tests/visual/screenshots/
 
 # Claude Code Workbench worktrees
 .worktrees/
+nanobanana-output/
