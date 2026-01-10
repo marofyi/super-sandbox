@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Slide 4: Code Example</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      width: 1920px;
+      height: 1080px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      text-align: center;
+      padding: 60px;
+      background: #1e1e1e;
+    }
+  </style>
+</head>
+<body>
+
+      <h1 style="color:white;font-size:32px;text-align:center;margin-bottom:30px;font-weight:bold;width:100%">Code Example</h1>
+      <div style="background:#2d2d2d;border:1px solid #444;padding:30px;border-radius:4px;text-align:left;width:100%;flex:1">
+        <pre style="color:#d4d4d4;font-family:Consolas,Monaco,monospace;font-size:16px;line-height:1.8;margin:0;white-space:pre-wrap">import { exportToPptx } from 'dom-to-pptx';
+
+// Select the slide element
+const slides = document.querySelectorAll('.slide');
+
+// Export to PPTX
+await exportToPptx(Array.from(slides), {
+  fileName: 'presentation.pptx'
+});</pre>
+      </div>
+    
+</body>
+</html>

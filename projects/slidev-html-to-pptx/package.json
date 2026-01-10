@@ -1,0 +1,19 @@
+{
+  "name": "slidev-html-to-pptx",
+  "version": "1.0.0",
+  "description": "Prototype: Convert Slidev HTML to editable PPTX using dom-to-pptx",
+  "type": "module",
+  "scripts": {
+    "create-input-pptx": "node scripts/create-input-pptx.js",
+    "slidev:dev": "slidev --port 3030",
+    "slidev:build": "slidev build --base /",
+    "slidev:export-png": "slidev export --format png --output slides",
+    "convert-to-pptx": "node scripts/convert-html-to-pptx.js",
+    "capture-screenshots": "node scripts/capture-screenshots.js",
+    "test:e2e": "node scripts/e2e-test.js",
+    "full-pipeline": "npm run create-input-pptx && npm run slidev:build && npm run convert-to-pptx && npm run capture-screenshots"
+  },
+  "dependencies": {
+    "pptxgenjs": "^3.12.0"
+  }
+}

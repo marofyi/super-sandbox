@@ -233,7 +233,7 @@ export async function screenshot(options: ScreenshotOptions = {}): Promise<strin
   } = options;
 
   const query = `
-    mutation Screenshot($type: ScreenshotType!, $quality: Int!, $fullPage: Boolean!, $optimizeForSpeed: Boolean!) {
+    mutation Screenshot($type: ScreenshotType!, $quality: Float!, $fullPage: Boolean!, $optimizeForSpeed: Boolean!) {
       screenshot(type: $type, quality: $quality, fullPage: $fullPage, optimizeForSpeed: $optimizeForSpeed) {
         base64
       }
