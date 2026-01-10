@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>dom-to-pptx Test</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:Arial,sans-serif;background:#1e293b;color:#fff;padding:20px}
+    .controls{position:fixed;top:20px;right:20px;z-index:100;display:flex;gap:10px}
+    button{background:#3b82f6;color:#fff;border:none;padding:12px 24px;border-radius:8px;font-size:16px;cursor:pointer}
+    button:hover{background:#2563eb}
+    .slides{display:flex;flex-direction:column;gap:20px;max-width:960px;margin:0 auto}
+    .slide{width:960px;height:540px;position:relative;border-radius:8px;overflow:hidden}
+    .slide-inner{width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:40px}
+    .s1{background:#1a1a2e}
+    .s1 h1{color:#fff;font-size:32px;margin-bottom:15px}
+    .s1 p{color:#ccc;font-size:18px}
+    .s1 .date{color:#888;font-size:12px;margin-top:30px}
+    .s2{background:#fff}
+    .s2 .slide-inner{align-items:flex-start;justify-content:flex-start;padding-top:40px}
+    .s2 h1{color:#333;font-size:28px;margin-bottom:20px}
+    .s2 ul{list-style:disc;padding-left:30px}
+    .s2 li{color:#444;font-size:16px;margin-bottom:10px}
+    .s3{background:#f5f5f5}
+    .s3 .slide-inner{justify-content:flex-start;padding-top:30px}
+    .s3 h1{color:#333;font-size:24px;margin-bottom:20px;width:100%;text-align:center}
+    .s3 .cols{display:flex;gap:20px;width:100%}
+    .s3 .col{flex:1;padding:15px;border-radius:4px}
+    .s3 .left{background:#3498db;border:2px solid #2980b9}
+    .s3 .right{background:#2ecc71;border:2px solid #27ae60}
+    .s3 .col h3{color:#fff;font-size:16px;margin-bottom:10px}
+    .s3 .col p{color:#fff;font-size:13px}
+    .s4{background:#1e1e1e}
+    .s4 .slide-inner{justify-content:flex-start;padding-top:30px}
+    .s4 h1{color:#fff;font-size:24px;margin-bottom:20px;width:100%;text-align:center}
+    .s4 pre{background:#2d2d2d;padding:20px;border-radius:4px;color:#d4d4d4;font-size:12px;width:100%;overflow:auto}
+    .s5{background:#1a1a2e}
+    .s5 h1{color:#fff;font-size:36px;margin-bottom:20px}
+    .s5 p{color:#ccc;font-size:18px}
+    #status{position:fixed;bottom:20px;left:20px;background:#000;padding:10px 20px;border-radius:8px;display:none}
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <button onclick="exportPptx()">Export to PPTX</button>
+  </div>
+  <div id="status"></div>
+
+  <div class="slides">
+    <div class="slide s1" id="slide1">
+      <div class="slide-inner">
+        <h1>Welcome to the Demo</h1>
+        <p>A Slidev to PPTX Conversion Test</p>
+        <p class="date">January 2026</p>
+      </div>
+    </div>
+
+    <div class="slide s2" id="slide2">
+      <div class="slide-inner">
+        <h1>Key Features</h1>
+        <ul>
+          <li>Convert any HTML element to PPTX</li>
+          <li>Preserve gradients and shadows</li>
+          <li>Maintain responsive layouts</li>
+          <li>Support for complex CSS styles</li>
+          <li>Fully editable output</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="slide s3" id="slide3">
+      <div class="slide-inner">
+        <h1>Two Column Layout</h1>
+        <div class="cols">
+          <div class="col left">
+            <h3>Left Column</h3>
+            <p>Content in the left column demonstrating text placement.</p>
+          </div>
+          <div class="col right">
+            <h3>Right Column</h3>
+            <p>Content in the right column showing layout adaptation.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide s4" id="slide4">
+      <div class="slide-inner">
+        <h1>Code Example</h1>
+        <pre>import { exportToPptx } from 'dom-to-pptx';
+
+const slides = document.querySelectorAll('.slide');
+await exportToPptx(Array.from(slides), {
+  fileName: 'presentation.pptx'
+});</pre>
+      </div>
+    </div>
+
+    <div class="slide s5" id="slide5">
+      <div class="slide-inner">
+        <h1>Thank You!</h1>
+        <p>Questions & Discussion</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/dom-to-pptx@latest/dist/dom-to-pptx.bundle.js"></script>
+  <script>
+    async function exportPptx() {
+      const status = document.getElementById('status');
+      status.style.display = 'block';
+      status.textContent = 'Exporting...';
+      try {
+        const slides = [
+          document.getElementById('slide1'),
+          document.getElementById('slide2'),
+          document.getElementById('slide3'),
+          document.getElementById('slide4'),
+          document.getElementById('slide5')
+        ];
+        await domToPptx.exportToPptx(slides, {
+          fileName: 'slidev-test.pptx'
+        });
+        status.textContent = 'Export complete!';
+      } catch (e) {
+        status.textContent = 'Error: ' + e.message;
+        console.error(e);
+      }
+      setTimeout(() => status.style.display = 'none', 3000);
+    }
+  </script>
+</body>
+</html>
