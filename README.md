@@ -4,109 +4,173 @@
   <p>
     <strong>Give cloud AI agents superpowers.</strong><br>
     Break free from sandbox limitations. Build, test, and deploy full-stack applications<br>
-    directly with Claude Code, OpenAI Codex, and Gemini CLI.
+    directly with Claude Code Web, OpenAI Codex, and Gemini CLI.
   </p>
 </div>
 
 ---
 
-## ⚡️ Quick Start
+## Quick Start (Cloud)
 
-Get up and running in seconds.
+**No terminal required.** Get started directly in your browser.
 
-```bash
-# Clone the template
-npx tiged your-username/super-sandbox my-project
-cd my-project
-```
+### Step 1: Create Your Copy
 
-That's it. You are ready to:
-- 🏗️ **Scaffold** projects in `projects/`
-- 🚀 **Deploy** instantly with the [Vercel skill](./skills/vercel/)
-- 🤖 **Automate** browsers with [Browserless](./browserless/)
+1. Click the green **"Use this template"** button at the top of this repo
+2. Select **"Create a new repository"**
+3. Name your repo and click **Create repository**
 
-## 🌟 Why Super Sandbox?
+> **Important:** This is a template repository. You must create your own copy before connecting it to any AI agent.
+
+### Step 2: Get Your Tokens
+
+Before connecting, create these tokens:
+
+| Token | Where to Get It |
+|-------|-----------------|
+| `GH_TOKEN` | [Fine-grained token](https://github.com/settings/personal-access-tokens/new) with **Actions: Read & Write** permission |
+| `BROWSERLESS_TOKEN` | [browserless.io](https://browserless.io) — Free tier available |
+| `VERCEL_TOKEN` | [vercel.com/account/tokens](https://vercel.com/account/tokens) — Required for deployments |
+
+### Step 3: Connect to Your AI Agent
+
+#### Claude Code Web
+
+1. Go to [claude.ai/code](https://claude.ai/code) (requires Claude Pro/Max)
+2. Click **Connect Repository** and authorize GitHub
+3. Select **your new repository** (the copy you just created)
+4. Add environment variables in session settings: `GH_TOKEN`, `BROWSERLESS_TOKEN`, `VERCEL_TOKEN`
+5. Start coding!
+
+> **Tip:** The repo includes `.claude/settings.json` that auto-configures tools on session start.
+
+#### OpenAI Codex
+
+1. Go to [chatgpt.com/codex](https://chatgpt.com/codex) (requires ChatGPT Plus/Pro/Enterprise)
+2. Click **Connect GitHub** and authorize access
+3. Go to [Environment Settings](https://chatgpt.com/codex/settings/environments):
+   - Select **your new repository**
+   - Enable **internet access** for deployments
+4. Add environment variables: `GH_TOKEN`, `BROWSERLESS_TOKEN`, `VERCEL_TOKEN`
+5. Start a task!
+
+---
+
+## Why Super Sandbox?
 
 Cloud AI agents are powerful but often trapped in restrictive sandboxes. **Super Sandbox** provides the missing bridge:
 
-- **Bypass Restrictions**: HTTP-only browser automation where WebSockets fail.
-- **Full-Stack Capable**: From static HTML to Next.js 16 with App Router.
-- **Universal Support**: Works seamlessly with **Claude Code Web**, **OpenAI Codex**, and **Gemini CLI**.
+| Problem | Solution |
+|---------|----------|
+| No Browser Automation Tools | HTTP-based browser automation via [Browserless](./browserless/) |
+| No deployment access | Direct Vercel deploys with a [vercel skill](./skills/vercel/) |
+| Tools not installed | Auto-setup hooks for CC Web, on-demand for Codex |
+| Context gets lost | `AGENTS.md` provides persistent instructions |
 
-## ☁️ Cloud Environment Support
+Works seamlessly with **Claude Code Web**, **OpenAI Codex**, and other cloud based AI agents.
 
-| Environment | Setup | Config |
-|-------------|-------|--------|
-| **Claude Code Web** | ✅ Auto-configured | `.claude/settings.json` |
-| **OpenAI Codex** | 🛠️ On-demand | [skills/codex-setup/](./skills/codex-setup/) |
-| **Gemini CLI** | ⚡️ Native | No setup needed |
+---
 
-👉 See [Cloud Environments Guide](./docs/cloud-environments.md) for details.
+## Why Browserless?
 
-## 🧰 Skills & Tools
+Browser automation is the missing piece that turns AI code generation into **true agentic development**.
+
+Without it, AI agents are flying blind:
+1. Agent writes code
+2. Agent deploys to Vercel
+3. **Agent has no idea if it actually works** — layout broken? Button not visible? Console errors?
+
+With Browserless, agents can close the loop:
+1. Agent writes code
+2. Agent deploys to Vercel
+3. **Agent screenshots the result and evaluates it**
+4. Agent fixes issues and iterates autonomously
+
+This self-verification loop is what separates "AI that generates code" from "AI that builds working software."
+
+**Why HTTP-based?** Cloud sandboxes (CC Web, Codex) block WebSocket connections, which breaks Playwright and Puppeteer based cloud solutions. Browserless is the only provider that offers pure HTTP requests through BrowserQL, so it works everywhere.
+
+---
+
+## Skills & Tools
 
 Your agent comes equipped with specialized skills:
 
 | Skill | Description |
 |-------|-------------|
-| **[vercel](./skills/vercel/)** | 🚀 Deploy static sites or full apps in ~10s |
-| **[create-project](./skills/create-project/)** | 🏗️ Scaffold React, Next.js, or static projects |
-| **[browserless](./browserless/)** | 🌐 Control browsers via HTTP (perfect for sandboxes) |
-| **[frontend-design](./skills/frontend-design/)** | 🎨 Generate polished, distinctive UI designs |
-| **[update](./skills/update/)** | 🔄 Sync your sandbox with upstream improvements |
+| **[vercel](./skills/vercel/)** | Deploy static sites or full apps in ~10s |
+| **[create-project](./skills/create-project/)** | Scaffold React, Next.js, or static html projects |
+| **[browserless](./browserless/)** | Control browsers via HTTP (works in sandboxes) |
+| **[frontend-design](./skills/frontend-design/)** | Generate polished, distinctive UI designs |
+| **[update](./skills/update/)** | Sync your super sandbox template copy with upstream improvements |
 
-## 📂 Project Structure
+---
+
+## Project Structure
 
 ```
 super-sandbox/
 ├── .claude/                   # CC Web session hooks & configuration
 ├── browserless/               # HTTP-only browser automation package
 ├── docs/                      # Comprehensive guides & documentation
-├── projects/                  # 🟢 YOUR WORK GOES HERE
+├── projects/                  # YOUR WORK GOES HERE
 │   └── examples/              # Reference implementations
 │       ├── static-html/       # Simple CDN-based dev
 │       ├── react-cdn/         # React 19 via CDN
-│       └── next-app/          # Next.js 16 Full Stack
+│       └── next-app/          # Next.js Full Stack
 ├── skills/                    # Agent capability definitions
 ├── AGENTS.md                  # Core instructions for AI agents
 └── README.md                  # This file
 ```
 
-## 📸 Browserless Automation
+---
 
-Standard browser tools (Playwright/Puppeteer) often fail in cloud sandboxes due to blocked WebSockets. We use **HTTP-based automation** via [Browserless](https://browserless.io).
+## Local Terminal Setup (Optional)
 
-```typescript
-import { goto, screenshot } from '@super-sandbox/browserless';
+If you prefer running Claude Code CLI locally or need features unavailable in cloud environments:
 
-// Works where others fail
-await goto('https://example.com');
-const img = await screenshot();
-```
+### Prerequisites
 
-**CLI Usage:**
+- Node.js 18+ and pnpm
+- Claude Code CLI: `npm install -g @anthropic-ai/claude-code`
+- Or Codex CLI: `npm install -g @openai/codex`
+
+### Installation
+
 ```bash
-./browserless/scripts/screenshot.sh https://example.com --responsive
+# 1. Create your repo from template (use GitHub's "Use this template" button)
+#    Then clone your new repo:
+git clone https://github.com/YOUR-USERNAME/YOUR-REPO-NAME.git
+cd YOUR-REPO-NAME
+
+# 2. Install dependencies (for browserless)
+cd browserless && pnpm install && pnpm build && cd ..
+
+# 3. Set environment variables
+export GH_TOKEN="your-github-token"
+export BROWSERLESS_TOKEN="your-browserless-token"
+export VERCEL_TOKEN="your-vercel-token"
+
+# 4. Start Claude Code
+claude
 ```
 
-## 🛠️ Configuration
+---
 
-| Variable | Required | Purpose |
-|----------|:--------:|---------|
-| `GH_TOKEN` | ✅ | GitHub PAT (repo scope) for git ops |
-| `BROWSERLESS_TOKEN` | ✅ | Free token from browserless.io for automation |
-| `VERCEL_TOKEN` | ⚪️ | Optional: For direct Vercel deployments |
+## Documentation
 
-## 📚 Documentation
+- **[AGENTS.md](./AGENTS.md)** — Instructions for AI agents
+- **[Cloud Environments](./docs/cloud-environments.md)** — Detailed cloud setup
+- **[Browserless Guide](./docs/browserless.md)** — Browser automation deep dive
+- **[Static HTML Patterns](./docs/static-html-guide.md)** — Rapid prototyping guide
+- **[CONTRIBUTING.md](./CONTRIBUTING.md)** — Contribution guidelines
 
-- **[AGENTS.md](./AGENTS.md)**: The "brain" of the operation.
-- **[Browserless Guide](./docs/browserless.md)**: Deep dive into automation.
-- **[Static HTML Patterns](./docs/static-html-guide.md)**: Rapid prototyping guide.
-- **[CONTRIBUTING.md](./CONTRIBUTING.md)**: Join the effort.
+---
 
-## 🔄 Updates
+## Updates
 
 Keep your sandbox fresh without losing your work:
+
 > "Check for Super Sandbox updates"
 
 The `update` skill intelligently merges upstream changes while preserving your `projects/` and configurations.

@@ -34,20 +34,19 @@ fi
 
 | Token | Location | Scope | Purpose |
 |-------|----------|-------|---------|
-| `GH_TOKEN` | CC Web env | `repo` (classic PAT) | Workflow dispatch |
+| `GH_TOKEN` | CC Web env | Fine-grained (Actions: Read & Write) | Workflow dispatch |
 | `BROWSERLESS_TOKEN` | CC Web env | Full (free account) | Browser automation |
-| `VERCEL_TOKEN` | CC Web env | Team-scoped | Direct deploys ([vercel skill](../skills/vercel/)) |
-
-**Note:** `VERCEL_TOKEN` is optional. Without it, use GitHub Actions for deployments.
+| `VERCEL_TOKEN` | CC Web env | Team-scoped | Deployments and hosting |
 
 ### Creating GH_TOKEN
 
-1. Go to [github.com/settings/tokens/new](https://github.com/settings/tokens/new)
-2. **Note**: `Claude Code Web`
+1. Go to [github.com/settings/personal-access-tokens/new](https://github.com/settings/personal-access-tokens/new)
+2. **Token name**: `Claude Code Web`
 3. **Expiration**: 30 days (or longer)
-4. **Scopes**: Check only `repo`
+4. **Repository access**: Select your Super Sandbox repo
+5. **Permissions**: Actions → Read & Write
 
-### Creating VERCEL_TOKEN (optional)
+### Creating VERCEL_TOKEN
 
 1. Go to [vercel.com/account/tokens](https://vercel.com/account/tokens)
 2. Click "Create Token"
@@ -101,11 +100,11 @@ Available tools:
 
 Set these in your Codex environment settings:
 
-| Variable | Required | Purpose |
-|----------|----------|---------|
-| `GH_TOKEN` | Yes | GitHub operations |
-| `BROWSERLESS_TOKEN` | Yes | Browser automation |
-| `VERCEL_TOKEN` | No | Direct Vercel deploys |
+| Variable | Purpose |
+|----------|---------|
+| `GH_TOKEN` | GitHub Actions (fine-grained, Actions: Read & Write) |
+| `BROWSERLESS_TOKEN` | Browser automation |
+| `VERCEL_TOKEN` | Deployments and hosting |
 
 ### Network
 
@@ -134,7 +133,7 @@ Set the same tokens as other environments:
 ```bash
 export GH_TOKEN="your-token"
 export BROWSERLESS_TOKEN="your-token"
-export VERCEL_TOKEN="your-token"  # optional
+export VERCEL_TOKEN="your-token"
 ```
 
 ### Workflow
@@ -152,9 +151,9 @@ Gemini CLI reads:
 
 | Token | Get It From | Purpose |
 |-------|-------------|---------|
-| `GH_TOKEN` | [github.com/settings/tokens](https://github.com/settings/tokens) | GitHub CLI operations |
+| `GH_TOKEN` | [Fine-grained token](https://github.com/settings/personal-access-tokens/new) | GitHub Actions (Actions: Read & Write) |
 | `BROWSERLESS_TOKEN` | [browserless.io](https://browserless.io) (free tier) | Browser automation |
-| `VERCEL_TOKEN` | [vercel.com/account/tokens](https://vercel.com/account/tokens) | Direct deployments |
+| `VERCEL_TOKEN` | [vercel.com/account/tokens](https://vercel.com/account/tokens) | Deployments and hosting |
 
 ### Security Notes
 
