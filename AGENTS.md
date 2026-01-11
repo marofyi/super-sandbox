@@ -257,6 +257,17 @@ Only escalate to a webapp when the user EXPLICITLY needs:
 
 See [docs/static-html-guide.md](./docs/static-html-guide.md) for templates and CDN library references. Projects live in `projects/`.
 
+## Transparent Logo Workflow
+
+When generating logos or icons with transparent backgrounds:
+
+1.  **Generate Concept:** Create the initial image on a **solid white background**.
+2.  **User Approval (MANDATORY):** Show this image to the user. **STOP** and wait for explicit approval before proceeding. Do not generate the black background variant or run scripts until the user is happy with the design.
+3.  **Generate Matte:** Once approved, generate the *exact same* image but with a **solid black background**.
+    *   *Tip:* Use the edit tool to change the background of the approved image to black, adding a "subtle white rim light" or "glow" to the object. This ensures visibility on dark backgrounds (like GitHub dark mode) after matting.
+4.  **Difference Matting:** Run a difference matting script (calculating `Alpha = 1 - (White - Black)`) to combine the two images into a high-quality transparent PNG.
+5.  **Clean Up:** Remove temporary white/black source images.
+
 ## Proof of Completion
 
 A task is only complete when:
