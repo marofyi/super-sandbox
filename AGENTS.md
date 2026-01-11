@@ -262,6 +262,7 @@ See [docs/static-html-guide.md](./docs/static-html-guide.md) for templates and C
 When generating images (icons, logos, assets) that require transparent backgrounds:
 
 1.  **Generate Concept:** Create the initial image on a **solid white background**.
+    *   *Tip:* Generate 3 distinct variants to give the user choices.
 2.  **User Approval (MANDATORY):** Show this image to the user. **STOP** and wait for explicit approval before proceeding. Do not generate the black background variant or run scripts until the user is happy with the design.
 3.  **Generate Matte:** Once approved, generate the *exact same* image but with a **solid black background**.
     *   *Tip:* Use the edit tool to change the background of the approved image to black. For dark mode compatibility, consider adding a "subtle white rim light" or "glow" to the object to separate it from the dark background.
