@@ -89,34 +89,36 @@ New projects are minimal: `.git/`, `AGENTS.md`, `README.md`. No framework lock-i
 │  ┌────────────────────────────────────────────────────────────────────┐  │
 │  │  Google Chrome + Claude in Chrome Extension                        │  │
 │  │                                                                    │  │
-│  │  • Runs natively on macOS                                          │  │
+│  │  • Extension ID: fcoeoabgfenejglbffodgkkbkcdhcgfn                  │  │
 │  │  • Has access to all logged-in sessions                            │  │
-│  │  • Controlled via Native Messaging API                             │  │
+│  │  • 26+ MCP tools: navigate, click, type, screenshot, etc.         │  │
 │  └─────────────────────────┬──────────────────────────────────────────┘  │
 │                            │                                             │
 │                            │ Native Messaging (stdio)                    │
 │                            │                                             │
 │  ┌─────────────────────────▼──────────────────────────────────────────┐  │
-│  │  ss-bridge                                                         │  │
+│  │  chrome-native-host (from Claude Code installation)                │  │
 │  │                                                                    │  │
-│  │  • Registered as Chrome Native Messaging host                      │  │
-│  │  • Serializes concurrent requests from VM                          │  │
-│  │  • Intercepts URL opens for OAuth flows                            │  │
+│  │  • Binary at: ~/.claude/chrome/chrome-native-host                  │  │
+│  │  • Bridges MCP protocol ↔ Native Messaging                         │  │
+│  │  • Already installed when user has Claude Code                     │  │
 │  └─────────────────────────┬──────────────────────────────────────────┘  │
 │                            │                                             │
-│                            │ Unix socket                                 │
-│                            │ /tmp/ss-browser-bridge.sock                 │
+│                            │ MCP Protocol (Unix socket)                  │
+│                            │ /tmp/claude-mcp-browser-bridge-$USER/...   │
 │                            │                                             │
 │  ┌─────────────────────────┴──────────────────────────────────────────┐  │
 │  │  ss CLI                                                            │  │
 │  │                                                                    │  │
 │  │  • Manages VM lifecycle via Lume                                   │  │
 │  │  • Creates and manages projects                                    │  │
-│  │  • Handles SSH connections with PTY passthrough                    │  │
+│  │  • SSH with MCP socket tunneling (critical for browser access)     │  │
+│  │  • Discovers host MCP socket path dynamically                      │  │
 │  │  • Auto-updates on launch                                          │  │
 │  └─────────────────────────┬──────────────────────────────────────────┘  │
 │                            │                                             │
-│                            │ SSH (PTY passthrough)                       │
+│                            │ SSH + Socket Forwarding                     │
+│                            │ (tunnels MCP socket from host to VM)        │
 │                            │                                             │
 │  ┌─────────────────────────┼──────────────────────────────────────────┐  │
 │  │  ~/super-sandbox/       │                                          │  │
@@ -142,13 +144,17 @@ New projects are minimal: `.git/`, `AGENTS.md`, `README.md`. No framework lock-i
 │  ┌────────────────────────────────────────────────────────────────────┐  │
 │  │  Claude Code Sessions (parallel)                                   │  │
 │  │                                                                    │  │
-│  │  Terminal 1 ──► claude (PID 1001) ──► ~/projects/my-app            │  │
-│  │  Terminal 2 ──► claude (PID 1002) ──► ~/projects/my-app            │  │
-│  │  Terminal 3 ──► claude (PID 1003) ──► ~/projects/other-proj        │  │
+│  │  Terminal 1 ──► claude --chrome ──► ~/projects/my-app              │  │
+│  │  Terminal 2 ──► claude --chrome ──► ~/projects/my-app              │  │
+│  │  Terminal 3 ──► claude --chrome ──► ~/projects/other-proj          │  │
 │  │                         │                                          │  │
+│  │                         │ MCP (tunneled socket)                    │  │
 │  │                         ▼                                          │  │
-│  │                  Browser bridge client                             │  │
-│  │                  (connects to host socket)                         │  │
+│  │         /tmp/claude-mcp-browser-bridge-sandbox/...sock             │  │
+│  │                         │                                          │  │
+│  │                         │ (tunneled to host socket)                │  │
+│  │                         ▼                                          │  │
+│  │                   Host Chrome                                      │  │
 │  └────────────────────────────────────────────────────────────────────┘  │
 │                                                                          │
 │  Pre-installed: git, node, python, gh, vercel, build-essential          │
@@ -163,23 +169,22 @@ New projects are minimal: `.git/`, `AGENTS.md`, `README.md`. No framework lock-i
 - Project lifecycle: create, list, delete
 - VM lifecycle: start, stop, reset, status
 - SSH session management with PTY passthrough
+- **MCP socket discovery and tunneling** (enables browser automation in VM)
 - Configuration management
 - Auto-update on launch
 
-#### ss-bridge (`/usr/local/bin/ss-bridge`)
+#### Claude Code (Host) - Prerequisite
 
-- Registered as Chrome Native Messaging host
-- Listens on Unix socket for VM connections
-- Forwards browser commands to Claude in Chrome extension
-- Intercepts and handles URL opens (for OAuth)
-- Serializes concurrent requests
+- Provides `chrome-native-host` binary at `~/.claude/chrome/chrome-native-host`
+- Registers Native Messaging host with Chrome
+- Creates MCP socket at `/tmp/claude-mcp-browser-bridge-$USER/`
+- **Must be installed on host before using Super-Sandbox**
 
 #### VM Image
 
 - Ubuntu 24.04 ARM64
 - Pre-installed tools: Claude Code, gh, vercel, node (LTS), python3, git, build-essential
 - SSH server for terminal access
-- Browser bridge client for host communication
 - Passwordless sudo for sandbox user
 
 #### Lume
@@ -606,91 +611,123 @@ The browser bridge enables Claude Code running in the VM to control Chrome on th
 2. **OAuth flows** for gh, vercel, and other tools
 3. **URL opening** from VM applications
 
-### Architecture
+### How It Works
+
+Super-Sandbox does **not** implement its own browser bridge. Instead, it tunnels Claude Code's existing MCP socket from the host into the VM. This ensures 100% compatibility with the Claude in Chrome extension.
 
 ```
-VM                          Host
-┌─────────────────┐         ┌─────────────────┐         ┌─────────────────┐
-│  Claude Code    │         │  ss-bridge      │         │  Chrome         │
-│                 │         │                 │         │                 │
-│  Browser tool   │───sock──│  Unix socket    │         │  Claude in      │
-│  gh auth login  │         │  listener       │───nm────│  Chrome ext     │
-│  vercel login   │         │                 │         │                 │
-│  open <url>     │         │  URL intercept  │───open──│  New tab        │
-└─────────────────┘         └─────────────────┘         └─────────────────┘
-
-sock = Unix socket (/tmp/ss-browser-bridge.sock)
-nm = Native Messaging (Chrome's stdio protocol)
-open = macOS `open` command
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  VM                                                                         │
+│                                                                             │
+│  Claude Code (claude --chrome)                                              │
+│       │                                                                     │
+│       │ MCP Protocol                                                        │
+│       ▼                                                                     │
+│  /tmp/claude-mcp-browser-bridge-sandbox/<session>.sock                      │
+│       │                                                                     │
+│       │ (SSH remote socket forwarding)                                      │
+│       │                                                                     │
+└───────┼─────────────────────────────────────────────────────────────────────┘
+        │
+        │ Tunneled via: ssh -R <vm-sock>:<host-sock>
+        │
+┌───────▼─────────────────────────────────────────────────────────────────────┐
+│  Host (macOS)                                                               │
+│                                                                             │
+│  /tmp/claude-mcp-browser-bridge-$USER/<session>.sock                        │
+│       │                                                                     │
+│       │ MCP Protocol                                                        │
+│       ▼                                                                     │
+│  chrome-native-host (~/.claude/chrome/chrome-native-host)                   │
+│       │                                                                     │
+│       │ Native Messaging (stdio, length-prefixed JSON)                      │
+│       ▼                                                                     │
+│  Chrome + Claude in Chrome Extension                                        │
+│       │                                                                     │
+│       │ Chrome APIs (tabs, scripting, debugger)                             │
+│       ▼                                                                     │
+│  Browser Tabs (with your logged-in sessions)                                │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Native Messaging Protocol
+### MCP Socket Discovery
 
-Chrome's Native Messaging uses length-prefixed JSON messages:
+The host MCP socket path is dynamic and includes the username and session ID:
 
 ```
-[4-byte length (little-endian)][JSON message]
+/tmp/claude-mcp-browser-bridge-$USER/<pid>.sock
 ```
 
-The bridge client in the VM and ss-bridge on the host both implement this protocol.
+The `ss` CLI must discover this socket on each connection:
 
-### Bridge Client (VM Side)
+```go
+// Pseudocode for socket discovery
+func discoverMCPSocket() (string, error) {
+    pattern := fmt.Sprintf("/tmp/claude-mcp-browser-bridge-%s/*.sock", os.Getenv("USER"))
+    matches, err := filepath.Glob(pattern)
+    if err != nil || len(matches) == 0 {
+        return "", errors.New("no MCP socket found - is Claude Code running with --chrome?")
+    }
+    // Return most recently modified socket
+    return mostRecent(matches), nil
+}
+```
 
-A simple script/binary in the VM that:
+**Important**: The socket only exists when Claude Code is running with Chrome integration enabled on the host. The `ss` CLI should:
 
-1. Connects to Unix socket (mounted from host)
-2. Sends commands in Native Messaging format
-3. Receives responses
-4. Provides CLI interface for manual testing
+1. Check if a socket exists
+2. If not, prompt user to run `claude --chrome` on host first (or start it automatically)
+3. Once socket is found, establish the tunnel
 
-Location: `/home/sandbox/.local/bin/ss-browser`
+### SSH Socket Forwarding
 
-Usage:
+The `ss` CLI uses SSH remote socket forwarding to tunnel the MCP socket:
+
 ```bash
-# From within VM
-ss-browser navigate "https://example.com"
-ss-browser screenshot
-ss-browser click "#login-button"
+ssh -t \
+    -R /tmp/claude-mcp-browser-bridge-sandbox/bridge.sock:/tmp/claude-mcp-browser-bridge-$USER/<discovered>.sock \
+    -o StrictHostKeyChecking=no \
+    -o UserKnownHostsFile=/dev/null \
+    -o LogLevel=ERROR \
+    -p 2222 \
+    sandbox@localhost \
+    "cd ~/projects/<name> && claude --chrome"
 ```
 
-Claude Code's browser tool uses this under the hood.
+The `-R` flag creates a reverse tunnel: the VM socket path maps to the host socket.
 
 ### OAuth Flow Handling
 
-When a tool needs browser authentication:
+OAuth flows (gh, vercel login) work automatically because:
 
-```
-1. gh auth login
-2. gh opens URL: https://github.com/login/device
-3. Bridge intercepts URL open request
-4. Bridge opens URL in host Chrome
+1. `gh auth login` triggers a browser open via Claude Code's MCP
+2. The MCP command is tunneled to the host
+3. Host's `chrome-native-host` receives the command
+4. Chrome on host opens the OAuth URL
 5. User completes auth in host browser
-6. gh receives callback/token
-7. Auth complete
-```
+6. Callback completes the flow
 
-The bridge intercepts URL opens via:
-- Direct requests from bridge client
-- `xdg-open` / custom open handler in VM
+No special handling required—it's the same flow as running Claude Code directly on the host.
 
-### Request Serialization
+### Parallel Sessions
 
-Multiple Claude Code sessions may send browser commands simultaneously. The bridge serializes these:
+Multiple Claude Code sessions in the VM can share browser access:
 
-1. Commands queue in order received
-2. Each command completes before next starts
-3. Timeout per command (30s default)
-4. Caller blocks until response
+- Each session connects to the same tunneled socket
+- The host's `chrome-native-host` handles concurrent MCP requests
+- Chrome extension manages multiple tabs as needed
 
-This prevents race conditions in Chrome automation.
+This works because we're using Claude Code's native implementation, which already supports parallel access.
 
 ### Connection Validation
 
-On startup, `ss` validates browser bridge connectivity:
+On startup, `ss` validates the browser bridge:
 
-1. Check if Chrome is running
-2. Check if Claude in Chrome extension is installed
-3. Test Native Messaging connection
+1. **Check Claude Code installation on host**: Look for `~/.claude/chrome/chrome-native-host`
+2. **Check for MCP socket**: Look for `/tmp/claude-mcp-browser-bridge-$USER/*.sock`
+3. **Check Chrome is running**: Required for browser automation
+4. **Check Claude in Chrome extension**: The extension must be installed
 
 If validation fails:
 
@@ -698,14 +735,30 @@ If validation fails:
 ╭───────────────────────────────────────────────────────────╮
 │  Browser Setup Required                                   │
 │                                                           │
-│  Super-Sandbox needs Claude in Chrome extension.          │
+│  Super-Sandbox requires Claude Code with Chrome enabled.  │
 │                                                           │
-│  1. Open Chrome                                           │
-│  2. Install: chrome.google.com/webstore/detail/claude...  │
-│  3. Run 'ss' again                                        │
+│  1. Install Claude Code: npm install -g @anthropic-ai/claude-code
+│  2. Run: claude --chrome                                  │
+│  3. Install Claude in Chrome extension when prompted      │
+│  4. Run 'ss' again                                        │
 │                                                           │
 ╰───────────────────────────────────────────────────────────╯
 ```
+
+### Browser Capabilities
+
+Once connected, Claude Code in the VM has full access to browser automation:
+
+| Category | Tools |
+|----------|-------|
+| Navigation | navigate, create_tab, close_tab, list_pages, switch_page |
+| Input | click, type, drag_and_drop, hover, keyboard, upload_file |
+| Forms | fill_input, fill_form, handle_dialog |
+| Inspection | screenshot, snapshot, execute_js, get_console_messages |
+| Network | list_network_requests, get_network_request |
+| Emulation | emulate_device, resize_page |
+
+These are the same tools available when running Claude Code directly on the host.
 
 ---
 
@@ -719,9 +772,12 @@ If validation fails:
 | Architecture | Apple Silicon (M1/M2/M3/M4) |
 | RAM | 8 GB minimum, 16 GB recommended |
 | Disk | 20 GB free space |
+| **Claude Code** | **Installed on host (`npm install -g @anthropic-ai/claude-code`)** |
 | Chrome | Latest stable version |
-| Claude in Chrome | Extension installed and logged in |
+| Claude in Chrome | Extension installed (prompted by `claude --chrome`) |
 | Claude subscription | Pro, Max, Team, or Enterprise |
+
+**Note**: Claude Code on the host is a hard requirement. Super-Sandbox tunnels the browser connection from the host's Claude Code installation—it does not implement its own browser bridge.
 
 ### Install Command
 
@@ -753,61 +809,61 @@ if [[ $macos_version -lt 13 ]]; then
     exit 1
 fi
 
-# 3. Install Lume if needed
+# 3. Check for Claude Code (REQUIRED)
+if ! command -v claude &> /dev/null; then
+    echo "Error: Claude Code is required but not installed."
+    echo
+    echo "Install it with:"
+    echo "  npm install -g @anthropic-ai/claude-code"
+    echo
+    echo "Then run this installer again."
+    exit 1
+fi
+
+# 4. Check for chrome-native-host (indicates Chrome integration is set up)
+if [[ ! -f "$HOME/.claude/chrome/chrome-native-host" ]]; then
+    echo "Warning: Claude Code Chrome integration not set up."
+    echo
+    echo "Run 'claude --chrome' once to set up browser integration,"
+    echo "then run this installer again."
+    echo
+fi
+
+# 5. Install Lume if needed
 if ! command -v lume &> /dev/null; then
     echo "Installing Lume (VM runtime)..."
     curl -fsSL https://raw.githubusercontent.com/trycua/cua/main/libs/lume/scripts/install.sh | bash
 fi
 
-# 4. Check for Chrome
+# 6. Check for Chrome
 if [[ ! -d "/Applications/Google Chrome.app" ]]; then
     echo "Warning: Google Chrome not found."
     echo "Install Chrome from: https://google.com/chrome"
-    echo "Then install the Claude in Chrome extension."
 fi
 
-# 5. Create directories
+# 7. Create directories
 echo "Creating directories..."
 mkdir -p ~/super-sandbox/projects
 
-# 6. Download CLI binaries
+# 8. Download CLI binary
 echo "Downloading Super-Sandbox..."
 curl -fsSL "https://supersandbox.dev/releases/latest/ss-darwin-arm64" \
     -o /usr/local/bin/ss
 chmod +x /usr/local/bin/ss
 
-curl -fsSL "https://supersandbox.dev/releases/latest/ss-bridge-darwin-arm64" \
-    -o /usr/local/bin/ss-bridge
-chmod +x /usr/local/bin/ss-bridge
-
-# 7. Register Native Messaging host
-echo "Registering browser bridge..."
-mkdir -p ~/Library/Application\ Support/Google/Chrome/NativeMessagingHosts
-cat > ~/Library/Application\ Support/Google/Chrome/NativeMessagingHosts/dev.supersandbox.bridge.json << 'EOF'
-{
-  "name": "dev.supersandbox.bridge",
-  "description": "Super-Sandbox Browser Bridge",
-  "path": "/usr/local/bin/ss-bridge",
-  "type": "stdio",
-  "allowed_origins": [
-    "chrome-extension://EXTENSION_ID_HERE/"
-  ]
-}
-EOF
-
-# 8. Pull VM image
+# 9. Pull VM image
 echo "Downloading sandbox environment..."
 lume pull ghcr.io/supersandbox/base:latest
 
-# 9. Create VM
+# 10. Create VM
 echo "Creating VM..."
 lume create super-sandbox ghcr.io/supersandbox/base:latest
 lume set super-sandbox --cpu 4 --memory 8GB --disk-size 100GB
 
-# 10. Configure mount
+# 11. Configure mount
 lume mount super-sandbox ~/super-sandbox/projects /home/sandbox/projects
 
-# 11. Create default config
+# 12. Create default config
 cat > ~/super-sandbox/config.yaml << 'EOF'
 version: 1
 vm:
@@ -859,15 +915,14 @@ Connecting...
 lume stop super-sandbox
 lume delete super-sandbox
 
-# Remove CLI binaries
+# Remove CLI binary
 sudo rm /usr/local/bin/ss
-sudo rm /usr/local/bin/ss-bridge
-
-# Remove Native Messaging registration
-rm ~/Library/Application\ Support/Google/Chrome/NativeMessagingHosts/dev.supersandbox.bridge.json
 
 # Remove data (optional - deletes all projects!)
 rm -rf ~/super-sandbox
+
+# Note: Claude Code, Chrome, and the Claude in Chrome extension
+# are not modified by Super-Sandbox and don't need cleanup.
 ```
 
 ---
@@ -978,6 +1033,43 @@ Try:
 
 ### Browser Errors
 
+#### Claude Code Not Installed
+
+```
+Error: Claude Code is not installed
+
+Super-Sandbox requires Claude Code on the host for browser integration.
+
+Install it:
+  npm install -g @anthropic-ai/claude-code
+
+Then run 'ss' again.
+```
+
+#### Chrome Integration Not Set Up
+
+```
+Error: Claude Code Chrome integration not found
+
+Run this command on your host (not in the sandbox):
+  claude --chrome
+
+This sets up the browser bridge. Then run 'ss' again.
+```
+
+#### MCP Socket Not Found
+
+```
+Error: Browser bridge socket not found
+
+The MCP socket is created when Claude Code runs with Chrome enabled.
+
+On your host, run:
+  claude --chrome
+
+Keep it running, then try 'ss' again in another terminal.
+```
+
 #### Chrome Not Running
 
 ```
@@ -986,29 +1078,17 @@ Error: Chrome is not running
 Start Chrome and try again.
 ```
 
-#### Extension Not Found
+#### Extension Not Connected
 
 ```
-Error: Claude in Chrome extension not found
+Error: Claude in Chrome extension not connected
 
-Install the extension:
-  1. Open Chrome
-  2. Go to: chrome.google.com/webstore/detail/claude/...
-  3. Click "Add to Chrome"
-  4. Run 'ss' again
-```
-
-#### Bridge Connection Failed
-
-```
-Error: Could not connect to browser bridge
+The extension may need to be reinstalled or Chrome restarted.
 
 Try:
   1. Restart Chrome
-  2. Run 'ss' again
-
-If the problem persists, reinstall:
-  curl -fsSL https://supersandbox.dev/install.sh | bash
+  2. Run 'claude --chrome' on host
+  3. Run 'ss' again
 ```
 
 ### Project Errors
@@ -1052,7 +1132,7 @@ Super-Sandbox v2 is a complete reimagining. There is no automatic migration.
 | Fork to use | Install to use |
 | Cloud-focused | Local-first |
 | Skills folders | Minimal scaffold |
-| Browserless HTTP | Native Chrome bridge |
+| Browserless HTTP | MCP socket tunneling to host Chrome |
 
 ### For Existing Users
 
@@ -1132,11 +1212,10 @@ PubkeyAuthentication yes
 ├── .config/
 │   ├── gh/                # GitHub CLI config
 │   └── vercel/            # Vercel CLI config
-├── .local/
-│   └── bin/
-│       └── ss-browser     # Browser bridge client
 └── .bashrc                # Shell configuration
 ```
+
+Note: No custom browser bridge client is needed. Claude Code in the VM uses its standard `--chrome` integration, which connects via the tunneled MCP socket.
 
 ### MOTD
 
@@ -1200,7 +1279,6 @@ func applyPendingUpdate() {
 ### Release Artifacts
 
 - `ss-darwin-arm64` - Main CLI
-- `ss-bridge-darwin-arm64` - Browser bridge
 - `install.sh` - Installer script
 - `checksums.txt` - SHA256 checksums
 
