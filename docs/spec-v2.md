@@ -760,6 +760,136 @@ Once connected, Claude Code in the VM has full access to browser automation:
 
 These are the same tools available when running Claude Code directly on the host.
 
+### Fallback: Chrome DevTools MCP
+
+If Claude in Chrome socket tunneling doesn't work reliably (e.g., socket path changes, MCP protocol incompatibilities, or extension updates), Super-Sandbox provides a fallback using [Chrome DevTools MCP](https://github.com/ChromeDevTools/chrome-devtools-mcp).
+
+#### How It Works
+
+Chrome DevTools MCP connects directly to Chrome's debugging protocol (CDP) over HTTP/WebSocket, bypassing the Claude in Chrome extension entirely.
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  VM                                                                         │
+│                                                                             │
+│  Claude Code                                                                │
+│       │                                                                     │
+│       │ MCP Protocol (local)                                                │
+│       ▼                                                                     │
+│  chrome-devtools-mcp server (runs in VM)                                    │
+│       │                                                                     │
+│       │ Chrome DevTools Protocol (CDP)                                      │
+│       │ http://localhost:9222 (tunneled)                                    │
+│       │                                                                     │
+└───────┼─────────────────────────────────────────────────────────────────────┘
+        │
+        │ SSH Local Port Forward: ssh -L 9222:localhost:9222
+        │
+┌───────▼─────────────────────────────────────────────────────────────────────┐
+│  Host (macOS)                                                               │
+│                                                                             │
+│  Chrome (launched with remote debugging)                                    │
+│       │                                                                     │
+│       │ --remote-debugging-port=9222                                        │
+│       │ --user-data-dir=~/.chrome-debug-profile                             │
+│       │                                                                     │
+│  Browser Tabs (with your logged-in sessions)                                │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+#### Host Setup
+
+Chrome must be launched with remote debugging enabled:
+
+```bash
+# Create a helper script: ~/super-sandbox/start-chrome-debug.sh
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
+    --remote-debugging-port=9222 \
+    --user-data-dir="$HOME/.chrome-debug-profile"
+```
+
+**Important**: The `--user-data-dir` flag creates a persistent profile. Log into your services once, and those sessions persist across restarts.
+
+#### SSH Port Forwarding
+
+The `ss` CLI forwards the debugging port from host to VM:
+
+```bash
+ssh -t \
+    -L 9222:localhost:9222 \
+    -o StrictHostKeyChecking=no \
+    -o UserKnownHostsFile=/dev/null \
+    -o LogLevel=ERROR \
+    -p 2222 \
+    sandbox@localhost \
+    "cd ~/projects/<name> && claude"
+```
+
+The `-L 9222:localhost:9222` creates a local forward: VM's localhost:9222 → Host's localhost:9222.
+
+#### VM Configuration
+
+Claude Code in the VM is configured with the Chrome DevTools MCP server:
+
+```bash
+# Run once in VM to configure
+claude mcp add chrome-devtools -- npx -y chrome-devtools-mcp@latest --browserUrl=http://127.0.0.1:9222
+```
+
+This is pre-configured in the VM image, so users don't need to set it up manually.
+
+#### Capabilities Comparison
+
+| Capability | Claude in Chrome | Chrome DevTools MCP |
+|------------|------------------|---------------------|
+| Navigate pages | ✓ | ✓ |
+| Click, type, forms | ✓ | ✓ |
+| Screenshots | ✓ | ✓ |
+| Console logs | ✓ | ✓ |
+| Network requests | ✓ | ✓ |
+| Performance tracing | ✗ | ✓ |
+| DOM snapshots | ✓ | ✓ |
+| Existing login sessions | ✓ (automatic) | ✓ (via --user-data-dir) |
+| Works without extension | ✗ | ✓ |
+| Requires Chrome restart | ✗ | ✓ (with debug flags) |
+
+Both approaches provide equivalent browser automation capabilities. The key differences:
+
+- **Claude in Chrome**: Seamless, uses existing Chrome instance, no restart needed
+- **Chrome DevTools MCP**: More reliable/predictable, adds performance tracing, requires Chrome launched with debug flags
+
+#### Automatic Fallback Detection
+
+The `ss` CLI attempts the primary approach (socket tunneling) first. If it fails:
+
+1. Check if MCP socket exists on host
+2. If not found, check if Chrome is running with `--remote-debugging-port`
+3. If debug port available, use Chrome DevTools MCP fallback
+4. If neither works, prompt user with setup instructions
+
+```
+╭───────────────────────────────────────────────────────────────────────╮
+│  Browser Integration                                                  │
+│                                                                       │
+│  Primary method (Claude in Chrome) not available.                     │
+│  Falling back to Chrome DevTools MCP.                                 │
+│                                                                       │
+│  Start Chrome with debugging enabled:                                 │
+│    ~/super-sandbox/start-chrome-debug.sh                              │
+│                                                                       │
+│  Or run manually:                                                     │
+│    /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \   │
+│        --remote-debugging-port=9222 \                                 │
+│        --user-data-dir="$HOME/.chrome-debug-profile"                  │
+│                                                                       │
+╰───────────────────────────────────────────────────────────────────────╯
+```
+
+#### Security Note
+
+Chrome's remote debugging protocol has no authentication. The debug port (9222) should only be bound to localhost. The SSH tunnel ensures only the VM can access it. Never use `--remote-debugging-address=0.0.0.0` as this would expose your browser to the network.
+
 ---
 
 ## Installation
@@ -1057,17 +1187,26 @@ Run this command on your host (not in the sandbox):
 This sets up the browser bridge. Then run 'ss' again.
 ```
 
-#### MCP Socket Not Found
+#### MCP Socket Not Found (Primary Method)
 
 ```
-Error: Browser bridge socket not found
+Warning: Claude in Chrome socket not found
 
-The MCP socket is created when Claude Code runs with Chrome enabled.
+Checking for Chrome DevTools fallback...
+Found Chrome with remote debugging on port 9222.
+Using Chrome DevTools MCP for browser automation.
+```
 
-On your host, run:
-  claude --chrome
+If Chrome isn't running with debugging:
 
-Keep it running, then try 'ss' again in another terminal.
+```
+Error: No browser integration available
+
+Option 1 (Recommended): Run 'claude --chrome' on host
+Option 2 (Fallback): Start Chrome with debugging:
+  ~/super-sandbox/start-chrome-debug.sh
+
+Then run 'ss' again.
 ```
 
 #### Chrome Not Running
@@ -1076,19 +1215,32 @@ Keep it running, then try 'ss' again in another terminal.
 Error: Chrome is not running
 
 Start Chrome and try again.
+
+For browser automation, either:
+  • Run 'claude --chrome' on host, or
+  • Run '~/super-sandbox/start-chrome-debug.sh'
 ```
 
-#### Extension Not Connected
+#### Both Methods Unavailable
 
 ```
-Error: Claude in Chrome extension not connected
+Error: Browser integration unavailable
 
-The extension may need to be reinstalled or Chrome restarted.
+Neither Claude in Chrome nor Chrome DevTools debugging is available.
 
-Try:
-  1. Restart Chrome
-  2. Run 'claude --chrome' on host
-  3. Run 'ss' again
+To enable browser automation:
+
+  Primary (Claude in Chrome):
+    1. Run 'claude --chrome' on host
+    2. Keep it running
+
+  Fallback (Chrome DevTools):
+    1. Run ~/super-sandbox/start-chrome-debug.sh
+    2. Or: /Applications/Google\ Chrome.app/.../Google\ Chrome \
+           --remote-debugging-port=9222 \
+           --user-data-dir="$HOME/.chrome-debug-profile"
+
+Then run 'ss' again.
 ```
 
 ### Project Errors
@@ -1185,6 +1337,9 @@ gh
 
 # Vercel CLI
 vercel (global npm)
+
+# Browser automation fallback
+chrome-devtools-mcp (pre-configured as MCP server)
 ```
 
 ### User Configuration
@@ -1215,7 +1370,12 @@ PubkeyAuthentication yes
 └── .bashrc                # Shell configuration
 ```
 
-Note: No custom browser bridge client is needed. Claude Code in the VM uses its standard `--chrome` integration, which connects via the tunneled MCP socket.
+**Browser Integration**: Two methods are pre-configured:
+
+1. **Primary**: Claude Code's `--chrome` integration via tunneled MCP socket
+2. **Fallback**: Chrome DevTools MCP connecting to host's debug port (9222)
+
+The `ss` CLI automatically selects the appropriate method based on what's available on the host.
 
 ### MOTD
 
