@@ -1,107 +1,44 @@
-# Frontend Design Skill
+---
+name: frontend-design
+description: Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, artifacts, posters, or applications (examples include websites, landing pages, dashboards, React components, HTML/CSS layouts, or when styling/beautifying any web UI) from scratch or for exploration of a new project. Existing project design guidelines always take precedence. Generates creative, polished code and UI design that avoids generic AI aesthetics.
+license: Complete terms in LICENSE.txt
+---
 
-Create distinctive, production-grade frontend interfaces that avoid generic AI aesthetics.
+IMPORTANT: Existing project design guidelines always take precedence. This skill is a guide for explorative work or completely new projects without existing design guidelines.
 
-## Usage
+This skill guides creation of distinctive, production-grade frontend interfaces that avoid generic "AI slop" aesthetics. Implement real working code with exceptional attention to aesthetic details and creative choices.
 
-```
-User: "Create a landing page for my SaaS product"
-Agent: [applies these design principles to create polished UI]
-```
+The user provides frontend requirements: a component, page, application, or interface to build. They may include context about the purpose, audience, or technical constraints.
 
-## Design Philosophy
+## Design Thinking
 
-This skill is based on [Anthropic's official frontend-design skill](https://github.com/anthropics/claude-code/blob/main/plugins/frontend-design/skills/frontend-design/SKILL.md).
+Before coding, understand the context and commit to a BOLD aesthetic direction:
+- **Purpose**: What problem does this interface solve? Who uses it?
+- **Tone**: Pick an extreme: brutally minimal, maximalist chaos, retro-futuristic, organic/natural, luxury/refined, playful/toy-like, editorial/magazine, brutalist/raw, art deco/geometric, soft/pastel, industrial/utilitarian, etc. There are so many flavors to choose from. Use these for inspiration but design one that is true to the aesthetic direction.
+- **Constraints**: Technical requirements (framework, performance, accessibility).
+- **Differentiation**: What makes this UNFORGETTABLE? What's the one thing someone will remember?
 
-### Core Principles
+**CRITICAL**: Choose a clear conceptual direction and execute it with precision. Bold maximalism and refined minimalism both work - the key is intentionality, not intensity.
 
-1. **Distinctive Typography**
-   - Avoid generic system fonts
-   - Use font pairings that create hierarchy
-   - Consider variable fonts for flexibility
+Then implement working code (HTML/CSS/JS, React, Vue, etc.) that is:
+- Production-grade and functional
+- Visually striking and memorable
+- Cohesive with a clear aesthetic point-of-view
+- Meticulously refined in every detail
 
-2. **Cohesive Color Palettes**
-   - Build from a primary brand color
-   - Include sharp accent colors
-   - Ensure sufficient contrast ratios
+## Frontend Aesthetics Guidelines
 
-3. **Purposeful Motion**
-   - Animations should communicate state
-   - Avoid gratuitous movement
-   - Respect `prefers-reduced-motion`
+Focus on:
+- **Typography**: Choose fonts that are beautiful, unique, and interesting. Avoid generic fonts like Arial and Inter; opt instead for distinctive choices that elevate the frontend's aesthetics; unexpected, characterful font choices. Pair a distinctive display font with a refined body font.
+- **Color & Theme**: Commit to a cohesive aesthetic. Use CSS variables for consistency. Dominant colors with sharp accents outperform timid, evenly-distributed palettes.
+- **Motion**: Use animations for effects and micro-interactions. Prioritize CSS-only solutions for HTML. Use Motion library for React when available. Focus on high-impact moments: one well-orchestrated page load with staggered reveals (animation-delay) creates more delight than scattered micro-interactions. Use scroll-triggering and hover states that surprise.
+- **Spatial Composition**: Unexpected layouts. Asymmetry. Overlap. Diagonal flow. Grid-breaking elements. Generous negative space OR controlled density.
+- **Backgrounds & Visual Details**: Create atmosphere and depth rather than defaulting to solid colors. Add contextual effects and textures that match the overall aesthetic. Apply creative forms like gradient meshes, noise textures, geometric patterns, layered transparencies, dramatic shadows, decorative borders, custom cursors, and grain overlays.
 
-4. **Asymmetric Layouts**
-   - Break out of grid monotony
-   - Use negative space intentionally
-   - Create visual tension and interest
+NEVER use generic AI-generated aesthetics like overused font families (Inter, Roboto, Arial, system fonts), cliched color schemes (particularly purple gradients on white backgrounds), predictable layouts and component patterns, and cookie-cutter design that lacks context-specific character.
 
-## Anti-Patterns to Avoid
+Interpret creatively and make unexpected choices that feel genuinely designed for the context. No design should be the same. Vary between light and dark themes, different fonts, different aesthetics. NEVER converge on common choices (Space Grotesk, for example) across generations.
 
-- Generic gradient backgrounds
-- Overused rounded corners on everything
-- Stock photo hero sections
-- Cookie-cutter card layouts
-- Excessive shadows and blur effects
-- Rainbow gradient text
+**IMPORTANT**: Match implementation complexity to the aesthetic vision. Maximalist designs need elaborate code with extensive animations and effects. Minimalist or refined designs need restraint, precision, and careful attention to spacing, typography, and subtle details. Elegance comes from executing the vision well.
 
-## Technology Defaults
-
-When no preference is specified:
-
-| Technology | Default |
-|------------|---------|
-| CSS Framework | Tailwind CSS v4 |
-| Component Library | shadcn/ui |
-| Icons | Lucide React |
-| Fonts | Variable fonts from Google Fonts |
-
-## Implementation Notes
-
-### Static HTML Projects
-
-Use Tailwind Play CDN for rapid prototyping:
-
-```html
-<script src="https://cdn.tailwindcss.com"></script>
-```
-
-### React/Next.js Projects
-
-Install shadcn/ui components as needed:
-
-```bash
-npx shadcn@latest add button card
-```
-
-## Examples
-
-### Good: Distinctive Hero
-
-```html
-<section class="relative overflow-hidden">
-  <div class="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900" />
-  <div class="relative max-w-5xl mx-auto px-6 py-24">
-    <h1 class="text-6xl font-black tracking-tight text-white">
-      Ship faster.<br/>
-      <span class="text-purple-400">Sleep better.</span>
-    </h1>
-  </div>
-</section>
-```
-
-### Bad: Generic Hero
-
-```html
-<!-- Avoid this pattern -->
-<section class="bg-gradient-to-r from-blue-500 to-purple-500 rounded-3xl p-8">
-  <h1 class="text-4xl font-bold text-white text-center">
-    Welcome to Our Platform
-  </h1>
-</section>
-```
-
-## Reference
-
-- [Anthropic frontend-design skill](https://github.com/anthropics/claude-code/blob/main/plugins/frontend-design/skills/frontend-design/SKILL.md)
-- [Tailwind CSS v4](https://tailwindcss.com)
-- [shadcn/ui](https://ui.shadcn.com)
+Remember: Claude is capable of extraordinary creative work. Don't hold back, show what can truly be created when thinking outside the box and committing fully to a distinctive vision.

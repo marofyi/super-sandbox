@@ -1,0 +1,1274 @@
+#!/usr/bin/env python3
+# ABOUTME: Agent Workbench (AWB) - Interactive worktree launcher for AI coding agents (Claude, Codex)
+
+import subprocess
+import sys
+import os
+import hashlib
+import shutil
+import json
+import tempfile
+from pathlib import Path
+from datetime import datetime, timedelta
+
+def find_claude_binary():
+    """Find Claude binary with fallback chain: env var → PATH → default location."""
+    # 1. Check environment variable
+    if env_path := os.environ.get("CLAUDE_BIN"):
+        return env_path
+
+    # 2. Check PATH
+    if path_bin := shutil.which("claude"):
+        return path_bin
+
+    # 3. Fall back to default location
+    return str(Path.home() / ".claude" / "local" / "claude")
+
+
+def find_codex_binary():
+    """Find Codex binary."""
+    if path_bin := shutil.which("codex"):
+        return path_bin
+    return "codex"  # Assume it's in PATH
+
+
+CLAUDE_BIN = find_claude_binary()
+CODEX_BIN = find_codex_binary()
+
+# Default arguments for each tool (keeps zshrc aliases clean)
+CLAUDE_DEFAULT_ARGS = ["--dangerously-skip-permissions"]
+CODEX_DEFAULT_ARGS = ["--dangerously-bypass-approvals-and-sandbox", "--search"]
+
+ARCHIVE_EXPIRY_DAYS = 7
+ARCHIVE_MARKER = ".ccwb-archived"
+
+# ANSI color codes
+C_RESET = "\033[0m"
+C_BOLD = "\033[1m"
+C_DIM = "\033[2m"
+C_RED = "\033[31m"
+C_GREEN = "\033[32m"
+C_YELLOW = "\033[33m"
+C_BLUE = "\033[34m"
+C_MAGENTA = "\033[35m"
+C_CYAN = "\033[36m"
+C_WHITE = "\033[37m"
+C_BG_RED = "\033[41m"
+
+LOGO = f"""{C_CYAN}┌──────────────────────────────────┐
+│                                  │
+│    █████╗  ██╗    ██╗ ██████╗    │
+│   ██╔══██╗ ██║    ██║ ██╔══██╗   │
+│   ███████║ ██║ █╗ ██║ ██████╔╝   │
+│   ██╔══██║ ██║███╗██║ ██╔══██╗   │
+│   ██║  ██║ ╚███╔███╔╝ ██████╔╝   │
+│   ╚═╝  ╚═╝  ╚══╝╚══╝  ╚═════╝    │
+│{C_MAGENTA}         AGENT WORKBENCH          {C_CYAN}│
+└──────────────────────────────────┘{C_RESET}"""
+
+
+def run(cmd, cwd=None):
+    result = subprocess.run(cmd, shell=True, capture_output=True, text=True, cwd=cwd)
+    return result.stdout.strip(), result.returncode
+
+
+def extract_task_from_worktree(worktree_path):
+    """Extract the original user task from Claude session in worktree."""
+    claude_dir = Path(worktree_path) / ".claude"
+    if not claude_dir.exists():
+        return None
+
+    # Find most recent transcript/session file
+    transcripts = list(claude_dir.glob("projects/**/claude.*.jsonl"))
+    if not transcripts:
+        return None
+
+    # Get most recent
+    most_recent = max(transcripts, key=lambda p: p.stat().st_mtime)
+
+    try:
+        with open(most_recent, 'r') as f:
+            for line in f:
+                try:
+                    entry = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+
+                if entry.get("type") == "user" and entry.get("userType") == "external":
+                    message = entry.get("message", {})
+                    if isinstance(message, dict):
+                        content = message.get("content", "")
+                    elif isinstance(message, list):
+                        content = " ".join(
+                            item.get("text", "") if isinstance(item, dict) else str(item)
+                            for item in message
+                        )
+                    else:
+                        content = str(message)
+
+                    if isinstance(content, list):
+                        content = " ".join(
+                            item.get("text", "") if isinstance(item, dict) else str(item)
+                            for item in content
+                        )
+
+                    # Skip system/meta messages
+                    if content.startswith("<") or content.startswith("["):
+                        continue
+                    if content.startswith("Caveat:") or content.startswith("Note:"):
+                        continue
+                    if len(content) < 10:
+                        continue
+
+                    # Truncate to reasonable length
+                    return content[:150] + ("..." if len(content) > 150 else "")
+    except Exception:
+        pass
+
+    return None
+
+
+def get_repo_info():
+    root, code = run("git rev-parse --show-toplevel")
+    if code != 0:
+        return None, None
+    return root, Path(root).name
+
+
+def is_main_worktree():
+    git_dir, _ = run("git rev-parse --git-dir")
+    common_dir, _ = run("git rev-parse --git-common-dir")
+    return git_dir == common_dir
+
+
+def get_worktrees():
+    """Get list of all worktrees with metadata."""
+    output, _ = run("git worktree list --porcelain")
+    worktrees = []
+    current = {}
+
+    for line in output.split("\n"):
+        if line.startswith("worktree "):
+            current = {"path": line[9:]}
+        elif line.startswith("branch "):
+            current["branch"] = line[7:].replace("refs/heads/", "")
+        elif line == "":
+            if current and current.get("path"):
+                worktrees.append(current)
+            current = {}
+
+    if current and current.get("path"):
+        worktrees.append(current)
+
+    return worktrees
+
+
+def get_claude_worktrees(worktree_base):
+    """Get only claude worktrees in our managed folder."""
+    all_wt = get_worktrees()
+    return [
+        wt for wt in all_wt
+        if wt.get("path", "").startswith(str(worktree_base))
+    ]
+
+
+def get_worktree_age(path):
+    """Get age of worktree based on .git file creation time."""
+    try:
+        git_file = Path(path) / ".git"
+        if git_file.exists():
+            mtime = os.path.getmtime(git_file)
+        else:
+            mtime = os.path.getmtime(path)
+        return datetime.now() - datetime.fromtimestamp(mtime)
+    except:
+        return timedelta(days=999)
+
+
+def get_worktree_gitdir(worktree_path):
+    """Get the real .git directory for a worktree.
+
+    In worktrees, .git is a file containing 'gitdir: /path/to/real/gitdir'.
+    Returns the path to the real gitdir, or None if not found.
+    """
+    git_file = Path(worktree_path) / ".git"
+    if not git_file.exists():
+        return None
+
+    try:
+        if git_file.is_file():
+            content = git_file.read_text().strip()
+            if content.startswith("gitdir:"):
+                return Path(content[7:].strip())
+        elif git_file.is_dir():
+            # Main worktree - .git is a directory
+            return git_file
+    except Exception:
+        pass
+    return None
+
+
+def is_archived(worktree_path):
+    """Check if a worktree is archived."""
+    gitdir = get_worktree_gitdir(worktree_path)
+    if not gitdir:
+        return False
+    return (gitdir / ARCHIVE_MARKER).exists()
+
+
+def get_archive_date(worktree_path):
+    """Get the date when worktree was archived, or None if not archived."""
+    gitdir = get_worktree_gitdir(worktree_path)
+    if not gitdir:
+        return None
+
+    marker = gitdir / ARCHIVE_MARKER
+    if not marker.exists():
+        return None
+
+    try:
+        content = marker.read_text().strip()
+        return datetime.fromisoformat(content)
+    except Exception:
+        # Fallback to file mtime
+        return datetime.fromtimestamp(marker.stat().st_mtime)
+
+
+def archive_worktree(worktree_path):
+    """Archive a worktree by creating marker file with timestamp."""
+    gitdir = get_worktree_gitdir(worktree_path)
+    if not gitdir:
+        return False
+
+    try:
+        marker = gitdir / ARCHIVE_MARKER
+        marker.write_text(datetime.now().isoformat())
+        return True
+    except Exception:
+        return False
+
+
+def unarchive_worktree(worktree_path):
+    """Unarchive a worktree by removing the marker file."""
+    gitdir = get_worktree_gitdir(worktree_path)
+    if not gitdir:
+        return False
+
+    try:
+        marker = gitdir / ARCHIVE_MARKER
+        if marker.exists():
+            marker.unlink()
+        return True
+    except Exception:
+        return False
+
+
+def get_merged_branches(repo_root):
+    """Get set of branch names that have been merged into main/master."""
+    # Try main first, fall back to master
+    for base in ["main", "master"]:
+        output, code = run(f"git branch --merged {base}", cwd=repo_root)
+        if code == 0:
+            branches = set()
+            for line in output.split("\n"):
+                branch = line.strip().lstrip("* ")
+                if branch and branch not in (base, "main", "master"):
+                    branches.add(branch)
+            return branches
+    return set()
+
+
+def get_gone_remote_branches(repo_root):
+    """Get set of branch names whose remote tracking branch is gone (deleted on GitHub)."""
+    output, code = run("git branch -vv", cwd=repo_root)
+    if code != 0:
+        return set()
+
+    gone_branches = set()
+    for line in output.split("\n"):
+        # Format: "* branch  abc1234 [origin/branch: gone] commit msg"
+        # or:     "  branch  abc1234 [origin/branch: gone] commit msg"
+        if ": gone]" in line:
+            branch = line.strip().lstrip("* ").split()[0]
+            if branch:
+                gone_branches.add(branch)
+    return gone_branches
+
+
+def branch_exists(branch_name, repo_root):
+    """Check if a local branch exists."""
+    _, code = run(f"git show-ref --verify --quiet refs/heads/{branch_name}", cwd=repo_root)
+    return code == 0
+
+
+def remove_worktree(wt, quiet=False):
+    """Remove a worktree and its branch."""
+    path = wt["path"]
+    branch = wt.get("branch", "")
+
+    if not quiet:
+        print(f"  🧹 Cleaning: {branch or path}", file=sys.stderr)
+
+    run(f"git worktree remove --force '{path}'")
+
+    if Path(path).exists():
+        shutil.rmtree(path, ignore_errors=True)
+
+    run("git worktree prune")
+
+    # Delete branch if it's a managed worktree branch
+    if branch and "-" in branch:
+        run(f"git branch -D '{branch}'")
+
+
+def auto_cleanup(repo_root, worktree_base):
+    """Auto-cleanup worktrees: expired archives, merged branches, deleted remotes, orphans."""
+    # Sync with remote to detect deleted branches
+    run("git fetch --prune", cwd=repo_root)
+
+    worktrees = get_worktrees()
+    merged_branches = get_merged_branches(repo_root)
+    gone_branches = get_gone_remote_branches(repo_root)
+
+    cleaned = 0
+    archived = 0
+
+    for wt in worktrees:
+        path = wt.get("path", "")
+        branch = wt.get("branch", "")
+
+        if not path.startswith(str(worktree_base)):
+            continue
+
+        if not Path(path).exists():
+            run("git worktree prune")
+            continue
+
+        # Skip if already archived (handle expiry below)
+        if is_archived(path):
+            archive_date = get_archive_date(path)
+            if archive_date:
+                days_archived = (datetime.now() - archive_date).days
+                if days_archived >= ARCHIVE_EXPIRY_DAYS:
+                    if cleaned == 0:
+                        print(f"\n{C_YELLOW}🧹 Cleaning expired archives...{C_RESET}", file=sys.stderr)
+                    print(f"   {C_DIM}└─{C_RESET} {branch} {C_DIM}(archived {days_archived}d ago){C_RESET}", file=sys.stderr)
+                    remove_worktree(wt, quiet=True)
+                    cleaned += 1
+            continue
+
+        # Check if branch still exists (orphaned worktree)
+        if branch and not branch_exists(branch, repo_root):
+            if cleaned == 0 and archived == 0:
+                print(f"\n{C_YELLOW}🧹 Cleaning up...{C_RESET}", file=sys.stderr)
+            print(f"   {C_DIM}└─{C_RESET} {branch} {C_DIM}(branch deleted){C_RESET}", file=sys.stderr)
+            remove_worktree(wt, quiet=True)
+            cleaned += 1
+            continue
+
+        # Check if branch was merged or remote was deleted (PR merged/closed)
+        if branch in merged_branches or branch in gone_branches:
+            reason = "merged" if branch in merged_branches else "remote deleted"
+            if cleaned == 0 and archived == 0:
+                print(f"\n{C_YELLOW}📦 Auto-archiving completed work...{C_RESET}", file=sys.stderr)
+            print(f"   {C_DIM}└─{C_RESET} {branch} {C_DIM}({reason}){C_RESET}", file=sys.stderr)
+            archive_worktree(path)
+            archived += 1
+
+    if cleaned > 0:
+        print(f"{C_GREEN}   ✓ Cleaned {cleaned} worktree{'s' if cleaned > 1 else ''}{C_RESET}", file=sys.stderr)
+    if archived > 0:
+        print(f"{C_GREEN}   ✓ Archived {archived} worktree{'s' if archived > 1 else ''} (expires in {ARCHIVE_EXPIRY_DAYS}d){C_RESET}", file=sys.stderr)
+    if cleaned > 0 or archived > 0:
+        print(file=sys.stderr)
+
+    run("git worktree prune")
+
+
+def create_worktree(repo_root, branch_name, worktree_path):
+    _, code = run(f"git worktree add -b {branch_name} {worktree_path}", cwd=repo_root)
+    return code == 0
+
+
+def detect_package_manager(repo_root):
+    """Detect which package manager the project uses."""
+    repo = Path(repo_root)
+
+    # Check for lockfiles in order of preference
+    if (repo / "pnpm-lock.yaml").exists():
+        return "pnpm"
+    if (repo / "bun.lockb").exists():
+        return "bun"
+    if (repo / "yarn.lock").exists():
+        return "yarn"
+    if (repo / "package-lock.json").exists():
+        return "npm"
+    if (repo / "package.json").exists():
+        # Default to pnpm if package.json exists but no lockfile
+        return "pnpm"
+    return None
+
+
+def setup_worktree(repo_root, worktree_path):
+    """Set up worktree with proper dependencies and env files.
+
+    Instead of symlinking node_modules (which breaks when branches have
+    different dependencies), we run the package manager's install command.
+    pnpm's content-addressable store makes this fast (~10s) since packages
+    are hard-linked from a shared cache.
+    """
+    repo = Path(repo_root)
+    wt = Path(worktree_path)
+
+    # Copy all .env* files (not symlink - they may differ per branch)
+    for env_file in repo.glob(".env*"):
+        if env_file.is_file():
+            dest = wt / env_file.name
+            if not dest.exists():
+                shutil.copy2(env_file, dest)
+
+    # Install dependencies using detected package manager
+    pkg_manager = detect_package_manager(repo_root)
+    if pkg_manager and (wt / "package.json").exists():
+        print(f"   {C_DIM}Installing dependencies with {pkg_manager}...{C_RESET}", file=sys.stderr)
+
+        # Use ci/install based on package manager
+        if pkg_manager == "pnpm":
+            cmd = "pnpm install --frozen-lockfile"
+        elif pkg_manager == "bun":
+            cmd = "bun install --frozen-lockfile"
+        elif pkg_manager == "yarn":
+            cmd = "yarn install --frozen-lockfile"
+        else:  # npm
+            cmd = "npm ci"
+
+        _, code = run(cmd, cwd=str(wt))
+        if code == 0:
+            print(f"   {C_GREEN}✓{C_RESET} Dependencies installed", file=sys.stderr)
+        else:
+            # Fallback to regular install if frozen-lockfile fails
+            fallback_cmd = f"{pkg_manager} install"
+            _, code = run(fallback_cmd, cwd=str(wt))
+            if code == 0:
+                print(f"   {C_GREEN}✓{C_RESET} Dependencies installed", file=sys.stderr)
+            else:
+                print(f"   {C_YELLOW}⚠{C_RESET} Failed to install dependencies - run '{pkg_manager} install' manually", file=sys.stderr)
+
+
+def ensure_gitignore(repo_root):
+    """Ensure .worktrees is in .gitignore."""
+    gitignore_path = Path(repo_root) / ".gitignore"
+    worktree_entry = ".worktrees"
+
+    if gitignore_path.exists():
+        content = gitignore_path.read_text()
+        # Check if already present (as line or with trailing slash)
+        lines = content.splitlines()
+        if any(line.strip() in (".worktrees", ".worktrees/") for line in lines):
+            return  # Already ignored
+
+        # Append to existing file
+        with open(gitignore_path, "a") as f:
+            if content and not content.endswith("\n"):
+                f.write("\n")
+            f.write(f"\n# Claude Code Workbench worktrees\n{worktree_entry}/\n")
+    else:
+        # Create new .gitignore
+        gitignore_path.write_text(f"# Claude Code Workbench worktrees\n{worktree_entry}/\n")
+
+
+def ensure_vscode_settings(repo_root):
+    """Ensure .vscode/settings.json has worktree exclusions for IntelliSense."""
+    vscode_dir = Path(repo_root) / ".vscode"
+    settings_path = vscode_dir / "settings.json"
+
+    # Settings to add/merge
+    worktree_settings = {
+        "search.exclude": {
+            ".worktrees": True
+        },
+        "files.watcherExclude": {
+            "**/.worktrees/**": True
+        }
+    }
+
+    if settings_path.exists():
+        try:
+            content = settings_path.read_text()
+            settings = json.loads(content) if content.strip() else {}
+        except json.JSONDecodeError:
+            # Invalid JSON - don't overwrite, user needs to fix
+            return
+    else:
+        vscode_dir.mkdir(parents=True, exist_ok=True)
+        settings = {}
+
+    # Merge settings (don't overwrite existing exclusions)
+    modified = False
+    for key, value in worktree_settings.items():
+        if key not in settings:
+            settings[key] = value
+            modified = True
+        elif isinstance(settings[key], dict) and isinstance(value, dict):
+            for k, v in value.items():
+                if k not in settings[key]:
+                    settings[key][k] = v
+                    modified = True
+
+    if modified:
+        settings_path.write_text(json.dumps(settings, indent=2) + "\n")
+
+
+def format_age(age):
+    """Format timedelta as human readable string."""
+    if age.days > 0:
+        return f"{age.days}d"
+    hours = age.seconds // 3600
+    if hours > 0:
+        return f"{hours}h"
+    minutes = age.seconds // 60
+    return f"{minutes}m"
+
+
+def format_age_long(age):
+    """Format timedelta as longer human readable string."""
+    if age.days > 0:
+        return f"{age.days} day{'s' if age.days != 1 else ''} ago"
+    hours = age.seconds // 3600
+    if hours > 0:
+        return f"{hours} hour{'s' if hours != 1 else ''} ago"
+    minutes = age.seconds // 60
+    return f"{minutes} minute{'s' if minutes != 1 else ''} ago"
+
+
+def get_age_color(age):
+    """Get ANSI color based on worktree age."""
+    if age.days >= 7:
+        return C_RED
+    elif age.days >= 3:
+        return C_YELLOW
+    else:
+        return C_GREEN
+
+
+def get_worktree_icon(branch, age):
+    """Get icon based on worktree state."""
+    if "pending-" in branch:
+        if age.days >= 7:
+            return "💤"
+        elif age.days >= 3:
+            return "⏳"
+        else:
+            return "🔮"
+    else:
+        if age.days >= 7:
+            return "🍂"
+        elif age.days >= 3:
+            return "🌿"
+        else:
+            return "🌱"
+
+
+def interactive_select_fzf(worktree_base, repo_root, repo_name):
+    """Show interactive fzf menu to select or create worktree."""
+    existing = get_claude_worktrees(worktree_base)
+
+    # Print logo
+    print(LOGO)
+
+    # Separate active and archived worktrees
+    active_wts = []
+    archived_wts = []
+    for wt in existing:
+        path = wt.get("path", "")
+        if is_archived(path):
+            archived_wts.append(wt)
+        else:
+            active_wts.append(wt)
+
+    # Sort by age (most recent first)
+    active_wts.sort(key=lambda wt: get_worktree_age(wt.get("path", "")))
+    archived_wts.sort(key=lambda wt: get_worktree_age(wt.get("path", "")))
+
+    # Build items list with index-based lookup
+    # Line format: idx\tskip_down\tskip_up\tdisplay
+    # skip_down/skip_up = how many lines to move when pressing down/up from this line
+    items = []  # List of item data dicts, indexed by position
+    fzf_lines = []
+
+    # Primary options
+    # "New worktree" - down=1 (normal), up=1 (normal or wrap)
+    items.append({"action": "new"})
+    fzf_lines.append(f"0\t1\t1\t{C_MAGENTA}✨ New worktree session{C_RESET}")
+
+    # "Launch without" - if worktrees exist, down=3 to skip spacer+header
+    items.append({"action": "here"})
+    skip_down_here = 3 if active_wts else 1
+    fzf_lines.append(f"1\t{skip_down_here}\t1\t{C_BLUE}📍 Launch without worktree{C_RESET}")
+
+    # Add active worktrees section
+    if active_wts:
+        # Spacer and divider header - fallback skip values if somehow landed on
+        fzf_lines.append(f"-1\t2\t1\t ")
+        fzf_lines.append(f"-2\t1\t2\t{C_DIM}─── Worktrees ─────────────{C_RESET}")
+
+        for i, wt in enumerate(active_wts):
+            path = wt.get("path", "")
+            branch = wt.get("branch", "unknown")
+            age = get_worktree_age(path)
+            age_str = format_age(age)
+            age_long = format_age_long(age)
+            age_color = get_age_color(age)
+            icon = get_worktree_icon(branch, age)
+            task = extract_task_from_worktree(path)
+
+            items.append({
+                "action": "open",
+                "path": path,
+                "branch": branch,
+                "age_days": age.days,
+                "age_str": age_long,
+                "task": task or "",
+                "archived": False
+            })
+
+            # First worktree: up=3 to skip divider section
+            # Last worktree before archived: down=3 to skip next divider section
+            is_first = (i == 0)
+            is_last_before_archived = (i == len(active_wts) - 1) and bool(archived_wts)
+            skip_down_wt = 3 if is_last_before_archived else 1
+            skip_up_wt = 3 if is_first else 1
+
+            display = f"{icon} {age_color}{branch}{C_RESET} {C_DIM}({age_str}){C_RESET}"
+            fzf_lines.append(f"{len(items)-1}\t{skip_down_wt}\t{skip_up_wt}\t{display}")
+
+    # Add archived worktrees section
+    if archived_wts:
+        # Spacer and divider header - fallback skip values
+        fzf_lines.append(f"-1\t2\t1\t ")
+        fzf_lines.append(f"-2\t1\t2\t{C_DIM}─── Archived ──────────────{C_RESET}")
+
+        for i, wt in enumerate(archived_wts):
+            path = wt.get("path", "")
+            branch = wt.get("branch", "unknown")
+            archive_date = get_archive_date(path)
+            days_archived = (datetime.now() - archive_date).days if archive_date else 0
+            days_left = max(0, ARCHIVE_EXPIRY_DAYS - days_archived)
+            task = extract_task_from_worktree(path)
+
+            items.append({
+                "action": "open",
+                "path": path,
+                "branch": branch,
+                "age_days": days_archived,
+                "age_str": f"expires in {days_left}d" if days_left > 0 else "expiring soon",
+                "task": task or "",
+                "archived": True,
+                "days_left": days_left
+            })
+
+            # First archived: up=3 to skip divider section
+            is_first = (i == 0)
+            skip_up_wt = 3 if is_first else 1
+
+            expire_color = C_RED if days_left <= 2 else C_YELLOW if days_left <= 4 else C_DIM
+            display = f"📦 {C_DIM}{branch}{C_RESET} {expire_color}({days_left}d left){C_RESET}"
+            fzf_lines.append(f"{len(items)-1}\t1\t{skip_up_wt}\t{display}")
+
+    # Create preview script using index-based lookup
+    preview_script = create_preview_script_indexed(items, repo_root)
+
+    # Write preview script to temp file
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+        f.write(preview_script)
+        preview_script_path = f.name
+
+    os.chmod(preview_script_path, 0o755)
+
+    try:
+        # Build fzf command - multi-line header with separator
+        header_lines = [
+            "",  # Top margin
+            f"📂 {repo_name}",
+            f"⏎ claude  x codex  a archive  d delete  q quit",
+            f"─────────────────────────────────────────────────"
+        ]
+        header = "\n".join(header_lines)
+
+        fzf_cmd = [
+            "fzf",
+            "--ansi",
+            "--border=rounded",
+            "--header", header,
+            "--header-first",
+            "--delimiter", "\t",
+            "--with-nth", "4..",  # Display only field 4+ (hide idx, skip_down, skip_up)
+            "--preview", f"python3 {preview_script_path} {{1}}",  # Pass index to preview
+            "--preview-window", "right:50%",
+            # Keybindings: select, archive, delete, codex, quit
+            "--bind", "a:print(ACTION:ARCHIVE)+accept",
+            "--bind", "d:print(ACTION:DELETE)+accept",
+            "--bind", "x:print(TOOL:CODEX)+accept",
+            "--bind", "q:abort,esc:abort",
+            # Navigation: {2}=skip_down, {3}=skip_up - emit that many movements
+            # Use + to chain actions (newlines don't seem to work)
+            "--bind", "down:transform:case {2} in 1) echo down;; 3) echo 'down+down+down';; *) echo down;; esac",
+            "--bind", "up:transform:case {3} in 1) echo up;; 3) echo 'up+up+up';; *) echo up;; esac",
+            "--bind", "j:transform:case {2} in 1) echo down;; 3) echo 'down+down+down';; *) echo down;; esac",
+            "--bind", "k:transform:case {3} in 1) echo up;; 3) echo 'up+up+up';; *) echo up;; esac",
+            "--pointer", "→ ",
+            "--gutter", " ",  # Hide the gutter column
+            "--no-sort",
+            "--height", "50%",
+            "--min-height", "15",
+            "--layout", "reverse",
+            "--info", "hidden",
+            "--no-separator",
+            "--no-input",
+            # Clean look: no background highlight, transparent gutter
+            "--color", "header:blue,pointer:cyan:bold,hl:yellow,hl+:yellow:bold,bg+:-1,fg+:white:bold,gutter:-1",
+        ]
+
+        # Run fzf
+        input_text = "\n".join(fzf_lines)
+        result = subprocess.run(
+            fzf_cmd,
+            input=input_text,
+            capture_output=True,
+            text=True
+        )
+
+        if result.returncode == 130 or result.returncode == 1:  # Ctrl-C or abort
+            return None
+
+        # Parse output: with --bind print()+accept, output is:
+        # "ACTION:XXX\n<selected_line>" or "TOOL:CODEX\n<selected_line>" for hotkeys,
+        # or just "<selected_line>" for Enter
+        lines = result.stdout.strip().split("\n")
+        if not lines or not lines[0]:
+            return None
+
+        action_marker = None
+        tool_marker = None
+        selected_line = None
+
+        if lines[0].startswith("ACTION:"):
+            action_marker = lines[0]  # e.g., "ACTION:ARCHIVE"
+            selected_line = lines[1] if len(lines) > 1 else ""
+        elif lines[0].startswith("TOOL:"):
+            tool_marker = lines[0]  # e.g., "TOOL:CODEX"
+            selected_line = lines[1] if len(lines) > 1 else ""
+        else:
+            selected_line = lines[0]
+
+        # Extract index from selected line (format: "index\tdisplay_text")
+        idx = None
+        if selected_line and "\t" in selected_line:
+            try:
+                idx = int(selected_line.split("\t")[0])
+            except ValueError:
+                pass
+
+        # Handle invalid index (dividers use -1)
+        if idx is None or idx < 0 or idx >= len(items):
+            return {"action": "refresh"}
+
+        # Handle hotkey actions
+        if action_marker == "ACTION:ARCHIVE":
+            # Archive/unarchive requires a valid worktree selection
+            item = items[idx]
+            if item.get("action") == "open":
+                return {**item, "action": "archive_toggle"}
+            print(f"{C_DIM}   (Can only archive worktrees){C_RESET}", file=sys.stderr)
+            return {"action": "refresh"}
+
+        if action_marker == "ACTION:DELETE":
+            # Delete requires a valid worktree selection
+            item = items[idx]
+            if item.get("action") == "open":
+                return {**item, "action": "delete_request"}
+            print(f"{C_DIM}   (Can only delete worktrees){C_RESET}", file=sys.stderr)
+            return {"action": "refresh"}
+
+        # Handle tool selection (x for Codex)
+        if tool_marker == "TOOL:CODEX":
+            item = items[idx]
+            return {**item, "use_codex": True}
+
+        # Enter pressed - return selected item by index
+        return items[idx]
+
+    finally:
+        # Cleanup temp file
+        try:
+            os.unlink(preview_script_path)
+        except:
+            pass
+
+
+def create_preview_script_indexed(items, repo_root):
+    """Create a preview script that uses index-based lookup."""
+    # Escape the JSON strings properly for embedding in Python
+    items_json = json.dumps(items).replace("\\", "\\\\").replace("'", "\\'")
+    repo_root_escaped = repo_root.replace("\\", "\\\\").replace("'", "\\'")
+
+    script = f'''#!/usr/bin/env python3
+import sys
+import json
+
+items = json.loads('{items_json}')
+repo_root = '{repo_root_escaped}'
+
+C_RESET = "\\033[0m"
+C_BOLD = "\\033[1m"
+C_DIM = "\\033[2m"
+C_RED = "\\033[31m"
+C_GREEN = "\\033[32m"
+C_YELLOW = "\\033[33m"
+C_BLUE = "\\033[34m"
+C_MAGENTA = "\\033[35m"
+C_CYAN = "\\033[36m"
+
+def get_age_color(days):
+    if days >= 7:
+        return C_RED
+    elif days >= 3:
+        return C_YELLOW
+    return C_GREEN
+
+def main():
+    if len(sys.argv) < 2:
+        return
+
+    try:
+        idx = int(sys.argv[1])
+    except ValueError:
+        print(f"{{C_DIM}}No preview available{{C_RESET}}")
+        return
+
+    if idx < 0 or idx >= len(items):
+        print(f"{{C_DIM}}No preview available{{C_RESET}}")
+        return
+
+    item = items[idx]
+    action = item.get("action")
+
+    if action == "new":
+        print(f"{{C_CYAN}}{{C_BOLD}}✨ Create New Worktree{{C_RESET}}")
+        print()
+        print(f"{{C_BLUE}}How it works:{{C_RESET}}")
+        print()
+        print(f"{{C_DIM}}1.{{C_RESET}} Creates {{C_MAGENTA}}pending-*{{C_RESET}} branch")
+        print(f"{{C_DIM}}2.{{C_RESET}} On first edit, hook reads")
+        print("   first prompt and renames branch")
+        print(f"{{C_DIM}}3.{{C_RESET}} Worktree dir stays as stable ID")
+        print()
+        print(f"{{C_YELLOW}}Example:{{C_RESET}}")
+        print(f"  {{C_DIM}}pending-152345-abc{{C_RESET}}")
+        print(f"  {{C_GREEN}}→{{C_RESET}} {{C_CYAN}}fix-auth-bug-abc{{C_RESET}}")
+
+    elif action == "here":
+        print(f"{{C_MAGENTA}}{{C_BOLD}}📍 Launch Here{{C_RESET}}")
+        print()
+        print("Launch Claude in current dir")
+        print("without creating a worktree.")
+        print()
+        print(f"{{C_DIM}}Work directly on main branch.{{C_RESET}}")
+
+    elif action == "divider":
+        print(f"{{C_DIM}}Recent worktrees below{{C_RESET}}")
+
+    elif action == "open":
+        import subprocess
+        from pathlib import Path as P
+
+        path = item.get("path", "")
+        branch = item.get("branch", "unknown")
+        age_days = item.get("age_days", 0)
+        age_str = item.get("age_str", "unknown")
+        is_archived = item.get("archived", False)
+        days_left = item.get("days_left", 7)
+
+        if is_archived:
+            # Archived worktree preview
+            expire_color = C_RED if days_left <= 2 else C_YELLOW if days_left <= 4 else C_DIM
+            print(f"{{C_DIM}}{{C_BOLD}}📦 {{branch}}{{C_RESET}}")
+            print(f"{{expire_color}}Expires in {{days_left}} day{{'s' if days_left != 1 else ''}}{{C_RESET}}")
+            print()
+            print(f"{{C_YELLOW}}Status: Archived{{C_RESET}}")
+            print(f"{{C_DIM}}Will be auto-deleted after 7 days{{C_RESET}}")
+            print()
+
+            task = item.get("task", "")
+            if task:
+                print(f"{{C_MAGENTA}}Task:{{C_RESET}}")
+                words = task.split()
+                line = "  "
+                for word in words:
+                    if len(line) + len(word) > 38:
+                        print(line)
+                        line = "  " + word
+                    else:
+                        line += (" " if line != "  " else "") + word
+                if line.strip():
+                    print(line)
+                print()
+
+            print(f"{{C_CYAN}}Press 'a' to unarchive{{C_RESET}}")
+        else:
+            # Active worktree preview
+            age_color = get_age_color(age_days)
+            print(f"{{C_CYAN}}{{C_BOLD}}🌿 {{branch}}{{C_RESET}}")
+            print(f"{{C_DIM}}{{age_color}}{{age_str}}{{C_RESET}}")
+            print()
+
+            # Original task from transcript
+            task = item.get("task", "")
+            if task:
+                print(f"{{C_MAGENTA}}Task:{{C_RESET}}")
+                words = task.split()
+                line = "  "
+                for word in words:
+                    if len(line) + len(word) > 38:
+                        print(line)
+                        line = "  " + word
+                    else:
+                        line += (" " if line != "  " else "") + word
+                if line.strip():
+                    print(line)
+                print()
+
+            # Working directory status
+            result = subprocess.run(
+                f"git status --porcelain",
+                shell=True, capture_output=True, text=True, cwd=path
+            )
+            if result.stdout.strip():
+                lines = result.stdout.strip().split("\\n")
+                staged = sum(1 for l in lines if l and l[0] in "MADRC")
+                modified = sum(1 for l in lines if l and len(l) > 1 and l[1] in "MD")
+                untracked = sum(1 for l in lines if l.startswith("??"))
+                status_parts = []
+                if staged:
+                    status_parts.append(f"{{C_GREEN}}+{{staged}} staged{{C_RESET}}")
+                if modified:
+                    status_parts.append(f"{{C_YELLOW}}~{{modified}} modified{{C_RESET}}")
+                if untracked:
+                    status_parts.append(f"{{C_DIM}}?{{untracked}} untracked{{C_RESET}}")
+                if status_parts:
+                    status_str = ", ".join(status_parts)
+                    print(f"{{C_YELLOW}}⚡ {{status_str}}{{C_RESET}}")
+                    print()
+
+        # Files changed vs main
+        result = subprocess.run(
+            f"git diff --name-only main...{{branch}} 2>/dev/null",
+            shell=True, capture_output=True, text=True, cwd=repo_root
+        )
+        if result.stdout.strip():
+            files = result.stdout.strip().split("\\n")[:6]
+            print(f"{{C_GREEN}}Files changed:{{C_RESET}}")
+            for f in files[:5]:
+                # Show just filename, not full path
+                name = f.split("/")[-1] if "/" in f else f
+                print(f"  {{C_DIM}}•{{C_RESET}} {{name[:30]}}")
+            if len(files) > 5:
+                print(f"  {{C_DIM}}  +{{len(files)-5}} more{{C_RESET}}")
+            print()
+
+        # Recent commits
+        result = subprocess.run(
+            f"git log --oneline -3 {{branch}} 2>/dev/null",
+            shell=True, capture_output=True, text=True, cwd=repo_root
+        )
+        if result.stdout.strip():
+            print(f"{{C_BLUE}}Commits:{{C_RESET}}")
+            for commit in result.stdout.strip().split("\\n")[:3]:
+                if commit:
+                    print(f"  {{C_DIM}}•{{C_RESET}} {{commit[:35]}}")
+
+if __name__ == "__main__":
+    main()
+'''
+    return script
+
+
+def confirm_delete(branch):
+    """Ask for delete confirmation."""
+    display_branch = branch
+    print(f"\n{C_YELLOW}⚠️  Delete worktree: {C_BOLD}{display_branch}{C_RESET}")
+    print(f"{C_DIM}   This will remove the worktree and its branch.{C_RESET}")
+
+    try:
+        response = input(f"\n   Type {C_BOLD}yes{C_RESET} to confirm: ").strip().lower()
+        return response == "yes"
+    except (KeyboardInterrupt, EOFError):
+        print()
+        return False
+
+
+def get_main_branch(repo_root):
+    """Detect the default branch (main or master)."""
+    for branch in ["main", "master"]:
+        _, code = run(f"git show-ref --verify --quiet refs/heads/{branch}", cwd=repo_root)
+        if code == 0:
+            return branch
+    return "main"  # Default fallback
+
+
+def check_main_behind_remote(repo_root):
+    """Check if local main is behind origin/main.
+
+    Returns:
+        (is_behind, commits_behind, main_branch) or (False, 0, main_branch) if can't determine
+    """
+    main_branch = get_main_branch(repo_root)
+
+    # Fetch latest from remote (quietly)
+    run("git fetch origin --quiet", cwd=repo_root)
+
+    # Check if origin/main exists
+    _, code = run(f"git show-ref --verify --quiet refs/remotes/origin/{main_branch}", cwd=repo_root)
+    if code != 0:
+        return False, 0, main_branch
+
+    # Count commits behind
+    output, code = run(f"git rev-list --count {main_branch}..origin/{main_branch}", cwd=repo_root)
+    if code != 0:
+        return False, 0, main_branch
+
+    try:
+        commits_behind = int(output.strip())
+        return commits_behind > 0, commits_behind, main_branch
+    except ValueError:
+        return False, 0, main_branch
+
+
+def prompt_update_main(commits_behind, main_branch):
+    """Prompt user to update main branch. Returns True if user wants to update."""
+    print(f"\n{C_YELLOW}⚠️  Local {main_branch} is {C_BOLD}{commits_behind}{C_RESET}{C_YELLOW} commit{'s' if commits_behind != 1 else ''} behind origin/{main_branch}{C_RESET}")
+
+    try:
+        response = input(f"   Update {main_branch} before creating worktree? [{C_GREEN}Y{C_RESET}/n]: ").strip().lower()
+        return response in ("", "y", "yes")
+    except (KeyboardInterrupt, EOFError):
+        print()
+        return False
+
+
+def update_main_branch(repo_root, main_branch):
+    """Fast-forward main to origin/main."""
+    print(f"   {C_DIM}Updating {main_branch}...{C_RESET}", file=sys.stderr)
+
+    # Check for uncommitted changes
+    status_output, _ = run("git status --porcelain", cwd=repo_root)
+    has_changes = bool(status_output.strip())
+
+    # Stash changes if needed
+    if has_changes:
+        print(f"   {C_DIM}Stashing local changes...{C_RESET}", file=sys.stderr)
+        run("git stash push -m 'awb: auto-stash for main update'", cwd=repo_root)
+
+    # Use pull --ff-only since main is checked out in the main worktree
+    # (git fetch origin main:main fails when the branch is checked out)
+    _, code = run(f"git pull --ff-only origin {main_branch}", cwd=repo_root)
+
+    # Restore stashed changes
+    if has_changes:
+        print(f"   {C_DIM}Restoring local changes...{C_RESET}", file=sys.stderr)
+        run("git stash pop", cwd=repo_root)
+
+    if code == 0:
+        print(f"   {C_GREEN}✓{C_RESET} {main_branch} updated to latest", file=sys.stderr)
+        return True
+    else:
+        print(f"   {C_YELLOW}⚠{C_RESET} Could not fast-forward {main_branch} (may have local commits)", file=sys.stderr)
+        return False
+
+
+def create_new_worktree(repo_root, worktree_base):
+    """Create a new worktree and return its path."""
+    # Check if main is behind remote
+    is_behind, commits_behind, main_branch = check_main_behind_remote(repo_root)
+    if is_behind:
+        if prompt_update_main(commits_behind, main_branch):
+            update_main_branch(repo_root, main_branch)
+
+    ts = datetime.now().strftime("%H%M%S")
+    short_hash = hashlib.sha256(str(os.getpid()).encode()).hexdigest()[:6]
+    session_id = f"{ts}-{short_hash}"
+    branch_name = f"pending-{session_id}"
+    dir_name = session_id  # Just the ID - directory never needs renaming
+
+    worktree_path = worktree_base / dir_name
+
+    print(f"\n{C_CYAN}┌{'─' * 50}┐{C_RESET}")
+    print(f"{C_CYAN}│{C_RESET}  🌱 Creating fresh worktree...                   {C_CYAN}│{C_RESET}")
+    print(f"{C_CYAN}└{'─' * 50}┘{C_RESET}\n")
+
+    if not create_worktree(repo_root, branch_name, str(worktree_path)):
+        print(f"❌ {C_RED}Failed to create worktree{C_RESET}", file=sys.stderr)
+        return None
+
+    setup_worktree(repo_root, str(worktree_path))
+
+    print(f"   {C_GREEN}✓{C_RESET} Branch: {C_BOLD}{branch_name}{C_RESET}")
+    print(f"   {C_GREEN}✓{C_RESET} Path:   {C_DIM}{worktree_path}{C_RESET}")
+    print(f"\n   {C_YELLOW}💡 Branch will be auto-renamed on first edit{C_RESET}\n")
+
+    return str(worktree_path)
+
+
+def set_terminal_title(title):
+    """Set the terminal tab/window title using ANSI escape sequences."""
+    # Works on macOS Terminal, iTerm2, and most modern terminals
+    sys.stdout.write(f"\033]0;{title}\007")
+    sys.stdout.flush()
+
+
+def launch_tool(path=None, use_codex=False):
+    """Launch Claude or Codex, optionally in a specific directory.
+
+    Args:
+        path: Directory to change to before launching
+        use_codex: If True, launch Codex instead of Claude
+    """
+    if path:
+        os.chdir(path)
+
+    # Set terminal tab title to folder name
+    cwd = Path.cwd()
+    tool_prefix = "CX" if use_codex else "CC"
+    set_terminal_title(f"{tool_prefix}: {cwd.name}")
+
+    if use_codex:
+        # Launch Codex with default args
+        args = [CODEX_BIN] + CODEX_DEFAULT_ARGS
+        os.execv(CODEX_BIN, args)
+    else:
+        # Launch Claude with default args
+        args = [CLAUDE_BIN] + CLAUDE_DEFAULT_ARGS
+        os.execv(CLAUDE_BIN, args)
+
+
+def launch_claude(path=None):
+    """Launch Claude (wrapper for launch_tool)."""
+    launch_tool(path=path, use_codex=False)
+
+
+def main():
+    repo_root, repo_name = get_repo_info()
+
+    # Not in git repo - just run claude
+    if not repo_root:
+        launch_claude()
+        return
+
+    # Already in a worktree - just run claude there
+    if not is_main_worktree():
+        print(f"\n{C_GREEN}🌿 Already in a worktree — launching Claude...{C_RESET}\n", file=sys.stderr)
+        launch_claude()
+        return
+
+    # Worktree location - inside repo for IDE visibility
+    worktree_base = Path(repo_root) / ".worktrees"
+    worktree_base.mkdir(parents=True, exist_ok=True)
+
+    # Ensure .worktrees is gitignored and IDE is configured
+    ensure_gitignore(repo_root)
+    ensure_vscode_settings(repo_root)
+
+    # Auto-cleanup stale/merged/deleted worktrees
+    auto_cleanup(repo_root, worktree_base)
+
+    # Check for quick flags to skip menu
+    if "--new" in sys.argv or "-n" in sys.argv:
+        sys.argv = [a for a in sys.argv if a not in ("--new", "-n")]
+        path = create_new_worktree(repo_root, worktree_base)
+        if path:
+            launch_claude(path)
+        return
+
+    if "--here" in sys.argv or "-h" in sys.argv:
+        sys.argv = [a for a in sys.argv if a not in ("--here", "-h")]
+        # Check if main is behind remote before launching
+        is_behind, commits_behind, main_branch = check_main_behind_remote(repo_root)
+        if is_behind:
+            if prompt_update_main(commits_behind, main_branch):
+                update_main_branch(repo_root, main_branch)
+        launch_claude()
+        return
+
+    # Interactive selection
+    while True:
+        selected = interactive_select_fzf(worktree_base, repo_root, repo_name)
+
+        if selected is None:
+            print(f"\n{C_DIM}👋 See you later!{C_RESET}\n")
+            sys.exit(0)
+
+        action = selected.get("action")
+        use_codex = selected.get("use_codex", False)
+        tool_name = "Codex" if use_codex else "Claude"
+
+        if action == "refresh":
+            continue
+
+        if action == "new":
+            path = create_new_worktree(repo_root, worktree_base)
+            if path:
+                launch_tool(path, use_codex=use_codex)
+            return
+
+        elif action == "here":
+            # Check if main is behind remote before launching
+            is_behind, commits_behind, main_branch = check_main_behind_remote(repo_root)
+            if is_behind:
+                if prompt_update_main(commits_behind, main_branch):
+                    update_main_branch(repo_root, main_branch)
+
+            print(f"\n{C_MAGENTA}📍 Launching {tool_name} in current directory...{C_RESET}\n", file=sys.stderr)
+            launch_tool(use_codex=use_codex)
+            return
+
+        elif action == "open":
+            path = selected.get("path")
+            branch = selected.get("branch", "unknown")
+            print(f"\n{C_CYAN}📂 Opening worktree: {C_BOLD}{branch}{C_RESET} ({tool_name})\n", file=sys.stderr)
+            launch_tool(path, use_codex=use_codex)
+            return
+
+        elif action == "delete_request":
+            branch = selected.get("branch", "")
+            if branch and confirm_delete(branch):
+                display_branch = branch
+                print(f"\n{C_YELLOW}🗑️  Deleting worktree: {C_BOLD}{display_branch}{C_RESET}")
+                remove_worktree(selected, quiet=True)
+                print(f"{C_GREEN}   ✓ Deleted successfully{C_RESET}\n")
+            else:
+                print(f"{C_DIM}   Cancelled{C_RESET}\n")
+            continue
+
+        elif action == "archive_toggle":
+            path = selected.get("path", "")
+            branch = selected.get("branch", "unknown")
+            currently_archived = selected.get("archived", False)
+
+            if currently_archived:
+                # Unarchive
+                if unarchive_worktree(path):
+                    print(f"\n{C_GREEN}📦→🌿 Unarchived: {C_BOLD}{branch}{C_RESET}\n")
+                else:
+                    print(f"\n{C_RED}Failed to unarchive{C_RESET}\n")
+            else:
+                # Archive
+                if archive_worktree(path):
+                    print(f"\n{C_YELLOW}🌿→📦 Archived: {C_BOLD}{branch}{C_RESET}")
+                    print(f"{C_DIM}   Will be auto-deleted in {ARCHIVE_EXPIRY_DAYS} days{C_RESET}\n")
+                else:
+                    print(f"\n{C_RED}Failed to archive{C_RESET}\n")
+            continue
+
+
+if __name__ == "__main__":
+    main()

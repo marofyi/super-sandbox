@@ -34,3 +34,7 @@ projects/tanstack-chat/tests/visual/screenshots/
 # Claude Code Workbench worktrees
 .worktrees/
 nanobanana-output/
+
+# VM images (too large for git)
+vm-image/*.img
+vm-image/*.img.zst

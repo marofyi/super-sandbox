@@ -1,8 +1,0 @@
-{
-  "name": "super-sandbox",
-  "private": true,
-  "type": "module",
-  "engines": {
-    "node": ">=20.0.0"
-  }
-}
