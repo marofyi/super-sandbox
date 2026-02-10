@@ -141,3 +141,7 @@ First-time setup installs a config file:
 
 - [Official Documentation](https://code.claude.com/docs/en/chrome)
 - [Chrome Web Store](https://chromewebstore.google.com/detail/claude/fcoeoabgfenejglbffodgkkbkcdhcgfn)
+
+---
+
+[Back to README](../README.md) | [SETUP.md](../SETUP.md)

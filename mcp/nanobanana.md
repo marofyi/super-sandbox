@@ -115,3 +115,7 @@ Images are saved to `./nanobanana-output/` with auto-generated filenames based o
 
 - GitHub: [gemini-cli-extensions/nanobanana](https://github.com/gemini-cli-extensions/nanobanana)
 - License: Apache 2.0
+
+---
+
+[Back to README](../README.md) | [SETUP.md](../SETUP.md)

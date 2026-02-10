@@ -78,6 +78,7 @@ Run Claude Code in an isolated environment:
 |----------|---------|
 | [SETUP.md](SETUP.md) | **Start here** - Agent-guided installation |
 | [AGENTS.md](AGENTS.md) | Agent behavior guidelines |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution guidelines |
 | [mcp/](mcp/) | MCP server setup guides |
 | [browser/](browser/) | Browser automation setup |
 | [sandbox/](sandbox/) | Isolated environment setup |

@@ -83,3 +83,7 @@ Context7 indexes documentation for most popular libraries:
 ## Source
 
 - NPM: [@upstash/context7-mcp](https://www.npmjs.com/package/@upstash/context7-mcp)
+
+---
+
+[Back to README](../README.md) | [SETUP.md](../SETUP.md)

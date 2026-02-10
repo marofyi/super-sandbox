@@ -148,3 +148,7 @@ alias cc-docker="docker exec -it claude-sandbox claude --dangerously-skip-permis
 | Performance | Native-like | Good |
 | Resource usage | Low | Medium |
 | GUI apps support | Yes | Limited |
+
+---
+
+[Back to README](../README.md) | [SETUP.md](../SETUP.md)

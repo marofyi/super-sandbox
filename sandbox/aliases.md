@@ -69,3 +69,7 @@ Then reload:
 ```bash
 source ~/.zshrc
 ```
+
+---
+
+[Back to README](../README.md) | [SETUP.md](../SETUP.md)

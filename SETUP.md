@@ -63,7 +63,7 @@ Ask the user which MCP servers they want to install.
       "command": "npx",
       "args": ["-y", "github:gemini-cli-extensions/nanobanana/mcp-server"],
       "env": {
-        "GEMINI_API_KEY": "USER_KEY_HERE"
+        "GEMINI_API_KEY": "your-key-here"
       }
     }
   }
@@ -176,7 +176,7 @@ See `sandbox/orbstack-setup.md` for full instructions.
 
 After setup, verify everything works:
 
-1. **Skills**: Run `/help` and check skills are listed
+1. **Skills**: Run `/skills` and check skills are listed
 2. **MCP**: Run `/mcp` to see registered servers
 3. **Chrome**: Run `/chrome` to check extension connection
 

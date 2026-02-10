@@ -124,5 +124,9 @@ Run a performance trace on page load
 
 ## Source
 
-- GitHub: [ChromeDevTools/chrome-devtools-mcp](https://github.com/user/user/chrome-devtools-mcp)
+- GitHub: [anthropics/chrome-devtools-mcp](https://github.com/anthropics/chrome-devtools-mcp)
 - NPM: [chrome-devtools-mcp](https://www.npmjs.com/package/chrome-devtools-mcp)
+
+---
+
+[Back to README](../README.md) | [SETUP.md](../SETUP.md)

@@ -16,7 +16,7 @@ Deploy and manage projects on Vercel for instant preview and hosting.
 - **vercel CLI** - Install with `npm install -g vercel`
 - **Authentication** - Either:
   - `vercel login` (interactive, opens browser)
-  - `VERCEL_TOKEN` environment variable (for CI/CC Web)
+  - `VERCEL_TOKEN` environment variable (for CI/headless)
 
 ## Scripts
 
