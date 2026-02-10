@@ -55,7 +55,7 @@ This gives you `xlsx`, `pdf`, `pptx`, `docx`, `doc-coauthoring`, `frontend-desig
 |--------|--------------|
 | [Nanobanana](mcp/nanobanana.md) | Image generation, editing, diagrams (7 tools) |
 | [Context7](mcp/context7.md) | Documentation lookup for any library |
-| [Chrome DevTools](mcp/chrome-devtools.md) | Browser automation for SSH/headless |
+| [Atlassian](mcp/atlassian/) | Jira & Confluence (18 tools) |
 
 ### Tools
 
@@ -115,7 +115,10 @@ super-sandbox/
 ├── AGENTS.md             # Agent behavior rules
 ├── skills/               # Custom skills
 │   └── vercel/           # Deployment automation
-├── mcp/                  # MCP server guides
+├── mcp/                  # MCP servers
+│   ├── atlassian/        # Jira & Confluence MCP server
+│   ├── nanobanana.md     # Image generation setup
+│   └── context7.md       # Documentation lookup setup
 ├── browser/              # Browser automation guides
 ├── sandbox/              # Isolated environment guides
 └── statusline/           # Custom terminal status

@@ -7,9 +7,10 @@
 You are helping a user install Super Sandbox - a starter kit for agentic coding with Claude Code. The setup includes:
 
 1. **Skills** - Document handling, frontend design, deployment
-2. **MCP Servers** - Image generation, documentation lookup, browser automation
+2. **MCP Servers** - Image generation, documentation lookup, Jira & Confluence
 3. **Statusline** - Custom terminal status display
-4. **Sandbox** (optional) - Isolated execution environment
+4. **Aliases** - Shell shortcuts for common commands
+5. **Sandbox** (optional) - Isolated execution environment
 
 ## Setup Instructions
 
@@ -87,24 +88,47 @@ Add to `~/.claude/settings.json`:
 }
 ```
 
-#### 2c. Chrome DevTools (Browser Automation for SSH)
+#### 2c. Atlassian (Jira & Confluence)
 
-**Requires**: Chrome with debug port enabled
+**Requires**: Atlassian API token and Node.js 18+
 
-Add to `~/.claude/settings.json`:
+1. Generate API token at [id.atlassian.com](https://id.atlassian.com/manage-profile/security/api-tokens)
+2. Create credential file `~/.claude/atlassian.json`:
+
+```json
+{
+  "email": "your.email@company.com",
+  "apiToken": "your-token-here",
+  "baseUrl": "https://yourcompany.atlassian.net"
+}
+```
+
+3. Build the server:
+
+```bash
+cd path/to/super-sandbox/mcp/atlassian
+pnpm install && pnpm run build
+```
+
+4. Add to your project's `.mcp.json`:
 
 ```json
 {
   "mcpServers": {
-    "chrome-devtools": {
-      "command": "npx",
-      "args": ["-y", "chrome-devtools-mcp@latest", "--no-usage-statistics"]
+    "atlassian": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "/path/to/super-sandbox/mcp/atlassian/dist/mcp-server.js",
+        "--jira-project-key", "YOUR_PROJECT",
+        "--confluence-space-key", "YOUR_SPACE"
+      ]
     }
   }
 }
 ```
 
-See `mcp/chrome-devtools.md` for usage instructions.
+See [mcp/atlassian/README.md](mcp/atlassian/README.md) for all CLI flags and available tools.
 
 ---
 
@@ -144,7 +168,23 @@ Add to `~/.claude/settings.json`:
 
 ---
 
-### Step 5: Sandbox (Optional)
+### Step 5: Aliases
+
+**What**: Shell shortcut for launching Claude Code.
+
+Add to your `~/.zshrc` or `~/.bashrc`:
+
+```bash
+alias cc="claude --dangerously-skip-permissions --chrome"
+```
+
+Then reload: `source ~/.zshrc`
+
+See [sandbox/aliases.md](sandbox/aliases.md) for more aliases (sandbox, browser debugging, etc.).
+
+---
+
+### Step 6: Sandbox (Optional)
 
 **What**: Run Claude Code in isolated Linux VM.
 
