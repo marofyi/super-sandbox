@@ -2,27 +2,21 @@
 
 Recommended aliases for your `~/.zshrc` or `~/.bashrc`.
 
-## Claude Code Aliases
+## Claude Code
 
 ```bash
-# Claude Code with Chrome integration
-alias cc="claude --chrome"
-
-# Claude Code with permissions skipped (use in sandbox only!)
-alias cc-yolo="claude --dangerously-skip-permissions"
-
 # Claude Code with Chrome and permissions skipped
-alias cc-full="claude --dangerously-skip-permissions --chrome"
+alias cc="claude --dangerously-skip-permissions --chrome"
 ```
 
-## Sandbox Aliases
+## Sandbox
 
 ```bash
 # Run Claude Code in OrbStack sandbox
-alias cc-sandbox="orb run sandbox -- claude --dangerously-skip-permissions"
+alias cc-sandbox="orb run sandbox -- claude --dangerously-skip-permissions --chrome"
 
 # Run Claude Code in Docker sandbox
-alias cc-docker="docker exec -it claude-sandbox claude --dangerously-skip-permissions"
+alias cc-docker="docker exec -it claude-sandbox claude --dangerously-skip-permissions --chrome"
 ```
 
 ## Browser Automation
@@ -53,9 +47,8 @@ Add all of these to your shell config:
 # ~/.zshrc or ~/.bashrc
 
 # Claude Code
-alias cc="claude --chrome"
-alias cc-yolo="claude --dangerously-skip-permissions"
-alias cc-sandbox="orb run sandbox -- claude --dangerously-skip-permissions"
+alias cc="claude --dangerously-skip-permissions --chrome"
+alias cc-sandbox="orb run sandbox -- claude --dangerously-skip-permissions --chrome"
 
 # Browser
 alias chrome-debug="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222"
