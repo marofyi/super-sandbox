@@ -1,0 +1,5 @@
+node_modules/
+dist/
+.env
+.jira-tokens.json
+.atlassian.json

@@ -1,0 +1,27 @@
+{
+  "name": "atlassian-mcp",
+  "version": "1.0.0",
+  "description": "Atlassian MCP server - project-scoped Jira & Confluence access",
+  "type": "module",
+  "bin": {
+    "atlassian-mcp": "./dist/mcp-server.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "mcp": "node dist/mcp-server.js",
+    "test": "vitest run",
+    "test:no-cleanup": "TEST_SKIP_CLEANUP=true vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "dotenv": "^17.2.4",
+    "typescript": "^5.3.0",
+    "vitest": "^4.0.18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.25.3",
+    "zod": "^4.3.6"
+  }
+}
